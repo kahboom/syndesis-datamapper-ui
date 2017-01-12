@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "lib": ["es6", "dom"],
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "sourceMap": false,
+    "moduleResolution": "node",
+    "declaration": true,
+    "outDir": "../dist"
+  },
+  "awesomeTypescriptLoaderOptions": {
+    "useWebpackText": true 
+  }
+}

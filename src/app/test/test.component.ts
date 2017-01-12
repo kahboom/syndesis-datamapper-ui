@@ -2,14 +2,18 @@ import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-test',
-  templateUrl: './test.component.html',
-  styleUrls: ['./test.component.css']
+  template: require('./test.component.html'),
+  styleUrls: [require('./test.component.css')]
 })
 export class TestComponent implements OnInit {
 
-  constructor() { }
+  public world = "World!";
 
-  ngOnInit() {
+  constructor() { 
+    console.log("Hello world!");
   }
 
+  ngOnInit() {
+
+  }
 }
