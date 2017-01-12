@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 @Component({
   selector: 'app-test',
   template: require('./test.component.html'),
-  styleUrls: [require('./test.component.css')]
+  styles: [require('./test.component.css')]
 })
 export class TestComponent implements OnInit {
 
