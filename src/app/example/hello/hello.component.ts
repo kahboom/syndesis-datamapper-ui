@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-test',
-  template: require('./test.component.html'),
-  styles: [require('./test.component.css')]
+  selector: 'app-hello',
+  template: require('./hello.component.html'),
+  styles: [require('./hello.component.css')]
 })
-export class TestComponent implements OnInit {
+export class HelloComponent implements OnInit {
 
   public world = "World!";
 
