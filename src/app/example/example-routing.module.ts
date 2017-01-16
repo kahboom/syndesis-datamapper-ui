@@ -3,12 +3,10 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { ExampleComponent } from './example.component';
 
-const routes: Routes = [
-  { path: '', component: ExampleComponent, pathMatch: 'full' }
-];
-
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
+  imports: [RouterModule.forChild([
+    { path: '', component: ExampleComponent, pathMatch: 'full' }
+  ])],
   exports: [RouterModule],
   providers: []
 })
