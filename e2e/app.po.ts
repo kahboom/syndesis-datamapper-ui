@@ -6,6 +6,6 @@ export class DatamapperUiPage {
   }
 
   getParagraphText() {
-    return element(by.css('app-root h1')).getText();
+    return element(by.css('dev-root h1')).getText();
   }
 }

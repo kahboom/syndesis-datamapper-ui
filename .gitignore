@@ -1,8 +1,14 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
+/*
+!e2e
+!./dev-app
+!.editorconfig
+!.gitignore
+!angular-cli.json
+!lib
 
 # compiled output
-/dist/*
-!/dist/package.json
+/dist
 /tmp
 
 # dependencies

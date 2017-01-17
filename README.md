@@ -2,24 +2,6 @@
 
 This project was generated with [angular-cli](https://github.com/angular/angular-cli) version 1.0.0-beta.24.
 
-## Quick Start
-
-**Make sure you have node version >= 6.x.x and Yarn version >= 0.18.1**
-
-```bash
-# clone our repo
-git clone https://github.com/redhat-ipaas/datamapper-ui.git
-
-# change directory to iPaaS
-cd datamapper-ui
-
-# install the dependencies
-yarn
-
-# start the server
-ng serve
-```
-
 ## Development server
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
