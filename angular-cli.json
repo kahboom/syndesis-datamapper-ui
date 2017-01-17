@@ -8,8 +8,6 @@
       "root": "dev-app",
       "outDir": "dist",
       "assets": [
-        "assets",
-        "favicon.ico"
       ],
       "index": "index.html",
       "main": "main.ts",
