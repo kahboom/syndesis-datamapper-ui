@@ -1,5 +1,7 @@
 # DatamapperUI Component Library
 
+![Screen Shot](screenshots/Screenshot_2017-01-19_11-31-20.png)
+
 This project was generated with [angular-cli](https://github.com/angular/angular-cli) version 1.0.0-beta.24.  It differs from a normal angular-cli project in that it's a library and meant to be used as a component in other consoles.  However it still contains a demo app that can be used for standalone development of this component.
 
 Code that should be shared out of the library should go under `lib` and exported via `lib/index.ts`.  Note that shared components etc. should be also be marked for export in your NgModule, i.e.:
