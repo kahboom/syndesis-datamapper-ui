@@ -1,4 +1,56 @@
-<h1>
-  {{title}}
-</h1>
-<dev-example></dev-example>
+<header>
+
+  <!-- Navbar: Logged Out -->
+  <nav class="navbar navbar-fixed-top navbar-light loggedOut" *ngIf="!loggedIn">
+    <!-- Logo -->
+    <a [routerLink]=" ['/'] ">
+      <img src="{{ logoWhiteBg }}">
+    </a>
+  </nav>
+
+  <!-- Navbar: Logged In -->
+  <nav class="navbar navbar-pf-vertical">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+      </button>
+      <a [routerLink]=" ['/'] " class="navbar-brand">
+        <!--
+                <img class="navbar-brand-icon"
+                     src="/assets/images/logo-alt.svg"
+                     alt=""/>
+                <img class="navbar-brand-name"
+                     src="/assets/images/brand-alt.svg"
+                     alt="iPaaS" />
+                     -->
+        <img class="navbar-brand-icon" [src]="iconDarkBg" alt="" />
+        <img class="navbar-brand-name" [src]="logoDarkBg" alt="iPaaS" />
+      </a>
+    </div>
+    <nav class="collapse navbar-collapse">
+      <ul class="nav navbar-nav navbar-right navbar-iconic">
+
+        <!-- User Dropdown -->
+        <li class="dropdown">
+          <a class="dropdown-toggle nav-item-iconic" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <span title="Username" class="fa pficon-user"></span>&nbsp;Clint Eastwood
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+            <li><a href="#">Preferences</a></li>
+            <li><a href="#">Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </nav>
+  <!--/.navbar-->
+</header>
+
+<main class="container-fluid container-pf-nav-pf-vertical">
+  <!-- might be good to have a router outlet here really -->
+  <dev-example></dev-example>
+</main>
