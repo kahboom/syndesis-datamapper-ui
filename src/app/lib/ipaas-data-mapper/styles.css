@@ -1,0 +1,202 @@
+/*
+    Copyright (C) 2017 Red Hat, Inc.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+.row { margin:0px; }
+
+.toolbar-pf { background-color:#f5f5f5; border-bottom:1px solid #d1d1d1; }
+.cards-pf { background-color:white; }
+.breadcrumb { margin:0px; padding:0px; padding-bottom:10px; padding-left:20px; }
+.breadcrumb A { color:#5CBADF; font-weight:bold; }
+
+.form-group { margin-left:auto; margin-right:auto; margin-bottom:10px; margin-top:10px; }
+.form-group LABEL { width:75px; }
+.form-group SELECT { width:100px; }
+
+A:hover { cursor:pointer; }
+
+.docDef { margin-top:3%; position:relative; border:1px solid #CAC9C9; height:96%; background-color:white; }
+.docDef .card-pf { padding:0px; margin:0px; }
+.docDef .card-pf-title { padding:10px; margin:0px; text-align:left; font-size:12px; font-weight:bold; }
+.docDef .card-pf-heading { background-image:linear-gradient(rgb(250, 250, 250) 0px, rgb(237, 237, 237) 100%); margin:0px; padding:0px; }
+.docDef .card-pf-body { background-color:#FBFBFB; padding:0px; margin:0px; }
+.docDef .fieldDetail LABEL { vertical-align:top; font-weight:normal; }
+.docDef .fieldDetail { padding:5px 10px; width:100%; margin:0px; padding-left:15px; }
+.DocumentFieldDetailComponent .parentField {  }
+.DocumentFieldDetailComponent .parentField LABEL { }
+.docDef .selectedField { background-color:#02A2D8; color:white; }
+.DocumentFieldDetailComponent .parentField I { font-size:16px; color:#919191; vertical-align:baseline; }
+.DocumentFieldDetailComponent .parentField I.arrow { font-size:13px; margin-left:0px; }
+.docDef I { font-size:16px; margin-left:5px; }
+.docDef I.partOfMappingIcon { color:#5CBADF; font-size:10px; vertical-align:baseline; }
+.docDef .parentField I.partOfMappingIcon { color:#919191; }
+.docDef .selectedField I.partOfMappingIcon { color:white; }
+.docDef .parentField I.partOfMappingIconHidden { display:hidden; }
+.docDef .fieldsCount { padding:4px; font-size:10px; font-weight:bold; text-align:right; 
+    width:100%; border-top:1px solid #CAC9C9; padding-right:10px; }
+.docDef .outputField { padding-left:5px; }
+
+.docDef .searchBox { width:100%; border:1px solid #CAC9C9; border-left:2px solid #FBFBFB; border-right:2px solid #FBFBFB; 
+    font-size:12px; padding:5px 10px; }
+.docDef .searchBox:placeholder-shown { font-style:italic; }
+.docDef .searchBoxCloseIcon { position:absolute; right:10px; top:42px; } 
+.docDef .searchBoxCloseIcon I:hover { color:#5CBADF; }
+.docDef .searchBoxCloseIcon I { color:rgb(54,54,54); font-size:12px; }
+.docDef A.searchBoxIcon { position:absolute; right:9px; top:12px; } 
+.docDef A.searchBoxIcon I { font-size:12px; vertical-align:text-top; color:rgb(54,54,54); } 
+
+.fieldMappingDetail { border-left:1px solid #d1d1d1; padding:10px; height:100%; }
+.fieldMappingDetail .fieldDetail { display:inline; }
+.fieldMappingDetail .fieldDetail INPUT { margin-bottom:5px; font-size:12px; }
+.fieldMappingDetail .fieldDetail .dropdown-menu { padding:0px; }
+.fieldMappingDetail .fieldDetail .dropdown-menu button.dropdown-item { background-color:white; 
+        display:block; border:0px solid black; width:100%; text-align:left; }
+.fieldMappingDetail .fieldDetail .dropdown-menu button.active { background-color:#F5F5F5; }
+.fieldMappingDetail A { font-size:10px; font-weight:bold; color:#363636; }
+.fieldMappingDetail I { font-size:15px; vertical-align:baseline; }
+.fieldMappingDetail A:hover { color:#0088ce; cursor:pointer; text-decoration:none; }
+.fieldMappingDetail A.button I { margin-right:5px; font-size:10px; }
+.fieldMappingDetail A.button { margin:10px; margin-left:0px; border:1px solid #02A2D7; padding:5px 10px; border-radius:5px; }
+.fieldMappingDetail A.button:hover { border:1px solid #363636; }
+.fieldMappingDetail HR { margin-top:15px; margin-bottom:15px; border-top:1px solid #d1d1d1; }
+.fieldMappingDetail .sectionHeader { font-weight:bold; font:size:150%; }
+
+.mappingFieldContainer { background-color:#F9F9F9; border-radius:3px; padding:10px; padding-top:10px; margin-bottom:10px; margin-top:10px; }
+.mappingFieldContainer H3 { margin:0; padding:0; margin-bottom:10px; }
+
+.toolbar-pf .form-group .btn-link:focus { color:#252525; outline-style:none; }
+
+#CAC9C9
+.alert { margin-bottom:5px; }
+.alert .close { font-size:18px; color:#888888; }
+
+.mappingFieldSection { border:1px solid gray; padding:2px 4px; margin-top:5px; margin-bottom:10px; border-radius:3px; }
+.TransitionSelector { width:100%; }
+.TransitionSelector LABEL { width:20%; }
+.TransitionSelector SELECT { width:73%; }
+
+html, body {
+    height: 100%;
+}
+
+.fill {     
+    height: 83%;
+    margin:0px;
+    padding:0px;
+    width:100%;
+}
+
+/* for app.modal.component.ts */
+
+/* The Modal (background) */
+
+.modalWindow { z-index:1000; position:relative; width:100%; }
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+    position: absolute;
+    background-color: #fefefe;
+    margin: auto;
+    padding: 0;
+    border: 1px solid #888;
+    width: auto;
+    left:25%;
+    top:10%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+
+.modal-content { width:auto; min-width:250px; margin-left:auto; margin-right:auto; border:0px solid black; }
+
+/* Add Animation */
+@-webkit-keyframes animatetop {
+    from {top:-300px; opacity:0} 
+    to {top:10%; opacity:1}
+}
+
+@keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:10%; opacity:1}
+}
+
+/* The Close Button */
+.modal-header .close {
+    color: white;
+    float: right;
+    font-size: 16px;
+    margin-top: 3px;
+}
+
+.modal-header .close:hover,
+.modal-header .close:focus {
+    color: white;
+    opacity: 1.0;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-header {
+    padding: 5px 10px;
+    background-color: #030303;
+    border-bottom: 1px solid #292929;
+    color: #f5f5f5;
+    font-size:14px;
+    border-top: 1px solid #39a5dc;
+    margin:0;
+}
+
+.modal-body { margin:15px 8px; padding:0; margin-bottom:5px; }
+.modal-buttons { width:100%; text-align:right; }
+.modal-buttons A { font-size:16px; margin-left:10px; }
+.modal-buttons A:hover { text-decoration:none; color:#030303; }
+
+.modal-footer {
+    padding:0;
+    margin:0;
+    background-color: #030303;
+    border-top: 1px solid #292929;
+    border-bottom: 1px solid #39a5dc;
+    color: #f5f5f5;
+}
+
+.modal-message { padding:10px 20px; }
+
+/* end app.modal.component */
+
+.MappingSelectionComponent { margin-left:20px; margin-right:20px; margin-bottom:10px; }
+.MappingSelectionComponent TR { border:1px solid #F6F6F6; }
+.MappingSelectionComponent TR.headers { border:1px solid transparent; border-bottom:1px solid #F6F6F6;}
+.MappingSelectionComponent TR.odd { background-color:#F6F6F6; }
+.MappingSelectionComponent TH { }
+.MappingSelectionComponent TD.radios { width:20px; padding:5px; vertical-align:top; }
+.MappingSelectionComponent .inputFields,
+    .MappingSelectionComponent .outputFields { width:200px; padding:5px; padding-left:10px; vertical-align:top; }
