@@ -42,16 +42,49 @@ import { DataMapperAppExampleHostComponent } from './components/data.mapper.exam
 import { LineMachineComponent } from './components/line.machine.component';
 import { ToolbarComponent } from './components/toolbar.component';
 
+// export services/types for consumers of this module
+export { ErrorHandlerService } from './services/error.handler.service';
+export { DocumentManagementService } from './services/document.management.service';
+export { MappingManagementService } from './services/mapping.management.service';
+export { DocumentDefinition } from './models/document.definition.model';
+export { MappingDefinition } from './models/mapping.definition.model';
+export { ConfigModel } from './models/config.model';
+export { MappingModel } from './models/mapping.model';
+
+export { DataMapperAppComponent } from './components/data.mapper.app.component';
+
+
 @NgModule({
 	imports: [ CommonModule, HttpModule, FormsModule, NgbModule ],
-	declarations: [ DataMapperAppComponent, DocumentDefinitionComponent, 
-		MappingDetailComponent, ModalWindowComponent, DataMapperAppExampleHostComponent,
-		MappingFieldActionComponent, MappingFieldDetailComponent, DocumentFieldDetailComponent,
-		DataMapperErrorComponent, TransitionSelectionComponent, LineMachineComponent,
-		MappingSelectionComponent, ToolbarComponent ],
-	exports: [ DataMapperAppExampleHostComponent, ModalWindowComponent, DataMapperAppComponent ],
-	providers: [ DocumentManagementService, MappingManagementService, ErrorHandlerService ],
-	entryComponents: [ TransitionSelectionComponent, MappingSelectionComponent ],
-	bootstrap: [ DataMapperAppExampleHostComponent ]
+	declarations: [
+		DataMapperAppComponent,
+		DocumentDefinitionComponent,
+		MappingDetailComponent,
+		ModalWindowComponent,
+		DataMapperAppExampleHostComponent,
+		MappingFieldActionComponent,
+		MappingFieldDetailComponent,
+		DocumentFieldDetailComponent,
+		DataMapperErrorComponent,
+		TransitionSelectionComponent,
+		LineMachineComponent,
+		MappingSelectionComponent,
+		ToolbarComponent,
+	],
+	exports: [
+		DataMapperAppExampleHostComponent,
+		ModalWindowComponent,
+		DataMapperAppComponent,
+	],
+	providers: [
+		DocumentManagementService,
+		MappingManagementService,
+		ErrorHandlerService,
+	],
+	entryComponents: [
+		TransitionSelectionComponent,
+		MappingSelectionComponent,
+	],
+ 	bootstrap: [ DataMapperAppExampleHostComponent ]
 })
 export class DataMapperModule { }
