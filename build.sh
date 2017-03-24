@@ -1,10 +1,10 @@
 #!/bin/bash
 
 echo "Building code"
-node_modules/.bin/ngc -p ./tsconfig-aot.json 
+npm run aot:build
 
 echo "Rolling up code"
-node_modules/.bin/rollup -c rollup-config.js
+npm run aot:rollup
 
 echo "Copying distribution files"
 node copy-dist-files
