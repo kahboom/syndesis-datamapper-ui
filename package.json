@@ -25,7 +25,7 @@
     "pretest:once": "npm run build",
     "test:once": "karma start karma.conf.js --single-run",
     "lint": "tslint ./src/**/*.ts -t verbose",
-    "aot:build": "ngc -p ./tsconfig.aot.json",
+    "aot:build": "\"node_modules/.bin/ngc\" -v -p ./tsconfig-aot.json",
     "aot:rollup": "rollup -c rollup-config.js",
     "aot:serve": "lite-server -c bs-config.aot.json"
   },
