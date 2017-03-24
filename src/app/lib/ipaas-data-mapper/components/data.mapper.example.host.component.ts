@@ -38,13 +38,13 @@ import { DataMapperAppComponent } from './data.mapper.app.component';
 export class DataMapperAppExampleHostComponent {
 
 	@ViewChild('dataMapperComponent')
-  	private dataMapperComponent: DataMapperAppComponent;
-  	
-  	private cfg: ConfigModel;
+  	public dataMapperComponent: DataMapperAppComponent;
 
-  	constructor(private documentService: DocumentManagementService, 
-  		private mappingService: MappingManagementService, 
-		private errorService: ErrorHandlerService) { 
+  	public cfg: ConfigModel;
+
+  	constructor(private documentService: DocumentManagementService,
+  		private mappingService: MappingManagementService,
+		private errorService: ErrorHandlerService) {
 
 		// initialize config information before initializing services
 		var c: ConfigModel = new ConfigModel();
@@ -61,11 +61,11 @@ export class DataMapperAppExampleHostComponent {
 		// point services' config pointers to our config
 		c.documentService.cfg = c;
 		c.mappingService.cfg = c;
-			
+
 		// fetch the input / output documents from the inspection service
 		c.documentService.initialize();
 
-		// fetch mappings from the mapping service 
+		// fetch mappings from the mapping service
 		// (currently hard coded to look up and use first mapping config prefixed with "UI")
 		c.mappingService.initialize();
 
@@ -73,6 +73,6 @@ export class DataMapperAppExampleHostComponent {
 		c.mappingService.saveMappingOutput$.subscribe((saveHandler: Function) => {
 			console.log("Host component saving mappings.");
 			c.mappingService.saveMappingToService(saveHandler);
-		});		
-	}  	
+		});
+	}
 }
