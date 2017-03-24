@@ -24,7 +24,7 @@ import { AppComponent } from './app.component';
 
 import { DataMapperModule } from './lib/ipaas-data-mapper/data.mapper.module';
 
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { TypeaheadModule } from 'ng2-bootstrap';
 
 @NgModule({
   declarations: [
@@ -34,7 +34,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     BrowserModule,
     FormsModule,
     HttpModule,
-    NgbModule.forRoot(),
+    TypeaheadModule.forRoot(),
     RouterModule.forRoot([]),
     DataMapperModule
   ],

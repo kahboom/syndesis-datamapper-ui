@@ -30,6 +30,7 @@ export class DocumentDefinition {
     private pathSeparator: string = ".";
     private noneField: Field = null;
     public uri: string = null;
+    public fieldPaths: string[] = [];
 
     public getCachedField(name: string): Field {
         return this.complexFieldsByClassName[name];
@@ -137,7 +138,9 @@ export class DocumentDefinition {
         for (let field of this.fields) {
             this.populateFieldParentPaths(field, "", 0);
             this.populateFieldData(field);
-        }       
+        }  
+
+        this.fieldPaths.sort();  
 
         if (this.debugParsing) {
             console.log(this.printDocumentFields(this.fields, 0));
@@ -185,6 +188,7 @@ export class DocumentDefinition {
     }
 
     private populateFieldData(field:Field) {
+        this.fieldPaths.push(field.path);
         this.allFields.push(field);
         this.fieldsByPath[field.path] = field;
         if (field.isTerminal()) {
@@ -229,9 +233,10 @@ export class DocumentDefinition {
             childField = childField.copy();
             childField.parentField = field;
             this.populateFieldParentPaths(childField, field.path + this.pathSeparator, field.fieldDepth + 1);  
-            this.populateFieldData(childField);
+            this.populateFieldData(childField);            
             field.children.push(childField);
         }
+        this.fieldPaths.sort(); 
     }
 
     private prepareComplexFields() {

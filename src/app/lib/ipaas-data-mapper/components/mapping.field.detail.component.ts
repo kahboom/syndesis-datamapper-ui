@@ -24,9 +24,9 @@ import { DocumentDefinition } from '../models/document.definition.model';
 @Component({
 	selector: 'mapping-field-detail',
 	template: `
-	  	<div class='fieldDetail' *ngIf="docDef && docDef.fields" style="margin-bottom:5px;">	  		
+	  	<div class='fieldDetail' *ngIf="docDef && docDef.fields && docDef.fieldPaths" style="margin-bottom:5px;">	  		
    			<input type="text" style="width:94%; float:left;" [(ngModel)]="selectedFieldPath" 
-   				[ngbTypeahead]="search" (selectItem)="selectionChanged($event)" [editable]="false">
+   				[typeahead]="dataSource" typeaheadWaitMs="200" (typeaheadOnSelect)="selectionChanged($event)">
    			<a style='display:inline; float:right;' (click)="remove($event)">
    				<i class="fa fa-trash" aria-hidden="true"></i>
    			</a>
@@ -39,8 +39,15 @@ export class MappingFieldDetailComponent {
 	@Input() cfg: ConfigModel;
 	@Input() selectedFieldPath: string;
 	@Input() originalSelectedFieldPath: string;
-	@Input() docDef: DocumentDefinition;  
+	@Input() docDef: DocumentDefinition; 
 	private lastFieldPath: string;
+	private dataSource: Observable<any>;
+
+	public constructor() {
+		this.dataSource = Observable.create((observer: any) => {
+			observer.next(this.executeSearch(this.selectedFieldPath));
+		});
+	}
 
 	remove(event: MouseEvent): void {
 		this.cfg.mappingService.removeMappedField(this.selectedFieldPath, this.docDef.isInput);
@@ -48,6 +55,7 @@ export class MappingFieldDetailComponent {
 	}
 
 	selectionChanged(event: any):void {	
+		console.log(event);
 		if (this.lastFieldPath == null) {
 			this.lastFieldPath = this.originalSelectedFieldPath;
 		}
@@ -61,7 +69,7 @@ export class MappingFieldDetailComponent {
 		this.cfg.mappingService.saveCurrentMapping();
 	}
 
-	public executeSearch(filter: string): any {
+	public executeSearch(filter: string): string[] {
 		var fieldNames: string[] = [];
 		for (let field of this.docDef.getTerminalFields(true)) {
 			if (filter == null || filter == "" 
@@ -78,7 +86,4 @@ export class MappingFieldDetailComponent {
 		}
 		return fieldNames;
 	}
-
-	search = (text$: Observable<string>) => text$.debounceTime(200).distinctUntilChanged()
-		.map((term: any) => { return this.executeSearch(term); });
 }

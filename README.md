@@ -8,7 +8,6 @@ Variables used in this document:
 
 1) install NPM: https://docs.npmjs.com/getting-started/installing-node
 2) run 'npm install' in ${atlasui.home} to install node modules
-3) one of the node libraries "jasmine" is currently broken (Feb 13, 2017), unzip the ${atlasui.home} 'jasmine-fix.zip' file into ${atlas2.home}/node_modules/@types to fix the broken 'index.d.ts' file there
 4) run 'npm start' in ${atlasui.home} to start the UI
 
 Reference: angular 2 env setup guide: https://angular.io/docs/ts/latest/guide/setup.html

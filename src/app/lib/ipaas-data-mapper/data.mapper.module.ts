@@ -18,7 +18,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpModule } from '@angular/http';
 import { FormsModule } from '@angular/forms';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { TypeaheadModule } from 'ng2-bootstrap';
 
 import { DocumentManagementService } from './services/document.management.service';
 import { MappingManagementService } from './services/mapping.management.service';
@@ -55,7 +55,12 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 
 
 @NgModule({
-	imports: [ CommonModule, HttpModule, FormsModule, NgbModule ],
+	imports: [ 
+		CommonModule, 
+		HttpModule, 
+		FormsModule, 
+		TypeaheadModule
+	],
 	declarations: [
 		DataMapperAppComponent,
 		DocumentDefinitionComponent,
