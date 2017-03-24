@@ -1,0 +1,9 @@
+{
+  "server": {
+    "baseDir": "aot",
+    "routes": {
+      "/node_modules": "node_modules"
+    }
+  },
+  "cors": true
+}
