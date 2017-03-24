@@ -15,7 +15,7 @@
 */
 
 import { Component, OnInit, Input, ViewChild, ViewChildren, DoCheck, QueryList,
-	ViewContainerRef, Directive, Type, ComponentFactoryResolver, AfterViewInit, 
+	ViewContainerRef, Directive, Type, ComponentFactoryResolver, AfterViewInit,
 	SimpleChange, Inject} from '@angular/core';
 import { DOCUMENT, DomSanitizer, SafeResourceUrl, SafeUrl, SafeStyle} from '@angular/platform-browser';
 
@@ -33,9 +33,9 @@ import { DOCUMENT, DomSanitizer, SafeResourceUrl, SafeUrl, SafeStyle} from '@ang
 				<div class="modal-body">
 					<div class="modal-message" *ngIf="message">{{message}}</div>
 					<template #dyn_target></template>
-					<div class="modal-buttons">					
-						<a class='button' (click)="buttonClicked(false)"><i class="fa fa-close"></i></a>	  		
-						<a class='button' (click)="buttonClicked(true)"><i class="fa fa-check"></i></a>	  		
+					<div class="modal-buttons">
+						<a class='button' (click)="buttonClicked(false)"><i class="fa fa-close"></i></a>
+						<a class='button' (click)="buttonClicked(true)"><i class="fa fa-check"></i></a>
 					</div>
 				</div>
 				<div class="modal-footer"></div>
@@ -44,25 +44,25 @@ import { DOCUMENT, DomSanitizer, SafeResourceUrl, SafeUrl, SafeStyle} from '@ang
     `
 })
 
-export class ModalWindowComponent implements AfterViewInit { 
+export class ModalWindowComponent implements AfterViewInit {
 	@Input() headerText: string = "";
 	@Input() parentComponent: Component;
-	@Input() nestedComponentType: Type<any>;		
+	@Input() nestedComponentType: Type<any>;
 	@Input() nestedComponentInitializedCallback: Function;
 	@Input() okButtonHandler: Function;
 	@Input() cancelButtonHandler: Function;
 
 	public message: string = null;
 	public nestedComponent: Component;
-	
-	private componentLoaded: boolean = false;		
+
+	private componentLoaded: boolean = false;
 	private modalStyle: SafeStyle;
 	private visible: boolean = false;
 
 	@ViewChildren('dyn_target', {read: ViewContainerRef}) myTarget: QueryList<ViewContainerRef>;
 
-	constructor(private componentFactoryResolver: ComponentFactoryResolver, 
-		@Inject(DOCUMENT) private document: Document, private sanitizer: DomSanitizer) { }
+	constructor(private componentFactoryResolver: ComponentFactoryResolver,
+		@Inject(DOCUMENT) private document: any, private sanitizer: DomSanitizer) { }
 
 	ngAfterViewInit() {
 		//from: http://stackoverflow.com/questions/40811809/add-component-dynamically-inside-an-ngif
@@ -70,24 +70,24 @@ export class ModalWindowComponent implements AfterViewInit {
 			if (!this.componentLoaded && this.visible && this.myTarget && (this.myTarget.toArray().length)) {
 				//break us out of a change detection call stack with timeout so we can change data on created comp.
 				setTimeout(()=> { this.loadComponent(); }, 1);
-			}    		
+			}
   		});
 	}
 
 	public loadComponent(): void {
 		var viewContainerRef: ViewContainerRef = this.myTarget.toArray()[0];
 		viewContainerRef.clear();
-	    let componentFactory = this.componentFactoryResolver.resolveComponentFactory(this.nestedComponentType);	    
+	    let componentFactory = this.componentFactoryResolver.resolveComponentFactory(this.nestedComponentType);
 	    this.nestedComponent = viewContainerRef.createComponent(componentFactory).instance;
 	    this.nestedComponentInitializedCallback(this);
   	}
 
 	public closeClicked(event: MouseEvent): void { this.buttonClicked(false); }
 	public close(): void { this.visible = false; }
-	public show(): void { 
+	public show(): void {
 		let number = (this.document.body.scrollTop);
 		this.modalStyle = this.sanitizer.bypassSecurityTrustStyle("top:" + number + "px;");
-		this.visible = true; 
+		this.visible = true;
 	}
 
 	private buttonClicked(okClicked: boolean): void {
@@ -107,9 +107,9 @@ export class ModalWindowComponent implements AfterViewInit {
 		this.message = "";
 		this.headerText = "";
 		this.parentComponent = null;
-		this.componentLoaded = false;		
+		this.componentLoaded = false;
 		this.nestedComponentType = null;
 		this.okButtonHandler = null;
-		this.cancelButtonHandler = null;		
+		this.cancelButtonHandler = null;
 	}
 }
