@@ -6,11 +6,17 @@ Variables used in this document:
 
 [INITIAL SETUP]
 
+Reference: angular 2 env setup guide: https://angular.io/docs/ts/latest/guide/setup.html
+
 1) install NPM: https://docs.npmjs.com/getting-started/installing-node
 2) run 'npm install' in ${atlasui.home} to install node modules
-4) run 'npm start' in ${atlasui.home} to start the UI
 
-Reference: angular 2 env setup guide: https://angular.io/docs/ts/latest/guide/setup.html
+[Compiling with AOT]
+
+Reference: angular 2 AOT compilation guide: https://angular.io/docs/ts/latest/cookbook/aot-compiler.html
+
+1) compile AOT with "npm run aot:build"
+2) after compilation, reduce unnecessary js code with "npm run aot:rollup"
 
 [RUNNING THE UI]
 

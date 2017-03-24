@@ -14,7 +14,8 @@
 	limitations under the License.
 */
 
-import { platformBrowser }    from '@angular/platform-browser';
-import { ExampleAppModuleNgFactory } from '../aot/src/app/example.app.module.ngfactory';
-console.log('Running AOT compiled');
-platformBrowser().bootstrapModuleFactory(ExampleAppModuleNgFactory);
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+
+import { ExampleAppModule } from './app/example.app.module';
+
+platformBrowserDynamic().bootstrapModule(ExampleAppModule);
