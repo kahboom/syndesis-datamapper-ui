@@ -45,13 +45,13 @@ import { ToolbarComponent } from './toolbar.component';
   		<div class="row"><data-mapper-error #errorPanel [errorService]="cfg.errorService"></data-mapper-error></div>
   		<div class="row"><div class="col-md-12"><modal-window #modalWindow></modal-window></div></div>
   		<div class="row" style='height:100%; position:relative;'>
-	  		<div class="col-md-9" style='height:100%; padding:0;'>  		
+	  		<div class="col-md-9" style='height:100%; padding:0;'>
 	  			<div style="float:left; width:40%; padding-left:10px; height:100%;">
 		  			<document-definition #docDefInput [cfg]="cfg"
 		  				[docDef]="cfg.inputDoc" [lineMachine]="lineMachine"></document-definition>
 		  		</div>
 		  		<div style="float:left; width:20%; height:100%; margin-left:-5px; margin-right:-5px;">
-		  			<line-machine #lineMachine [cfg]="cfg" 
+		  			<line-machine #lineMachine [cfg]="cfg"
 		  				[docDefInput]="docDefInput" [docDefOutput]="docDefOutput"></line-machine>
 		  		</div>
 		  		<div style="float:left; width:40%; height:100%;">
@@ -73,38 +73,38 @@ export class DataMapperAppComponent implements OnInit {
 	@Input() cfg:ConfigModel;
 
 	@ViewChild('lineMachine')
-  	private lineMachine: LineMachineComponent;
+  	public lineMachine: LineMachineComponent;
 
 	@ViewChild('errorPanel')
-  	private errorPanel: DataMapperErrorComponent;
+  	public errorPanel: DataMapperErrorComponent;
 
   	@ViewChild('modalWindow')
-  	private modalWindow: ModalWindowComponent;
+  	public modalWindow: ModalWindowComponent;
 
 	@ViewChild('docDefInput')
-  	private docDefInput: DocumentDefinitionComponent;
+  	public docDefInput: DocumentDefinitionComponent;
 
   	@ViewChild('docDefOutput')
-  	private docDefOutput: DocumentDefinitionComponent;
+  	public docDefOutput: DocumentDefinitionComponent;
 
   	@ViewChild('mappingDetailComponent')
-  	private mappingDetailComponent: MappingDetailComponent;
+  	public mappingDetailComponent: MappingDetailComponent;
 
   	@ViewChild('toolbarComponent')
-  	private toolbarComponent: ToolbarComponent;
+  	public toolbarComponent: ToolbarComponent;
 
-	ngOnInit(): void {				
-		this.toolbarComponent.parentComponent = this;		
+	ngOnInit(): void {
+		this.toolbarComponent.parentComponent = this;
 		this.mappingDetailComponent.modalWindow = this.modalWindow;
 
 		this.cfg.mappingService.mappingSelectionRequired$.subscribe((mappings: MappingModel[]) => {
 			this.selectMapping(mappings);
-		});		
+		});
 
 		this.cfg.documentService.documentsFetched$.subscribe(() => {
-			this.updateFromConfig();			
-		});	
-	}        
+			this.updateFromConfig();
+		});
+	}
 
 	private selectMapping(mappingsForField: MappingModel[]): void {
 		this.modalWindow.reset();
@@ -116,7 +116,7 @@ export class DataMapperAppComponent implements OnInit {
 			c.mappings = mappingsForField;
 			c.selectedMapping = mappingsForField[0];
 		};
-		this.modalWindow.nestedComponentType = MappingSelectionComponent;	
+		this.modalWindow.nestedComponentType = MappingSelectionComponent;
 		this.modalWindow.okButtonHandler = (mw: ModalWindowComponent) => {
 			var self: DataMapperAppComponent = mw.parentComponent as DataMapperAppComponent;
 			var c: MappingSelectionComponent = mw.nestedComponent as MappingSelectionComponent;
@@ -124,19 +124,19 @@ export class DataMapperAppComponent implements OnInit {
 			self.cfg.mappingService.selectMapping(mapping, false);
 		};
 		this.modalWindow.cancelButtonHandler = (mw: ModalWindowComponent) => {
-			var self: DataMapperAppComponent = mw.parentComponent as DataMapperAppComponent;	
+			var self: DataMapperAppComponent = mw.parentComponent as DataMapperAppComponent;
 			self.cfg.mappingService.selectMapping(null, false);
 		};
 		this.modalWindow.show();
-	}	
+	}
 
 	public updateFromConfig(): void {
 		this.lineMachine.updateHeight();
 		this.mappingDetailComponent.updateHeight();
-		
+
 		// update the mapping line drawing after our fields have redrawn themselves
         // without this, the x/y from the field dom elements is messed up / misaligned.
-        setTimeout(()=> { this.lineMachine.redrawLinesForMappings(); }, 1);        
+        setTimeout(()=> { this.lineMachine.redrawLinesForMappings(); }, 1);
 	}
 
 	public buttonClickedHandler(action: string, component: ToolbarComponent): void {

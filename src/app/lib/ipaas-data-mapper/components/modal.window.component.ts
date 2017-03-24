@@ -57,7 +57,7 @@ export class ModalWindowComponent implements AfterViewInit {
 	
 	private componentLoaded: boolean = false;		
 	private modalStyle: SafeStyle;
-	private visible: boolean = false;
+	public visible: boolean = false;
 
 	@ViewChildren('dyn_target', {read: ViewContainerRef}) myTarget: QueryList<ViewContainerRef>;
 

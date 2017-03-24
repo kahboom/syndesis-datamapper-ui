@@ -42,14 +42,14 @@ export class LineModel {
 	template: `
 		<div class="LineMachineComponent" #lineMachineElement on-mousemove="drawLine($event)" style="height:100%; margin-top:6%;">
 			<svg [attr.style]="svgStyle">
-				<svg:line *ngFor="let l of lines" 
-					[attr.x1]="l.sourceX" [attr.y1]="l.sourceY" 
-					[attr.x2]="l.targetX" [attr.y2]="l.targetY" 
+				<svg:line *ngFor="let l of lines"
+					[attr.x1]="l.sourceX" [attr.y1]="l.sourceY"
+					[attr.x2]="l.targetX" [attr.y2]="l.targetY"
 					shape-rendering="optimizeQuality"
 					[attr.style]="l.style"></svg:line>
-				<svg:line *ngIf="lineBeingFormed && lineBeingFormed.targetY" 
-					[attr.x1]="lineBeingFormed.sourceX" [attr.y1]="lineBeingFormed.sourceY" 
-					[attr.x2]="lineBeingFormed.targetX" [attr.y2]="lineBeingFormed.targetY" 
+				<svg:line *ngIf="lineBeingFormed && lineBeingFormed.targetY"
+					[attr.x1]="lineBeingFormed.sourceX" [attr.y1]="lineBeingFormed.sourceY"
+					[attr.x2]="lineBeingFormed.targetX" [attr.y2]="lineBeingFormed.targetY"
 					shape-rendering="optimizeQuality"
 					[attr.style]="lineBeingFormed.style"></svg:line>
 			</svg>
@@ -57,15 +57,15 @@ export class LineModel {
 	`
 })
 
-export class LineMachineComponent { 
+export class LineMachineComponent {
 	@Input() cfg: ConfigModel;
 	@Input() docDefInput: DocumentDefinitionComponent;
 	@Input() docDefOutput: DocumentDefinitionComponent;
 
-	private lines: LineModel[] = [];
-	private lineBeingFormed: LineModel;
-	private drawingLine: boolean = false;
-	private svgStyle: SafeStyle;	
+	public lines: LineModel[] = [];
+	public lineBeingFormed: LineModel;
+	public drawingLine: boolean = false;
+	public svgStyle: SafeStyle;
 
 	@ViewChild('lineMachineElement') lineMachineElement: ElementRef;
 
@@ -74,15 +74,15 @@ export class LineMachineComponent {
 	ngOnInit(): void {
 		this.cfg.mappingService.activeMappingChanged$.subscribe((mappingIsNew: boolean) => {
 			this.activeMappingChanged(mappingIsNew);
-		});		
+		});
 		this.cfg.mappingService.mappingUpdated$.subscribe(() => {
 			this.activeMappingChanged(false);
-		});		
-		
+		});
+
 	}
 
-	public addLineFromParams(sourceX: string, sourceY: string, targetX: string, targetY: string, 
-		color: string, strokeWidth: string): void {		
+	public addLineFromParams(sourceX: string, sourceY: string, targetX: string, targetY: string,
+		color: string, strokeWidth: string): void {
 		var l: LineModel = new LineModel();
 		l.sourceX = sourceX;
 		l.sourceY = sourceY;
@@ -125,7 +125,7 @@ export class LineMachineComponent {
 		}
 	}
 
-	public handleDocumentFieldMouseOver(component: DocumentFieldDetailComponent, event: MouseEvent): void {		
+	public handleDocumentFieldMouseOver(component: DocumentFieldDetailComponent, event: MouseEvent): void {
 		if (!this.drawingLine) {
 			return;
 		}
@@ -141,13 +141,13 @@ export class LineMachineComponent {
 		if (!mappingIsNew) {
 			console.log("active line drawing turned off");
 			this.drawingLine = false;
-			this.setLineBeingFormed(null);		
+			this.setLineBeingFormed(null);
 		} else {
 			var mapping: MappingModel = this.cfg.mappings.activeMapping;
 			var inputSelected: boolean = (mapping.inputFieldPaths.length == 1);
 			var outputSelected: boolean = (mapping.outputFieldPaths.length == 1);
 			if ((inputSelected && !outputSelected) || (!inputSelected && outputSelected) ) {
-				console.log("active line drawing turned on");				
+				console.log("active line drawing turned on");
 				var l: LineModel = new LineModel();
 				l.color = "#02A2D7";
 				l.strokeWidth = "3";
@@ -160,24 +160,24 @@ export class LineMachineComponent {
 					var fieldPathToFind: string = this.cfg.mappings.activeMapping.outputFieldPaths[0];
 					pos = this.docDefOutput.getFieldDetailComponentPosition(fieldPathToFind);
 					l.sourceX = "100%";
-				}	
+				}
 				if (pos != null) {
-					l.sourceY = (pos.y + 17).toString();							
+					l.sourceY = (pos.y + 17).toString();
 					this.setLineBeingFormed(l);
 					this.drawingLine = true;
-				}				
+				}
 			}
 		}
-				
+
 		// update the mapping line drawing after our fields have redrawn themselves
         // without this, the x/y from the field dom elements is messed up / misaligned.
-        setTimeout(() => { this.redrawLinesForMappings(); }, 1);  
+        setTimeout(() => { this.redrawLinesForMappings(); }, 1);
 	}
 
 	public updateHeight(): void {
 		/*
 		if (this.cfg.inputDoc && this.cfg.outputDoc) {
-			var maxFieldCount: number = Math.max(this.cfg.inputDoc.fields.length, 
+			var maxFieldCount: number = Math.max(this.cfg.inputDoc.fields.length,
 				this.cfg.outputDoc.fields.length);
 			var heightCSS: string = ((maxFieldCount * 40) + 100).toString() + "px";
 			this.svgStyle = this.sanitizer.bypassSecurityTrustStyle("width:100%; height:" + heightCSS + ";");
@@ -197,7 +197,7 @@ export class LineMachineComponent {
 		for (let m of mappings) {
 			foundSelectedMapping = foundSelectedMapping || (m == activeMapping)
 			this.drawLinesForMapping(m);
-		}			
+		}
 		if (!foundSelectedMapping && activeMapping) {
 			this.drawLinesForMapping(activeMapping);
 		}
@@ -251,11 +251,11 @@ export class LineMachineComponent {
 					var color: string = isSelectedMapping ? "#02A2D7" : "#A2A2A2";
 					var strokeWidth: string = isSelectedMapping ? "3" : "1";
 					if (this.cfg.showLinesAlways || isSelectedMapping) {
-						this.addLineFromParams("0", (sourceY + 17).toString(), 
-							"100%", (targetY + 17).toString(), color, strokeWidth);	
+						this.addLineFromParams("0", (sourceY + 17).toString(),
+							"100%", (targetY + 17).toString(), color, strokeWidth);
 					}
 				}
-			}			
+			}
 		}
 	}
 }
