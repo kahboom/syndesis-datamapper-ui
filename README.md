@@ -11,13 +11,6 @@ Reference: angular 2 env setup guide: https://angular.io/docs/ts/latest/guide/se
 1) install NPM: https://docs.npmjs.com/getting-started/installing-node
 2) run 'npm install' in ${atlasui.home} to install node modules
 
-[Compiling with AOT]
-
-Reference: angular 2 AOT compilation guide: https://angular.io/docs/ts/latest/cookbook/aot-compiler.html
-
-1) compile AOT with "npm run aot:build"
-2) after compilation, reduce unnecessary js code with "npm run aot:rollup"
-
 [RUNNING THE UI]
 
 1) build all of the atlas 2 maven projects by executing 'mvn clean install' in ${atlasui.home}
@@ -33,6 +26,15 @@ Reference: angular 2 AOT compilation guide: https://angular.io/docs/ts/latest/co
 	This should automatically open the ui in your browser with a "Angular Quickstart" tab, if it doesn't, open this URL in a tab:
 
 	http://localhost:3000/
+
+[Compiling And Running With AOT]
+
+Reference: angular 2 AOT compilation guide: https://angular.io/docs/ts/latest/cookbook/aot-compiler.html
+
+1) compile with "npm run aot:build"
+2) strip unused code with "npm run aot:rollup"
+3) copy misc js/html/css files we need with "npm run aot:copy"
+4) run aot artifact with "npm run aot:serve"
 
 [SAMPLE]
 
