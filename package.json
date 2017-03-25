@@ -27,6 +27,7 @@
     "lint": "tslint ./src/**/*.ts -t verbose",
     "aot:build": "\"node_modules/.bin/ngc\" -v -p ./tsconfig-aot.json",
     "aot:rollup": "rollup -c rollup-config.js",
+    "aot:copy": "node copy-dist-files",
     "aot:serve": "lite-server -c bs-config.aot.json"
   },
   "dependencies": {

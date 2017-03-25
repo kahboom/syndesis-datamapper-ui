@@ -7,7 +7,7 @@ echo "Rolling up code"
 npm run aot:rollup
 
 echo "Copying distribution files"
-node copy-dist-files
+npm run aot:copy
 
 echo "Starting server"
 npm run aot:serve

@@ -1,6 +1,6 @@
 {
   "server": {
-    "baseDir": "aot",
+    "baseDir": "aot/dist",
     "routes": {
       "/node_modules": "node_modules"
     }
