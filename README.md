@@ -6,11 +6,10 @@ Variables used in this document:
 
 [INITIAL SETUP]
 
+Reference: angular 2 env setup guide: https://angular.io/docs/ts/latest/guide/setup.html
+
 1) install NPM: https://docs.npmjs.com/getting-started/installing-node
 2) run 'npm install' in ${atlasui.home} to install node modules
-4) run 'npm start' in ${atlasui.home} to start the UI
-
-Reference: angular 2 env setup guide: https://angular.io/docs/ts/latest/guide/setup.html
 
 [RUNNING THE UI]
 
@@ -27,6 +26,15 @@ Reference: angular 2 env setup guide: https://angular.io/docs/ts/latest/guide/se
 	This should automatically open the ui in your browser with a "Angular Quickstart" tab, if it doesn't, open this URL in a tab:
 
 	http://localhost:3000/
+
+[Compiling And Running With AOT]
+
+Reference: angular 2 AOT compilation guide: https://angular.io/docs/ts/latest/cookbook/aot-compiler.html
+
+1) compile with "npm run aot:build"
+2) strip unused code with "npm run aot:rollup"
+3) copy misc js/html/css files we need with "npm run aot:copy"
+4) run aot artifact with "npm run aot:serve"
 
 [SAMPLE]
 
