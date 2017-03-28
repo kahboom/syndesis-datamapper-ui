@@ -48,11 +48,19 @@ export class DataMapperAppExampleHostComponent {
 
 		// initialize config information before initializing services
 		var c: ConfigModel = new ConfigModel();
+
+		//provide the urls for the inspection mapping services
 		c.baseJavaServiceUrl = "http://localhost:8585/v2/atlas/java/";
 		c.baseMappingServiceUrl = "http://localhost:8585/v2/atlas/";
+
+		//provide source/target classes
 		c.mappingInputJavaClass = "twitter4j.Status";
 		c.mappingOutputJavaClass = "org.apache.camel.salesforce.dto.Contact";
+
+		//create empty mapping data
 		c.mappings = new MappingDefinition();
+
+		//put pointers to our services in our shared config
 		c.documentService = documentService;
 		c.mappingService = mappingService;
 		c.errorService = errorService;
