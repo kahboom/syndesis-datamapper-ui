@@ -20,23 +20,49 @@ import { DocumentDefinition } from './document.definition.model';
 import { ErrorHandlerService } from '../services/error.handler.service';
 import { DocumentManagementService } from '../services/document.management.service';
 import { MappingManagementService } from '../services/mapping.management.service';
+import { InitializationService } from '../services/initialization.service';
 
 export class ConfigModel {
 	public baseJavaServiceUrl: string;
 	public baseMappingServiceUrl: string;
-	public mappingInputJavaClass: string;
-	public mappingOutputJavaClass: string;
+
+	// class path fetching configuration
+	// if classPath is specified, maven call to resolve pom will be skipped
+	public pomPayload: string;
+	public classPathFetchTimeoutInMilliseconds: number = 30000;
+	public classPath: string;
 
 	public showMappingDetailTray: boolean = false;
 	public showMappingDataType: boolean = false;
 	public showLinesAlways: boolean = false;
+	public debugParsing: boolean = false;
+	public initialized: boolean = false;
 
 	public documentService: DocumentManagementService;
 	public mappingService: MappingManagementService;
 	public errorService: ErrorHandlerService;	
+	public initializationService: InitializationService;
 
-	public inputDoc: DocumentDefinition;
-	public outputDoc: DocumentDefinition;
+	public sourceDocs: DocumentDefinition[] = [];
+	public targetDocs: DocumentDefinition[] = [];
+	public mappingFiles: string[] = [];
 
-	public mappings: MappingDefinition = new MappingDefinition();
+	public mappings: MappingDefinition = null;
+
+	public getDoc(isSource: boolean): DocumentDefinition {
+		return isSource ? this.sourceDocs[0] : this.targetDocs[0];
+	}
+
+	public getAllDocs(): DocumentDefinition[] {
+		return [].concat(this.sourceDocs).concat(this.targetDocs);
+	}
+
+	public documentsAreLoaded(): boolean {
+		for (let d of this.getAllDocs()) {
+			if (!d.initCfg.initialized) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

@@ -18,12 +18,22 @@ import { Component, Input } from '@angular/core';
 
 import { TransitionModel, TransitionMode, TransitionDelimiter } from '../models/transition.model';
 import { ConfigModel } from '../models/config.model';
+import { Field, EnumValue } from '../models/field.model';
+import { LookupTable, LookupTableEntry } from '../models/lookup.table.model';
+
+import { ModalWindowComponent } from './modal.window.component';
+import { LookupTableComponent } from './lookup.table.component';
 
 @Component({
 	selector: 'transition-selector',
 	template: `
 		<div class="TransitionSelector" *ngIf="cfg.mappings.activeMapping">
-			<div class="form-group">
+			<div class="form-group" *ngIf="modeIsEnum()">
+				<label style="float:left; width:94%;">{{ getMappedValueCount() }} values mapped</label>
+				<a style="float:right;" (click)="showLookupTable()"><i class="fa fa-edit"></i></a>
+				<div style="clear:both; height:0px"></div>
+			</div>
+			<div class="form-group" *ngIf="!modeIsEnum()">
 				<label>Action:</label>
 				<select (change)="selectionChanged($event);" selector="mode" 
 					[ngModel]="cfg.mappings.activeMapping.transition.mode">
@@ -45,9 +55,26 @@ import { ConfigModel } from '../models/config.model';
 
 export class TransitionSelectionComponent {
 	@Input() cfg: ConfigModel;
+	@Input() modalWindow: ModalWindowComponent;
 
 	private modes: any = TransitionMode;
 	private delimeters: any = TransitionDelimiter;	
+
+	private modeIsEnum(): boolean {
+		return this.cfg.mappings.activeMapping.transition.mode == TransitionMode.ENUM;
+	}
+
+	private getMappedValueCount(): number {
+		var tableName: string = this.cfg.mappings.activeMapping.transition.lookupTableName;
+		if (tableName == null) {
+			return 0;
+		}
+		var table: LookupTable = this.cfg.mappings.getTableByName(tableName);
+		if (!table || !table.entries) {
+			return 0;
+		}
+		return table.entries.length;
+	}
 
 	selectionChanged(event: MouseEvent) {
 		var eventTarget: any = event.target; //extract this to avoid compiler error about 'selectedOptions' not existing.	
@@ -60,5 +87,29 @@ export class TransitionSelectionComponent {
 		}	
 		this.cfg.mappings.activeMapping.updateSeparatorIndexes();	
 		this.cfg.mappingService.saveCurrentMapping();
+	}
+
+	private showLookupTable() {
+		if (!this.cfg.mappings.activeMapping.inputFieldPaths.length 
+			|| !this.cfg.mappings.activeMapping.outputFieldPaths.length) {
+			this.cfg.errorService.warn("Please select source and target fields before mapping values.", null);
+			return;
+		}
+		this.modalWindow.reset();
+		this.modalWindow.parentComponent = this;
+		this.modalWindow.headerText = "Map Enumeration Values";
+		this.modalWindow.nestedComponentInitializedCallback = (mw: ModalWindowComponent) => {
+			var self: TransitionSelectionComponent = mw.parentComponent as TransitionSelectionComponent;
+			var c: LookupTableComponent = mw.nestedComponent as LookupTableComponent;		
+			c.initialize(self.cfg);
+		};
+		this.modalWindow.nestedComponentType = LookupTableComponent;	
+		this.modalWindow.okButtonHandler = (mw: ModalWindowComponent) => {
+			var self: TransitionSelectionComponent = mw.parentComponent as TransitionSelectionComponent;
+			var c: LookupTableComponent = mw.nestedComponent as LookupTableComponent;
+			c.saveTable();
+			self.cfg.mappingService.saveCurrentMapping();
+		};
+		this.modalWindow.show();
 	}
 }

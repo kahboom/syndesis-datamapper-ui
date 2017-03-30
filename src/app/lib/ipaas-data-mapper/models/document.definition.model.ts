@@ -17,23 +17,37 @@
 import { Field } from './field.model';
 import { MappingModel } from './mapping.model';
 
+export class DocumentInitializationConfig {
+    documentIdentifier: string;
+    classPath: string;
+    initialized: boolean = false;
+    errorOccurred: boolean = false;
+}
+
 export class DocumentDefinition {
-	name: string;
-	public fields: Field[] = [];
+    public initCfg: DocumentInitializationConfig = new DocumentInitializationConfig();
+    
+    public name: string;
+    public fields: Field[] = [];
     public allFields: Field[] = [];
     public terminalFields: Field[] = [];
-    isInput: boolean;
+    public isSource: boolean;
     public complexFieldsByClassName: { [key:string]:Field; } = {};
-    enumFieldClasses: string[] = [];
+    public enumFieldsByClassName: { [key:string]:Field; } = {};
     public debugParsing: boolean = false;    
     public fieldsByPath: { [key:string]:Field; } = {};
     private pathSeparator: string = ".";
-    private noneField: Field = null;
+    private static noneField: Field = null;
     public uri: string = null;
     public fieldPaths: string[] = [];
 
-    public getCachedField(name: string): Field {
-        return this.complexFieldsByClassName[name];
+
+    public getComplexField(className: string): Field {
+        return this.complexFieldsByClassName[className];
+    }
+
+    public getEnumField(className: string): Field {
+        return this.enumFieldsByClassName[className];
     }
 
     public getAllFields(): Field[] {
@@ -41,14 +55,14 @@ export class DocumentDefinition {
     }
 
     public getNoneField(): Field {
-        if (this.noneField == null) {
-            this.noneField = new Field();
-            this.noneField.name = "[None]";
-            this.noneField.type = "";
-            this.noneField.displayName = "[None]";
-            this.noneField.path = "[None]";
+        if (DocumentDefinition.noneField == null) {
+            DocumentDefinition.noneField = new Field();
+            DocumentDefinition.noneField.name = "[None]";
+            DocumentDefinition.noneField.type = "";
+            DocumentDefinition.noneField.displayName = "[None]";
+            DocumentDefinition.noneField.path = "[None]";
         } 
-        return this.noneField;
+        return DocumentDefinition.noneField;
     }
 
     public getFields(fieldPaths: string[]): Field[] {
@@ -128,9 +142,6 @@ export class DocumentDefinition {
     }  
 
     public populateFromFields(): void {
-        //TODO: put enums back in after demo
-        this.filterEnumFields(this.fields);
-
         this.prepareComplexFields();
 
         this.alphabetizeFields(this.fields);
@@ -138,12 +149,19 @@ export class DocumentDefinition {
         for (let field of this.fields) {
             this.populateFieldParentPaths(field, "", 0);
             this.populateFieldData(field);
-        }  
+        }     
 
-        this.fieldPaths.sort();  
+        this.fieldPaths.sort();    
 
         if (this.debugParsing) {
             console.log(this.printDocumentFields(this.fields, 0));
+            var enumFields: string = "Enum fields:\n";
+            for (let field of this.allFields) {
+                if (field.enumeration) {
+                    enumFields += "\t" + field.path + " (" + field.className + ")\n";
+                }
+            }
+            console.log(enumFields);
         }
 
         console.log("Finished populating fields for '" + this.name + "', field count: " + this.allFields.length + ", terminal: " + this.terminalFields.length + ".");
@@ -191,6 +209,9 @@ export class DocumentDefinition {
         this.fieldPaths.push(field.path);
         this.allFields.push(field);
         this.fieldsByPath[field.path] = field;
+        if (field.enumeration) {
+            this.enumFieldsByClassName[field.className] = field;
+        }
         if (field.isTerminal()) {
             this.terminalFields.push(field);
         } else {
@@ -198,21 +219,7 @@ export class DocumentDefinition {
                 this.populateFieldData(childField);
             }
         }
-    }
-
-    private filterEnumFields(fields: Field[]) {
-        var fieldsCopy: Field[] = [].concat(fields);
-        fields.length = 0;
-        for (let field of fieldsCopy) {
-            if ((field.serviceObject.enumeration == true)
-                || (this.enumFieldClasses.indexOf(field.serviceObject.className) != -1)) {
-                console.log("Filtering out enum field: " + field.name + " (" + field.serviceObject.className + ")");
-                continue;
-            }
-            fields.push(field);
-            this.filterEnumFields(field.children);
-        }
-    }
+    }   
 
     public populateChildren(field: Field): void {
         //populate complex fields
@@ -220,10 +227,10 @@ export class DocumentDefinition {
             return;
         }
          
-        console.log("Populating complex field's children: " + field.path + " (" + field.serviceObject.className + ")");   
-        var cachedField = this.getCachedField(field.serviceObject.className);
+        console.log("Populating complex field's children: " + field.path + " (" + field.className + ")");   
+        var cachedField = this.getComplexField(field.className);
         if (cachedField == null) {
-            console.error("ERROR: Couldn't find cached complex field: " + field.serviceObject.className);
+            console.error("ERROR: Couldn't find cached complex field: " + field.className);
             return;
         }
 
@@ -233,10 +240,11 @@ export class DocumentDefinition {
             childField = childField.copy();
             childField.parentField = field;
             this.populateFieldParentPaths(childField, field.path + this.pathSeparator, field.fieldDepth + 1);  
-            this.populateFieldData(childField);            
+            this.populateFieldData(childField);
             field.children.push(childField);
         }
         this.fieldPaths.sort(); 
+
     }
 
     private prepareComplexFields() {
@@ -261,7 +269,7 @@ export class DocumentDefinition {
             for (let key in this.complexFieldsByClassName) {
                 var cachedField: Field = this.complexFieldsByClassName[key];
                 result +=  cachedField.name + " " + cachedField.type + " " + cachedField.serviceObject.status 
-                    + " (" + cachedField.serviceObject.className + ") children:" + cachedField.children.length + "\n";
+                    + " (" + cachedField.className + ") children:" + cachedField.children.length + "\n";
             }
             console.log(result);
         }
@@ -280,7 +288,7 @@ export class DocumentDefinition {
                 continue;
             }
             if (field.serviceObject.status == "SUPPORTED") {
-                this.complexFieldsByClassName[field.serviceObject.className] = field.copy();
+                this.complexFieldsByClassName[field.className] = field.copy();
             }
             if (field.children) {
                 this.discoverComplexFields(field.children);
@@ -297,7 +305,7 @@ export class DocumentDefinition {
             for (var i = 0; i < indent; i++) {
                 result += "\t";
             }
-            result += f.name + " " + f.type + " " + f.serviceObject.status + " (" + f.serviceObject.className + ") children:" + f.children.length;
+            result += f.name + " " + f.type + " " + f.serviceObject.status + " (" + f.className + ") children:" + f.children.length;
             result += "\n";
             if (f.children) {
                 result += this.printDocumentFields(f.children, indent + 1);
@@ -312,7 +320,7 @@ export class DocumentDefinition {
             field.hasUnmappedChildren = false;
         }
         for (let mapping of mappings) {
-            var fieldPaths: string[] = this.isInput ? mapping.inputFieldPaths : mapping.outputFieldPaths;
+            var fieldPaths: string[] = this.isSource ? mapping.inputFieldPaths : mapping.outputFieldPaths;
             for (let field of this.getFields(fieldPaths)) {
                 field.partOfMapping = true;   
                 var parentField: Field = field.parentField;

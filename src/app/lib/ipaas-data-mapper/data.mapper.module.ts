@@ -23,9 +23,11 @@ import { TypeaheadModule } from 'ng2-bootstrap';
 import { DocumentManagementService } from './services/document.management.service';
 import { MappingManagementService } from './services/mapping.management.service';
 import { ErrorHandlerService } from './services/error.handler.service';
+import { InitializationService } from './services/initialization.service';
 
 import { ModalWindowComponent } from './components/modal.window.component';
 import { TransitionSelectionComponent } from './components/transition.selection.component';
+import { LookupTableComponent } from './components/lookup.table.component';
 import { DataMapperErrorComponent } from './components/data.mapper.error.component';
 
 import { DocumentFieldDetailComponent } from './components/document.field.detail.component';
@@ -46,6 +48,7 @@ import { ToolbarComponent } from './components/toolbar.component';
 export { ErrorHandlerService } from './services/error.handler.service';
 export { DocumentManagementService } from './services/document.management.service';
 export { MappingManagementService } from './services/mapping.management.service';
+export { InitializationService } from './services/initialization.service';
 export { DocumentDefinition } from './models/document.definition.model';
 export { MappingDefinition } from './models/mapping.definition.model';
 export { ConfigModel } from './models/config.model';
@@ -75,6 +78,7 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 		LineMachineComponent,
 		MappingSelectionComponent,
 		ToolbarComponent,
+		LookupTableComponent
 	],
 	exports: [
 		DataMapperAppExampleHostComponent,
@@ -85,10 +89,12 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 		DocumentManagementService,
 		MappingManagementService,
 		ErrorHandlerService,
+		InitializationService
 	],
 	entryComponents: [
 		TransitionSelectionComponent,
 		MappingSelectionComponent,
+		LookupTableComponent
 	],
  	bootstrap: [ DataMapperAppExampleHostComponent ]
 })

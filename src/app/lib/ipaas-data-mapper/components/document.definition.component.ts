@@ -30,7 +30,8 @@ import { DocumentManagementService } from '../services/document.management.servi
 @Component({
 	selector: 'document-definition',
 	template: `
-	  	<div #documentDefinitionElement class='docDef' *ngIf="docDef" style="height:calc(100% - 25px); overflow:hidden;">
+	  	<div #documentDefinitionElement class='docDef' *ngIf="docDef.initCfg.initialized" 
+            style="height:calc(100% - 25px); overflow:hidden;">
   			<div class="card-pf-heading">
 				<h2 class="card-pf-title">{{docDef.name}}</h2>
                 <a class="searchBoxIcon" (click)="toggleSearch()">
@@ -63,7 +64,10 @@ export class DocumentDefinitionComponent {
     public searchIconStyle: SafeStyle;
     private scrollTop: number = 0;
 
-    constructor(private sanitizer: DomSanitizer) {}
+    constructor(private sanitizer: DomSanitizer) {}   
+
+    @ViewChild('documentDefinitionElement') documentDefinitionElement:ElementRef;
+    @ViewChildren('fieldDetail') fieldComponents: QueryList<DocumentFieldDetailComponent>;    
 
     private getFieldCount(): number {
         if (this.docDef && this.docDef.allFields) {
@@ -71,8 +75,6 @@ export class DocumentDefinitionComponent {
         }
         return 0;
     }
-    @ViewChild('documentDefinitionElement') documentDefinitionElement:ElementRef;
-    @ViewChildren('fieldDetail') fieldComponents: QueryList<DocumentFieldDetailComponent>;    
 
     public getFieldDetailComponent(fieldPath: string): DocumentFieldDetailComponent {
         for (let c of this.fieldComponents.toArray()) {
@@ -109,11 +111,11 @@ export class DocumentDefinitionComponent {
     }
 
     private search(searchFilter: string): void {
-        this.cfg.documentService.updateSearch(searchFilter, this.docDef.isInput);
+        this.cfg.documentService.updateSearch(searchFilter, this.docDef.isSource);
     }  
 
     private clearSearch(): void  {
-        this.cfg.documentService.updateSearch(null, this.docDef.isInput);
+        this.cfg.documentService.updateSearch(null, this.docDef.isSource);
         this.searchFilter = "";
     }
 

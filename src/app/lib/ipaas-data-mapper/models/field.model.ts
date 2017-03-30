@@ -14,8 +14,14 @@
     limitations under the License.
 */
 
+export class EnumValue {
+    name: string;
+    ordinal: number;
+}
+
 export class Field {
 	name: string;
+    className: string;
     displayName: string;
 	path: string;
 	type: string;
@@ -24,6 +30,8 @@ export class Field {
 	partOfMapping: boolean = false;	
 	visible:boolean = true;
 	selected:boolean = false;
+    enumeration:boolean = false;
+    enumValues: EnumValue[] = [];
 	children: Field[] = [];
     fieldDepth: number = 0;
     uuid: string;
@@ -37,6 +45,9 @@ export class Field {
     }
 	
     public isTerminal(): boolean {
+        if (this.enumeration) {
+            return true;
+        }
     	return (this.type != "COMPLEX");
     }
 

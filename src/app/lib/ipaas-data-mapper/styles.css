@@ -32,21 +32,26 @@ A:hover { cursor:pointer; }
 .docDef .card-pf-title { padding:10px; margin:0px; text-align:left; font-size:12px; font-weight:bold; }
 .docDef .card-pf-heading { background-image:linear-gradient(rgb(250, 250, 250) 0px, rgb(237, 237, 237) 100%); margin:0px; padding:0px; }
 .docDef .card-pf-body { background-color:#FBFBFB; padding:0px; margin:0px; }
-.docDef .fieldDetail LABEL { vertical-align:top; font-weight:normal; }
-.docDef .fieldDetail { padding:5px 10px; width:100%; margin:0px; padding-left:15px; }
+
+.DocumentFieldDetailComponent { width:100%; margin:0px; font-weight:normal; }
+.DocumentFieldDetailComponent .fieldDetail { padding:5px 10px; border-bottom:1px solid #d1d1d1; }
+.DocumentFieldDetailComponent LABEL { font-weight:normal; padding:0; margin:0; margin-bottom:1px; }
 .DocumentFieldDetailComponent .parentField {  }
 .DocumentFieldDetailComponent .parentField LABEL { }
-.docDef .selectedField { background-color:#02A2D8; color:white; }
-.DocumentFieldDetailComponent .parentField I { font-size:16px; color:#919191; vertical-align:baseline; }
-.DocumentFieldDetailComponent .parentField I.arrow { font-size:13px; margin-left:0px; }
-.docDef I { font-size:16px; margin-left:5px; }
-.docDef I.partOfMappingIcon { color:#5CBADF; font-size:10px; vertical-align:baseline; }
-.docDef .parentField I.partOfMappingIcon { color:#919191; }
-.docDef .selectedField I.partOfMappingIcon { color:white; }
-.docDef .parentField I.partOfMappingIconHidden { display:hidden; }
+.DocumentFieldDetailComponent .selectedField { background-color:#02A2D8; color:white; }
+.DocumentFieldDetailComponent I { font-size:14px; vertical-align:text-bottom; text-shadow:0 1px 2px rgba(3, 3, 3, 0.24);
+    color: #0088ce; }
+.DocumentFieldDetailComponent .parentField I { color: #bbbbbb; }
+.DocumentFieldDetailComponent .parentField I.arrow { font-size:12px; vertical-align:baseline; text-shadow:none; 
+    width:8px; display:inline-block; }
+.DocumentFieldDetailComponent .parentField I.parentFolder { color:#363636; text-shadow:none; margin-right:2px; }
+.DocumentFieldDetailComponent I.partOfMappingIcon { }
+.DocumentFieldDetailComponent .parentField I.partOfMappingIcon { }
+.DocumentFieldDetailComponent .selectedField I.partOfMappingIcon { color:white; }
+.DocumentFieldDetailComponent I.partOfMappingIconHidden { display:hidden; }
+
 .docDef .fieldsCount { padding:4px; font-size:10px; font-weight:bold; text-align:right; 
     width:100%; border-top:1px solid #CAC9C9; padding-right:10px; }
-.docDef .outputField { padding-left:5px; }
 
 .docDef .searchBox { width:100%; border:1px solid #CAC9C9; border-left:2px solid #FBFBFB; border-right:2px solid #FBFBFB; 
     font-size:12px; padding:5px 10px; }
@@ -76,6 +81,9 @@ A:hover { cursor:pointer; }
 .mappingFieldContainer { background-color:#F9F9F9; border-radius:3px; padding:10px; padding-top:10px; margin-bottom:10px; margin-top:10px; }
 .mappingFieldContainer H3 { margin:0; padding:0; margin-bottom:10px; }
 
+.LookupTableComponent LABEL { width:100px; margin-right:10px; }
+.LookupTableComponent SELECT { width:200px; }
+
 .toolbar-pf .form-group .btn-link:focus { color:#252525; outline-style:none; }
 
 #CAC9C9
@@ -87,16 +95,9 @@ A:hover { cursor:pointer; }
 .TransitionSelector LABEL { width:20%; }
 .TransitionSelector SELECT { width:73%; }
 
-html, body {
-    height: 100%;
-}
+html, body { height:100%; }
 
-.fill {     
-    height: 83%;
-    margin:0px;
-    padding:0px;
-    width:100%;
-}
+.fill { height:83%; margin:0px; padding:0px; width:100%; }
 
 /* for app.modal.component.ts */
 

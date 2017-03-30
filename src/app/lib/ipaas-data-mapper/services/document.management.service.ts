@@ -22,7 +22,7 @@ import 'rxjs/add/observable/forkJoin';
 import { Subject } from 'rxjs/Subject';
 
 import { ConfigModel } from '../models/config.model';
-import { Field } from '../models/field.model';
+import { Field, EnumValue } from '../models/field.model';
 import { DocumentDefinition } from '../models/document.definition.model';
 import { ErrorHandlerService } from './error.handler.service';
 
@@ -34,17 +34,14 @@ export class DocumentManagementService {
 	private updateFromSelectedFieldsSource = new Subject<void>();
 	updateFromSelectedFields$ = this.updateFromSelectedFieldsSource.asObservable();	
 
-	private documentsFetchedSource = new Subject<void>();
-	documentsFetched$ = this.documentsFetchedSource.asObservable();	
-
 	private headers: Headers = new Headers();
 
 	constructor(private http: Http) { 
 		this.headers.append("Content-Type", "application/json");		
 	}
 
-	public updateSearch(searchFilter: string, isInput: boolean): void {
-		var docDef: DocumentDefinition = isInput ? this.cfg.inputDoc : this.cfg.outputDoc;
+	public updateSearch(searchFilter: string, isSource: boolean): void {
+		var docDef: DocumentDefinition = this.cfg.getDoc(isSource);
 
 		for (let field of docDef.getAllFields()) {
 			field.visible = false;
@@ -69,33 +66,73 @@ export class DocumentManagementService {
 	}
 
 	public initialize(): void {
-		//fetch input doc
-		var startTime: number = Date.now();
-		var className: string = this.cfg.mappingInputJavaClass;
-		var url: string = this.cfg.baseJavaServiceUrl + "class?className=" + className;
-		this.http.get(url, {headers: this.headers}).toPromise()
-			.then((res: Response) => { this.extractDocumentDefinitionData(res, true, startTime); })
-			.catch((error: any) => { this.handleError("Error occurred while retrieving document fields.", error); } );
-
-		//fetch output doc
-		var className = this.cfg.mappingOutputJavaClass;
-		var url: string = this.cfg.baseJavaServiceUrl + "class?className=" + className;
-		this.http.get(url, {headers: this.headers}).toPromise()
-			.then((res: Response) => { this.extractDocumentDefinitionData(res, false, startTime); })
-			.catch((error: any) => { this.handleError("Error occurred while retrieving document fields.", error); } );
-
 		this.cfg.mappingService.mappingUpdated$.subscribe(mappingDefinition => {
-			this.cfg.inputDoc.updateFromMappings(this.cfg.mappings.mappings);
-			this.cfg.outputDoc.updateFromMappings(this.cfg.mappings.mappings);
+			for (var d of this.cfg.getAllDocs()) {
+				d.updateFromMappings(this.cfg.mappings.mappings);
+			}
 		});		
 	}	
 
-	private extractDocumentDefinitionData(res: Response, isInput: boolean, startTime: number): void {	  		
-  		let body = res.json();  	
+	public fetchClassPath(): Observable<string> {
+		return new Observable<string>((observer:any) => {
+			var startTime: number = Date.now();
+			var requestBody = {
+				"MavenClasspathRequest": {
+					"jsonType": "com.mediadriver.atlas.java.v2.MavenClasspathRequest",
+					"pomXmlData": this.cfg.pomPayload,
+					"executeTimeout": this.cfg.classPathFetchTimeoutInMilliseconds
+				}	
+			}
+			if (this.cfg.debugParsing) {
+				console.log("class path payload: " + JSON.stringify(requestBody), requestBody);
+			}
+			var url: string = this.cfg.baseJavaServiceUrl + "mavenclasspath";
+			this.http.post(url, requestBody, { headers: this.headers }).toPromise()
+				.then((res: Response) => {
+					let body: any = res.json();   
+					if (this.cfg.debugParsing) {
+						console.log("class path response: " + JSON.stringify(body), body);
+					}
+					var classPath: string = body.MavenClasspathResponse.classpath;
+					console.log("Finished fetching class path '" + classPath + "' in " 
+						+ (Date.now() - startTime) + "ms.");
+	  				observer.next(classPath);
+					observer.complete();
+				})
+				.catch((error: any) => { 
+					this.handleError("Error occurred while retrieving document fields.", error); 
+					observer.throw(error);
+					observer.complete();
+				} 
+			);
+		});
+	}
 
-  		var docDef: DocumentDefinition = new DocumentDefinition();
-		docDef.isInput = isInput;
-  		docDef.name = body.JavaClass.fullyQualifiedName;	
+	public fetchDocument(docDef: DocumentDefinition): Observable<DocumentDefinition> {
+		return new Observable<DocumentDefinition>((observer:any) => {
+			var startTime: number = Date.now();
+			var className: string = docDef.initCfg.documentIdentifier;
+			var url: string = this.cfg.baseJavaServiceUrl + "class?className=" + className;
+			this.http.get(url, { headers: this.headers }).toPromise()
+				.then((res: Response) => { 
+					this.extractDocumentDefinitionData(res, docDef); 
+					console.log("Finished fetching and parsing document '" + docDef.name + "' in " 
+						+ (Date.now() - startTime) + "ms.");
+	  				observer.next(docDef);
+					observer.complete();
+				})
+				.catch((error: any) => { 
+					this.handleError("Error occurred while retrieving document fields.", error); 
+					observer.throw(error);
+					observer.complete();
+				} 
+			);
+		});
+	}
+
+	private extractDocumentDefinitionData(res: Response, docDef: DocumentDefinition): void {	  		
+  		let body: any = res.json();  	
+  		docDef.name = body.JavaClass.className;	
   		docDef.uri = body.JavaClass.uri;
   		docDef.debugParsing = this.debugParsing;  
 
@@ -120,16 +157,8 @@ export class DocumentManagementService {
   			}
   		}
 
-  		docDef.populateFromFields();
-
-  		if (isInput) {
-  			this.cfg.inputDoc = docDef;
-  		} else {
-  			this.cfg.outputDoc = docDef;
-  		}
-
-  		console.log("Finished fetching and parsing document '" + docDef.name + "' in " + (Date.now() - startTime) + "ms.");
-  		this.documentsFetchedSource.next();	
+  		docDef.populateFromFields();  
+  		docDef.initCfg.initialized = true;		  		
 	}	
 
 	private parseFieldFromDocument(field: any, docDef: DocumentDefinition): Field {
@@ -141,14 +170,27 @@ export class DocumentManagementService {
 			console.log("Filtering black listed field: " + field.name 
 				+ " (" + field.className + "), parent class: " + docDef.name);
 			return null;
-		} else if (field != null && field.enumeration == true) {
-			docDef.enumFieldClasses.push(field.className);
-			return null;
 		}
 		
 		var parsedField: Field = new Field();
 		parsedField.name = field.name;
-		parsedField.type = field.type;
+		parsedField.type = field.type;  	
+  		parsedField.className = field.className;
+  		parsedField.enumeration = field.enumeration;
+  		parsedField.serviceObject = field;  
+
+		if (parsedField.enumeration && field.javaEnumFields && field.javaEnumFields.javaEnumField) {
+			for (let enumValue of field.javaEnumFields.javaEnumField) {
+				var parsedEnumValue: EnumValue = new EnumValue();
+				parsedEnumValue.name = enumValue.name;
+				parsedEnumValue.ordinal = enumValue.ordinal;
+				parsedField.enumValues.push(parsedEnumValue);
+          	}
+          	if (this.debugParsing) {
+          		console.log("parsed enums for field " + parsedField.className, parsedField);
+          	}
+  		}
+
   		if (field.javaFields && field.javaFields.javaField && field.javaFields.javaField.length) {
 	  		for (let childField of field.javaFields.javaField) {
 	  			var parsedChild: Field = this.parseFieldFromDocument(childField, docDef);
@@ -156,11 +198,10 @@ export class DocumentManagementService {
 	  				parsedField.children.push(parsedChild);
 	  			}
 	  		}
-  		}
-		parsedField.serviceObject = field;  		  		
-  		var className = field.className;
+  		}	
 
   		//TODO: temp fixes for missing twitter4j classes
+		var className = field.className;
   		if (className == "User") {
   			className = "twitter4j.User";
   		} else if (className == "URLEntity") {
@@ -174,7 +215,8 @@ export class DocumentManagementService {
   		} else if (className == "Place") {
   			className = "twitter4j.Place";
   		}
-  		field.className = className;
+  		field.className = className;	  		
+		parsedField.className = className;
 
   		return parsedField;
 	}
