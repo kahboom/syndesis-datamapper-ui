@@ -32,14 +32,17 @@ import { LineMachineComponent } from './line.machine.component';
 		<div class="DocumentFieldDetailComponent" #fieldDetailElement on-mouseover='handleMouseOver($event)'>
 			<div [attr.class]='getCssClass()' (click)="handleMouseClick($event)" *ngIf="field.visible">								
 				<div style="float:left;">														
-					<div class="spacer" [attr.style]="getSpacerWidth()">&nbsp;</div>
-					<div style="float:left; width:12px;" *ngIf="!docDef.isInput">
+					<div style="display:inline-block; width:12px;" *ngIf="!docDef.isSource">
 						<i [attr.class]='getMappingClass()'></i>
 					</div>
-					<i *ngIf="!field.isTerminal()" [attr.class]="parentToggleClass"></i>
+					<div class="spacer" [attr.style]="getSpacerWidth()">&nbsp;</div>
+					<div *ngIf="!field.isTerminal()" style="display:inline-block;">					
+						<i [attr.class]="parentToggleClass"></i>
+						<i class="fa fa-folder parentFolder"></i>
+					</div>
 		  			<label>{{field.displayName}}</label>
 		  		</div>
-		  		<div style="float:right; width:12px;" *ngIf="docDef.isInput">
+		  		<div style="float:right; width:12px;" *ngIf="docDef.isSource">
 		  			<i [attr.class]='getMappingClass()'></i>
 		  		</div>
 		  		<div style="clear:both; height:0px;">&nbsp;</div>
@@ -85,7 +88,7 @@ export class DocumentFieldDetailComponent {
 		if (!this.field.isTerminal()) {
 			cssClass += " parentField";
 		}
-		if (!this.docDef.isInput) {
+		if (!this.docDef.isSource) {
 			cssClass += " outputField";
 		}
 		return cssClass;
@@ -116,10 +119,10 @@ export class DocumentFieldDetailComponent {
 				// don't do anything, field is already a part of current mapping
 				return;
 			}
-			var isInput: boolean = this.docDef.isInput;
+			var isSource: boolean = this.docDef.isSource;
 			var mapping: MappingModel = this.cfg.mappings.activeMapping;
 			if (mapping != null && (this.docDef.getSelectedFields().length != 0) 
-				&& !mapping.isFieldInMapping(this.field.path, isInput)) {
+				&& !mapping.isFieldInMapping(this.field.path, isSource)) {
 				this.cfg.mappingService.deselectMapping();
 			}			
 			this.field.selected = !this.field.selected;		

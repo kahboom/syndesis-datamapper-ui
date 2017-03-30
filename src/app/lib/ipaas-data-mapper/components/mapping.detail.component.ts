@@ -59,16 +59,17 @@ import { TransitionSelectionComponent } from './transition.selection.component';
 		  		<div *ngFor="let field of getMappingFields(true)" style="padding-bottom:10px;">
 		  			<mapping-field-detail #mappingField [selectedFieldPath]="field.path" 
 		  				[originalSelectedFieldPath]="field.path"
-		  				[cfg]="cfg" [docDef]="cfg.inputDoc"></mapping-field-detail>
+		  				[cfg]="cfg" [docDef]="cfg.getDoc(true)"></mapping-field-detail>
 		  			<mapping-field-action [field]="field" [mapping]="cfg.mappings.activeMapping" 
-		  				[isInput]="true" [cfg]="cfg"></mapping-field-action>
+		  				[isSource]="true" [cfg]="cfg"></mapping-field-action>
 		  		</div>
 				<!-- <a (click)="addField($event, true)"><i class="fa fa-plus" 
 					aria-hidden="true" style="font-size:10px"></i> Add Field</a> -->
 			</div>
 	  		<div class="mappingFieldContainer" >
 	  			<h3 class="sectionHeader" style="float:left; margin-bottom:10px;">Action:&nbsp;</h3>
-	  			<transition-selector style="float:left; clear:left; width:100%;" [cfg]="cfg"></transition-selector>
+	  			<transition-selector style="float:left; clear:left; width:100%;" [cfg]="cfg"
+	  				[modalWindow]="modalWindow"></transition-selector>
 	  			<div style="clear:both; height:0px;"></div>
 	  		</div>
 	  		<div class="mappingFieldContainer">
@@ -76,11 +77,11 @@ import { TransitionSelectionComponent } from './transition.selection.component';
 		  		<div *ngFor="let field of getMappingFields(false)" style="padding-bottom:10px;">
 		  			<mapping-field-detail #mappingField [selectedFieldPath]="field.path" 
 		  				[originalSelectedFieldPath]="field.path"
-		  				[cfg]="cfg" [docDef]="cfg.outputDoc"></mapping-field-detail>
+		  				[cfg]="cfg" [docDef]="cfg.getDoc(false)"></mapping-field-detail>
 		  			<mapping-field-action [field]="field" [mapping]="cfg.mappings.activeMapping" 
-		  				[isInput]="false" [cfg]="cfg"></mapping-field-action>
+		  				[isSource]="false" [cfg]="cfg"></mapping-field-action>
 		  		</div>
-				<a (click)="addField($event, false)"><i class="fa fa-plus" 
+				<a (click)="addField($event, false)" *ngIf='mappingIsntEnum()'><i class="fa fa-plus" 
 					aria-hidden="true" style="font-size:10px"></i> Add Field</a>	  		
 			</div>		  				  		
 	    </div>
@@ -93,13 +94,15 @@ export class MappingDetailComponent {
 
 	private detailStyle: SafeStyle;
 
-	@ViewChildren('mappingField') mappingFields: QueryList<MappingFieldDetailComponent>;
-
 	constructor(private sanitizer: DomSanitizer) {}
 
-	private getMappingFields(isInput: boolean): Field[] {
-		var docDef: DocumentDefinition = isInput ? this.cfg.inputDoc : this.cfg.outputDoc;
-		var fieldPaths: string[] = isInput ? this.cfg.mappings.activeMapping.inputFieldPaths
+	private mappingIsntEnum(): boolean {
+		return !(this.cfg.mappings.activeMapping.transition.mode == TransitionMode.ENUM);
+	}
+
+	private getMappingFields(isSource: boolean): Field[] {
+		var docDef: DocumentDefinition = this.cfg.getDoc(isSource);
+		var fieldPaths: string[] = isSource ? this.cfg.mappings.activeMapping.inputFieldPaths
 			: this.cfg.mappings.activeMapping.outputFieldPaths;
 		if (fieldPaths == null || fieldPaths.length == 0) {
 			return [docDef.getNoneField()];			
@@ -110,7 +113,7 @@ export class MappingDetailComponent {
 	private addNewMapping(event: MouseEvent): void {
 		console.log("Creating new mapping.")
 		this.cfg.mappingService.deselectMapping();
-		this.cfg.mappings.activeMapping = this.cfg.mappingService.createMapping();
+		this.cfg.mappings.activeMapping = new MappingModel();
 		this.cfg.mappingService.notifyActiveMappingUpdated(true);
 	}
 
@@ -133,29 +136,17 @@ export class MappingDetailComponent {
 			self.cfg.mappingService.removeMapping(self.cfg.mappings.activeMapping);
 			this.cfg.showMappingDetailTray = false;
 		};
-		this.modalWindow.show();
-		
+		this.modalWindow.show();		
 	}
 
-	private addField(event: MouseEvent, isInput: boolean): void {
-		this.cfg.mappingService.addMappedField(null, isInput);
+	private addField(event: MouseEvent, isSource: boolean): void {
+		this.cfg.mappingService.addMappedField(null, isSource);
 		//if adding a field and only one is now mapped, add another b/c user wants two fields now, not one
 		var mapping: MappingModel = this.cfg.mappings.activeMapping;
-		var mappedFieldCount: number = isInput ? mapping.inputFieldPaths.length : mapping.outputFieldPaths.length;
+		var mappedFieldCount: number = isSource ? mapping.inputFieldPaths.length : mapping.outputFieldPaths.length;
 		if (mappedFieldCount == 1) {
-			this.cfg.mappingService.addMappedField(null, isInput);
+			this.cfg.mappingService.addMappedField(null, isSource);
 		}
 		this.cfg.mappingService.saveCurrentMapping();
 	}	
-
-	public updateHeight(): void {
-		/*
-		if (this.cfg.inputDoc && this.cfg.outputDoc) {
-			var maxFieldCount: number = Math.max(this.cfg.inputDoc.fields.length, 
-				this.cfg.outputDoc.fields.length);
-			var heightCSS: string = ((maxFieldCount * 40) + 120).toString() + "px";
-			this.detailStyle = this.sanitizer.bypassSecurityTrustStyle("height:" + heightCSS + ";");
-		}
-		*/		
-	}
 }

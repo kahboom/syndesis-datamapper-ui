@@ -19,51 +19,89 @@ import { MappingModel } from '../models/mapping.model';
 import { Field } from '../models/field.model';
 import { MappingDefinition } from '../models/mapping.definition.model';
 import { DocumentDefinition } from '../models/document.definition.model';
+import { LookupTable, LookupTableEntry } from '../models/lookup.table.model';
 
 export class MappingSerializer {
-	private static uuidCounter: number = 0;
-
 	public static serializeMappings(mappingDefinition: MappingDefinition, 
-		inputDoc: DocumentDefinition, outputDoc: DocumentDefinition): any {						
+		sourceDoc: DocumentDefinition, targetDoc: DocumentDefinition): any {						
 		var jsonMappings: any[] = [];
+		var tables: LookupTable[] = [];
 		for (let m of mappingDefinition.mappings) {
-			var isSeparateMapping: boolean = (m.transition.mode == TransitionMode.SEPARATE);
 			var jsonMapping: any;
-			if (isSeparateMapping) {				
+			if (m.transition.mode == TransitionMode.SEPARATE) {				
 				var delimiter: string = (m.transition.delimiter == TransitionDelimiter.SPACE) ? "SPACE" : "COMMA";
 				jsonMapping = {
 					"jsonType": "com.mediadriver.atlas.v2.SeparateFieldMapping", 
-					"inputField": MappingSerializer.serializeFields(m.inputFieldPaths, inputDoc, m, false)[0],
+					"inputField": MappingSerializer.serializeFields(m.inputFieldPaths, sourceDoc, m, false)[0],
 					"outputFields": {
-						"mappedField": MappingSerializer.serializeFields(m.outputFieldPaths, outputDoc, m, true)
+						"mappedField": MappingSerializer.serializeFields(m.outputFieldPaths, targetDoc, m, true)
 					},
 					"strategy": delimiter
 				};	
+			} else if (m.transition.mode == TransitionMode.ENUM) {
+				jsonMapping = {
+					"jsonType": "com.mediadriver.atlas.v2.LookupFieldMapping", 
+					"inputField": MappingSerializer.serializeFields(m.inputFieldPaths, sourceDoc, m, false)[0],
+					"outputField": MappingSerializer.serializeFields(m.outputFieldPaths, targetDoc, m, false)[0],
+					"lookupTableName": m.transition.lookupTableName
+				};
 			} else {			
 				jsonMapping = {
 					"jsonType": "com.mediadriver.atlas.v2.MapFieldMapping", 
-					"inputField": MappingSerializer.serializeFields(m.inputFieldPaths, inputDoc, m, false)[0],
-					"outputField": MappingSerializer.serializeFields(m.outputFieldPaths, outputDoc, m, false)[0]
+					"inputField": MappingSerializer.serializeFields(m.inputFieldPaths, sourceDoc, m, false)[0],
+					"outputField": MappingSerializer.serializeFields(m.outputFieldPaths, targetDoc, m, false)[0]
 				};								
 			}
 			jsonMappings.push(jsonMapping);
 		}
-		
-		if (mappingDefinition.mappingUUID == null) {
-			mappingDefinition.mappingUUID = "UI." + Math.floor((Math.random() * 1000000) + 1).toString();
-		}
+				
+		var serializedLookupTables: any[] = MappingSerializer.serializeLookupTables(mappingDefinition);
 		let payload = {
 			"AtlasMapping": {
 				"jsonType": "com.mediadriver.atlas.v2.AtlasMapping",				
 				"fieldMappings": {
 					"fieldMapping": jsonMappings 
 				},
-				"name": mappingDefinition.mappingUUID,
-				"sourceUri": inputDoc.uri,
-				"targetUri": outputDoc.uri,
+				"name": mappingDefinition.name,
+				"sourceUri": sourceDoc.uri,
+				"targetUri": targetDoc.uri,
+				"lookupTables": {
+					"lookupTable": serializedLookupTables
+				}
 			}
 		};
 		return payload;
+	}
+
+	private static serializeLookupTables(mappingDefinition: MappingDefinition) {
+		var tables: LookupTable[] = mappingDefinition.getTables();
+		
+		if (!tables || !tables.length) {
+			return [];
+		}
+
+		var serializedTables: any[] = [];
+		for (let t of tables) {
+			var lookupEntries: any[] = [];
+			for (let e of t.entries) {
+				var serialized: any = {
+					"sourceValue": e.sourceValue,
+					"sourceType": e.sourceType,
+					"targetValue": e.targetValue,
+					"targetType": e.targetType
+				};
+				lookupEntries.push(serialized);
+			}
+
+			var serialized: any = {
+				"lookupEntryList": {
+					"lookupEntry": lookupEntries
+				},
+				"name": t.name
+			}
+			serializedTables.push(serialized);			
+		}
+		return serializedTables;
 	}
 
 	private static serializeFields(fieldPaths: string[], docDef: DocumentDefinition, 
@@ -97,56 +135,67 @@ export class MappingSerializer {
 		return fieldsJson;
 	}
 	
-	public static deserializeMappings(jsonMappings: any[]): MappingModel[] {
+	public static deserializeMappings(json: any): MappingModel[] {
 		var mappings: MappingModel[] = [];
-		console.log(jsonMappings);
-		for (let jsonMapping of jsonMappings) {	
-			for (let fieldMapping of jsonMapping.AtlasMapping.fieldMappings.fieldMapping) {
-				var m: MappingModel = MappingSerializer.createMapping();
-				var isSeparateMapping = (fieldMapping.jsonType == "com.mediadriver.atlas.v2.SeparateFieldMapping");
-	  			m.transition.mode = isSeparateMapping ? TransitionMode.SEPARATE : TransitionMode.MAP;	  			
-	  			//TODO: only supporting one input field right now.
-	  			var f: Field = new Field();
-	  			f.name = fieldMapping.inputField.field.name;
-	  			f.type = fieldMapping.inputField.field.type;
-	  			f.path = fieldMapping.inputField.field.path;
-	  			f.serviceObject = fieldMapping.inputField.field;
-	  			MappingSerializer.addFieldIfDoesntExist(m.inputFieldPaths, f.path);
-	  			if (isSeparateMapping) {
-	  				var d: TransitionDelimiter = TransitionDelimiter.COMMA;
-	  				d = (fieldMapping.strategy == "SPACE") ? TransitionDelimiter.SPACE: 
-	  				m.transition.delimiter = d;
-	  				var delimeter = (m.transition.delimiter == TransitionDelimiter.SPACE) ? "SPACE" : "COMMA";
-	  				for (let outputField of fieldMapping.outputFields.mappedField) {
-	  					f = new Field();
-	  					f.name = outputField.field.name;
-	  					f.type = outputField.field.type;
-	  					if (outputField.fieldActions
-	  						&& outputField.fieldActions.fieldAction.length
-	  						&& outputField.fieldActions.fieldAction[0].index) {
-	  						var index: number = (outputField.fieldActions.fieldAction[0].index + 1)
-	  						m.fieldSeparatorIndexes[f.name] = index.toString();
-	  					} else {
-	  						m.fieldSeparatorIndexes[f.name] = "1";
-	  					}
-		  				//TODO: calculate proper path
-
-		  				f.path = outputField.field.path;
-			  			f.serviceObject = outputField.field;
-			  			MappingSerializer.addFieldIfDoesntExist(m.outputFieldPaths, f.path);
-	  				}
-	  			} else {
-	  				f = new Field();
-	  				f.name = fieldMapping.outputField.field.name;
-	  				f.type = fieldMapping.outputField.field.type;
-		  			f.path = fieldMapping.outputField.field.path;
-		  			f.serviceObject = fieldMapping.outputField.field;
-		  			MappingSerializer.addFieldIfDoesntExist(m.outputFieldPaths, f.path);
-	  			}	 	  					  			
-	  			mappings.push(m);
-	  		}	  	
-  		}
+		for (let fieldMapping of json.AtlasMapping.fieldMappings.fieldMapping) {
+			var m: MappingModel = new MappingModel();
+			var isSeparateMapping = (fieldMapping.jsonType == "com.mediadriver.atlas.v2.SeparateFieldMapping");
+  			var isLookupMapping = (fieldMapping.jsonType == "com.mediadriver.atlas.v2.LookupFieldMapping");
+  			var fieldPath: string = fieldMapping.inputField.field.path
+  			MappingSerializer.addFieldIfDoesntExist(m.inputFieldPaths, fieldPath);
+  			if (isSeparateMapping) {
+  				m.transition.mode = TransitionMode.SEPARATE;
+  				var d: TransitionDelimiter = TransitionDelimiter.COMMA;
+  				d = (fieldMapping.strategy == "SPACE") ? TransitionDelimiter.SPACE: 
+  				m.transition.delimiter = d;
+  				var delimeter = (m.transition.delimiter == TransitionDelimiter.SPACE) ? "SPACE" : "COMMA";
+  				
+  				for (let outputField of fieldMapping.outputFields.mappedField) {
+  					var fieldName: string = outputField.field.name;
+  					fieldPath = outputField.field.path;	  					
+  					if (outputField.fieldActions
+  						&& outputField.fieldActions.fieldAction.length
+  						&& outputField.fieldActions.fieldAction[0].index) {
+  						var index: number = (outputField.fieldActions.fieldAction[0].index + 1)
+  						m.fieldSeparatorIndexes[fieldName] = index.toString();
+  					} else {
+  						m.fieldSeparatorIndexes[fieldName] = "1";
+  					}
+		  			MappingSerializer.addFieldIfDoesntExist(m.outputFieldPaths, fieldPath);
+  				}
+  			} else if (isLookupMapping) {
+  				console.log(fieldMapping);
+  				m.transition.lookupTableName = fieldMapping.lookupTableName;
+  				m.transition.mode = TransitionMode.ENUM;	  	
+  				MappingSerializer.addFieldIfDoesntExist(m.outputFieldPaths, fieldMapping.outputField.field.path);
+  			} else {
+  				m.transition.mode = TransitionMode.MAP;	  			
+	  			MappingSerializer.addFieldIfDoesntExist(m.outputFieldPaths, fieldMapping.outputField.field.path);
+  			}	 	  					  			
+  			mappings.push(m);
+  		}	  	
   		return mappings;
+	}
+
+	public static deserializeLookupTables(jsonMappings: any[]): LookupTable[] {
+		var tables: LookupTable[] = [];
+		for (let jsonMapping of jsonMappings) {	
+			for (let t of jsonMapping.AtlasMapping.lookupTables.lookupTable) {
+				var table: LookupTable = new LookupTable();
+				table.name = t.name;
+				for (let entry of t.lookupEntryList.lookupEntry) {
+					var parsedEntry: LookupTableEntry = new LookupTableEntry();
+					parsedEntry.sourceValue = entry.sourceValue;
+					parsedEntry.sourceType = entry.sourceType;
+					parsedEntry.targetValue = entry.targetValue;
+					parsedEntry.targetType = entry.targetType;
+					table.entries.push(parsedEntry);
+				}				
+				console.log("parsed table:" + table.toString());
+				tables.push(table);
+			}
+		}
+		return tables;
 	}
 
 	private static addFieldIfDoesntExist(fieldPaths: string[], fieldPath: string): void {
@@ -156,12 +205,5 @@ export class MappingSerializer {
 			}
 		}
 		fieldPaths.push(fieldPath);
-	}
-
-	public static createMapping(): MappingModel {
-		var m: MappingModel = new MappingModel();
-		m.uuid = "mapping #" + MappingSerializer.uuidCounter;
-		MappingSerializer.uuidCounter++;
-		return m;
 	}
 }

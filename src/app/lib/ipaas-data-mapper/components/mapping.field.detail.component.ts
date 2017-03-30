@@ -50,19 +50,18 @@ export class MappingFieldDetailComponent {
 	}
 
 	remove(event: MouseEvent): void {
-		this.cfg.mappingService.removeMappedField(this.selectedFieldPath, this.docDef.isInput);
+		this.cfg.mappingService.removeMappedField(this.selectedFieldPath, this.docDef.isSource);
 		this.cfg.mappingService.saveCurrentMapping();
 	}
 
 	selectionChanged(event: any):void {	
-		console.log(event);
 		if (this.lastFieldPath == null) {
 			this.lastFieldPath = this.originalSelectedFieldPath;
 		}
-		this.cfg.mappingService.removeMappedField(this.lastFieldPath, this.docDef.isInput);
+		this.cfg.mappingService.removeMappedField(this.lastFieldPath, this.docDef.isSource);
 		var fieldPath: string = event.item;
 		if (fieldPath != this.docDef.getNoneField().path) {
-			this.cfg.mappingService.addMappedField(fieldPath, this.docDef.isInput);
+			this.cfg.mappingService.addMappedField(fieldPath, this.docDef.isSource);
 			this.lastFieldPath = fieldPath;
 		}
 		console.log("Attempting to save current mapping, mapping detail selection changed.");

@@ -14,17 +14,19 @@
 	limitations under the License.
 */
 
-export enum TransitionMode { MAP, SEPARATE }    
+export enum TransitionMode { MAP, SEPARATE, ENUM }    
 export enum TransitionDelimiter { SPACE, COMMA }    
 
 export class TransitionModel {
-	public uuid: string;
 	public mode: TransitionMode = TransitionMode.MAP;
 	public delimiter: TransitionDelimiter = TransitionDelimiter.SPACE;
+	public lookupTableName: string = null;
 
 	public getPrettyName() {
 		if (this.mode == TransitionMode.SEPARATE) {
 			return "Separate (" + ((this.delimiter == TransitionDelimiter.SPACE) ? "Space)" : "Comma)");
+		} else if (this.mode == TransitionMode.ENUM) {
+			return "Enum (table: " + this.lookupTableName + ")";
 		}
 		return "Map";
 	}
@@ -32,4 +34,18 @@ export class TransitionModel {
 	public isSeparateMode(): boolean {
 		return this.mode == TransitionMode.SEPARATE;
 	}
+
+	public toJSON(): any {
+		return {
+			"mode": this.mode,
+			"delimiter": this.delimiter,
+			"lookupTableName": this.lookupTableName
+		};
+	}
+
+    public fromJSON(json: any): void {
+        this.mode = json.mode;
+        this.delimiter = json.delimiter;
+        this.lookupTableName = json.lookupTableName;
+    }	
 }
