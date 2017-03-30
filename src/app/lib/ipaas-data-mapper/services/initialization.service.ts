@@ -84,7 +84,7 @@ export class InitializationService {
 	private fetchDocuments(): void {
 		console.log("Loading source/target documents.");
 		for (let docDef of this.cfg.getAllDocs()) {
-			this.cfg.documentService.fetchDocument(docDef).subscribe(
+			this.cfg.documentService.fetchDocument(docDef, this.cfg.classPath).subscribe(
 				(docDef: DocumentDefinition) => { 
 					console.log("Document was loaded: " + docDef.name, docDef);
 					this.updateStatus();
