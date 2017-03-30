@@ -108,12 +108,19 @@ export class DocumentManagementService {
 		});
 	}
 
-	public fetchDocument(docDef: DocumentDefinition): Observable<DocumentDefinition> {
+	public fetchDocument(docDef: DocumentDefinition, classPath:string): Observable<DocumentDefinition> {
 		return new Observable<DocumentDefinition>((observer:any) => {
 			var startTime: number = Date.now();
 			var className: string = docDef.initCfg.documentIdentifier;
-			var url: string = this.cfg.baseJavaServiceUrl + "class?className=" + className;
-			this.http.get(url, { headers: this.headers }).toPromise()
+			var payload: any = {
+				"ClassInspectionRequest": {
+					"jsonType":"com.mediadriver.atlas.java.v2.ClassInspectionRequest",
+					"classpath": classPath,
+					"className": className,
+				}
+			}
+			var url: string = this.cfg.baseJavaServiceUrl + "class";
+			this.http.post(url, payload, { headers: this.headers }).toPromise()
 				.then((res: Response) => { 
 					this.extractDocumentDefinitionData(res, docDef); 
 					console.log("Finished fetching and parsing document '" + docDef.name + "' in " 
@@ -131,12 +138,13 @@ export class DocumentManagementService {
 	}
 
 	private extractDocumentDefinitionData(res: Response, docDef: DocumentDefinition): void {	  		
-  		let body: any = res.json();  	
-  		docDef.name = body.JavaClass.className;	
-  		docDef.uri = body.JavaClass.uri;
+  		let body: any = res.json().ClassInspectionResponse;  
+  		console.log("Loading document: " + docDef.name, body);
+  		docDef.name = body.javaClass.className;	
+  		docDef.uri = body.javaClass.uri;
   		docDef.debugParsing = this.debugParsing;  
 
-  		console.log("Loading document: " + docDef.name);
+  		
   		
   		if (this.debugParsing) {
   			console.log("Document JSON from Service.", body);
@@ -144,13 +152,13 @@ export class DocumentManagementService {
 			console.log("Pretty formatted JSON.", jsonPretty);
 		}
 
-		if (body.JavaClass.status == "NOT_FOUND") {
+		if (body.javaClass.status == "NOT_FOUND") {
 			this.handleError("Could not load document. Document is not found: " + docDef.name, null);
 			return;
 		}  				
 
   		var fields: Field[] = docDef.fields;
-  		for (let field of body.JavaClass.javaFields.javaField) {
+  		for (let field of body.javaClass.javaFields.javaField) {
   			var parsedField: Field = this.parseFieldFromDocument(field, docDef);
   			if (parsedField != null) {
   				fields.push(parsedField);
