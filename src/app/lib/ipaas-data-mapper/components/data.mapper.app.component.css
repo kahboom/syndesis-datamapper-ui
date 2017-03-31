@@ -29,7 +29,7 @@ A:hover { cursor:pointer; }
 
 .docDef { margin-top:3%; position:relative; border:1px solid #CAC9C9; height:96%; background-color:white; }
 .docDef .card-pf { padding:0px; margin:0px; }
-.docDef .card-pf-title { padding:10px; margin:0px; text-align:left; font-size:12px; font-weight:bold; }
+.docDef .card-pf-title { padding:10px; margin:0px; text-align:left; font-size:12px; font-weight:bold; height:33px; }
 .docDef .card-pf-heading { background-image:linear-gradient(rgb(250, 250, 250) 0px, rgb(237, 237, 237) 100%); margin:0px; padding:0px; }
 .docDef .card-pf-body { background-color:#FBFBFB; padding:0px; margin:0px; }
 
@@ -77,6 +77,10 @@ A:hover { cursor:pointer; }
 .fieldMappingDetail A.button:hover { border:1px solid #363636; }
 .fieldMappingDetail HR { margin-top:15px; margin-bottom:15px; border-top:1px solid #d1d1d1; }
 .fieldMappingDetail .sectionHeader { font-weight:bold; font:size:150%; }
+
+.DataMapperLoadingMessage { position:absolute; height:30%; top:50%; width:100%; text-align:center; }
+.DataMapperLoadingMessage LABEL { vertical-align:text-top; margin-right:3px; }
+.DataMapperLoadingMessage IMG { height:12px; width:12px; vertical-align:middle; }
 
 .mappingFieldContainer { background-color:#F9F9F9; border-radius:3px; padding:10px; padding-top:10px; margin-bottom:10px; margin-top:10px; }
 .mappingFieldContainer H3 { margin:0; padding:0; margin-bottom:10px; }

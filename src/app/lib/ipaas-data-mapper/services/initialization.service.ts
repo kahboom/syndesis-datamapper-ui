@@ -44,7 +44,8 @@ export class InitializationService {
 		if (this.cfg.classPath) {
 			this.fetchDocuments();
 		} else {
-			//fetch class path					
+			this.cfg.loadingStatus = "Loading Maven class path.";
+			//fetch class path		
 			this.cfg.documentService.fetchClassPath().subscribe(
 				(classPath: string) => { 
 					this.cfg.classPath = classPath;
@@ -52,10 +53,8 @@ export class InitializationService {
 					this.fetchDocuments();
 					this.updateStatus();
 				},
-				(error: any) => { 
-					console.error("error caught loading doc in initialize service", error); 
-				}
-			);			
+				(error: any) => { this.handleError("could not load Maven class path.", error) }
+			);
 		}		
 
 		//load mappings
@@ -71,17 +70,14 @@ export class InitializationService {
 				console.log("Discovering mapping files.");
 				this.cfg.mappingService.findMappingFiles("UI").subscribe(
 					(files: string[]) => { this.fetchMappings(files); },
-					(error: any) => { 
-						console.error("Error caught loading mapping file names", error); 
-						this.mappingInitialized = true;
-						this.updateStatus();
-					}
+					(error: any) => { this.handleError("could not load mapping files.", error) }
 				);
 			}		
 		}
-	}
+	}	
 
 	private fetchDocuments(): void {
+		this.cfg.loadingStatus = "Loading source/target documents.";
 		console.log("Loading source/target documents.");
 		for (let docDef of this.cfg.getAllDocs()) {
 			this.cfg.documentService.fetchDocument(docDef, this.cfg.classPath).subscribe(
@@ -89,10 +85,8 @@ export class InitializationService {
 					console.log("Document was loaded: " + docDef.name, docDef);
 					this.updateStatus();
 				},
-				(error: any) => { 
-					console.error("error caught loading doc in initialize service", error); 
-					docDef.initCfg.errorOccurred = true;
-				}
+				(error: any) => { this.handleError("could not load document '" 
+					+ docDef.initCfg.documentIdentifier + "'.", error) }
 			);
 		}
 	}
@@ -111,11 +105,7 @@ export class InitializationService {
 				this.mappingInitialized = true;
 				this.updateStatus();
 			},
-			(error: any) => { 
-				console.error("error caught loading mappings in initialize service", error); 
-				this.mappingInitialized = true;
-				this.updateStatus();
-			}
+			(error: any) => { this.handleError("could not load mapping definitions.", error) }
 		);
 	}
 
@@ -137,11 +127,19 @@ export class InitializationService {
 			for (let d of this.cfg.getAllDocs()) {
 				d.updateFromMappings(this.cfg.mappings.mappings);
 			}
-			this.cfg.initialized = true;
+			this.cfg.loadingStatus = "Initialization complete.";
+			this.cfg.initialized = true; 
 			this.systemInitializedSource.next();
 			console.log("System finished initializing.");
 		}
 		
 	}
-	
+
+	private handleError(message: string, error:any ) {
+		message = "Error: " + message;
+		console.error(message, error); 
+		this.cfg.loadingStatus = message;	
+		this.cfg.initializationErrorOccurred = true;
+		this.updateStatus();
+	}	
 }

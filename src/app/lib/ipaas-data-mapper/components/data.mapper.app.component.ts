@@ -14,7 +14,8 @@
 	limitations under the License.
 */
 
-import { Component, OnInit, Input, ViewChild, Injectable } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, Injectable, ViewEncapsulation } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl, SafeUrl, SafeStyle} from '@angular/platform-browser';
 
 import { Field } from '../models/field.model';
 import { DocumentDefinition } from '../models/document.definition.model';
@@ -38,34 +39,11 @@ import { MappingSelectionComponent } from './mapping.selection.component';
 import { ToolbarComponent } from './toolbar.component';
 
 @Component({
-  selector: 'data-mapper',
-  template: `
-  	<toolbar [buttonClickedHandler]="buttonClickedHandler" #toolbarComponent [cfg]="cfg"></toolbar>
-  	<div style='height:100%; position:relative;'>
-  		<div class="row"><data-mapper-error #errorPanel [errorService]="cfg.errorService"></data-mapper-error></div>
-  		<div class="row"><div class="col-md-12"><modal-window #modalWindow></modal-window></div></div>
-  		<div class="row" style='height:100%; position:relative;'>
-	  		<div class="col-md-9" style='height:100%; padding:0;'>  		
-	  			<div style="float:left; width:40%; padding-left:10px; height:100%;">
-		  			<document-definition #docDefInput [cfg]="cfg"
-		  				[docDef]="cfg.sourceDocs[0]" [lineMachine]="lineMachine"></document-definition>
-		  		</div>
-		  		<div style="float:left; width:20%; height:100%; margin-left:-5px; margin-right:-5px;">
-		  			<line-machine #lineMachine [cfg]="cfg"
-		  				[docDefInput]="docDefInput" [docDefOutput]="docDefOutput"></line-machine>
-		  		</div>
-		  		<div style="float:left; width:40%; height:100%;">
-		  			<document-definition #docDefOutput [cfg]="cfg"
-		  				[docDef]="cfg.targetDocs[0]" [lineMachine]="lineMachine"></document-definition>
-		  		</div>
-		  		<div style="clear:both; height:0px; display:none;">&nbsp;</div>
-		  	</div>
-		  	<div class="col-md-3" style="padding:0px; height:100%;">
-		  		<mapping-detail #mappingDetailComponent [cfg]="cfg"></mapping-detail>
-		  	</div>
-		 </div>
-  	</div>
-  `
+	selector: 'data-mapper',
+	moduleId: module.id, 
+	encapsulation: ViewEncapsulation.None,
+	templateUrl: './data.mapper.app.component.html',
+	styleUrls: ['data.mapper.app.component.css']
 })
 
 export class DataMapperAppComponent implements OnInit {
@@ -93,18 +71,32 @@ export class DataMapperAppComponent implements OnInit {
   	@ViewChild('toolbarComponent')
   	public toolbarComponent: ToolbarComponent;
 
-	ngOnInit(): void {				
-		this.toolbarComponent.parentComponent = this;		
-		this.mappingDetailComponent.modalWindow = this.modalWindow;
+  	constructor(private sanitizer: DomSanitizer) {}
 
+	ngOnInit(): void {						
 		this.cfg.mappingService.mappingSelectionRequired$.subscribe((mappings: MappingModel[]) => {
 			this.selectMapping(mappings);
 		});		
 
 		this.cfg.initializationService.systemInitialized$.subscribe(() => {
-			this.updateFromConfig();			
+			this.updateFromConfig();
+			this.toolbarComponent.parentComponent = this;		
+			this.mappingDetailComponent.modalWindow = this.modalWindow;		
 		});	
 	}        
+
+	private getInitializationErrorStyle() {
+		var css: string = this.cfg.initializationErrorOccurred ? "color:red;" : "color: default;";
+		return this.sanitizer.bypassSecurityTrustStyle(css);
+	}
+
+	public getSystemInitializedStyle() {
+		var css: string = "display:hidden; height:0px;";
+		if (this.cfg && this.cfg.initialized) {
+			css = "display:normal; height:100%; position:relative;"
+		}
+		return this.sanitizer.bypassSecurityTrustStyle(css);
+	}
 
 	private selectMapping(mappingsForField: MappingModel[]): void {
 		this.modalWindow.reset();

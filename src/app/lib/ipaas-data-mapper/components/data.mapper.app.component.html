@@ -1,0 +1,28 @@
+<toolbar [buttonClickedHandler]="buttonClickedHandler" #toolbarComponent [cfg]="cfg"></toolbar>
+<div [attr.style]="getSystemInitializedStyle()">
+	<div class="row"><data-mapper-error #errorPanel [errorService]="cfg.errorService"></data-mapper-error></div>
+	<div class="row"><div class="col-md-12"><modal-window #modalWindow></modal-window></div></div>
+	<div class="row" style='height:100%; position:relative;'>	  				  			
+		<div class="col-md-9" style='height:100%; padding:0;'>  		
+			<div style="float:left; width:40%; padding-left:10px; height:100%;">
+  			<document-definition #docDefInput [cfg]="cfg"
+  				[docDef]="cfg.sourceDocs[0]" [lineMachine]="lineMachine"></document-definition>
+  		</div>
+  		<div style="float:left; width:20%; height:100%; margin-left:-5px; margin-right:-5px;">
+  			<line-machine #lineMachine [cfg]="cfg"
+  				[docDefInput]="docDefInput" [docDefOutput]="docDefOutput"></line-machine>
+  		</div>
+  		<div style="float:left; width:40%; height:100%;">
+  			<document-definition #docDefOutput [cfg]="cfg"
+  				[docDef]="cfg.targetDocs[0]" [lineMachine]="lineMachine"></document-definition>
+  		</div>
+  		<div style="clear:both; height:0px; display:none;">&nbsp;</div>
+  	</div>
+  	<div class="col-md-3" style="padding:0px; height:100%;">
+  		<mapping-detail #mappingDetailComponent [cfg]="cfg"></mapping-detail>
+  	</div>
+</div>
+<div class="DataMapperLoadingMessage" *ngIf="!cfg.initialized">
+	<label [attr.style]="getInitializationErrorStyle()">{{cfg.loadingStatus}}</label>
+	<img src="app/lib/ipaas-data-mapper/ajax-loader.gif" *ngIf="!cfg.initializationErrorOccurred">
+</div>
