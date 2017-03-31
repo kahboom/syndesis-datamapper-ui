@@ -37,6 +37,8 @@ export class ConfigModel {
 	public showLinesAlways: boolean = false;
 	public debugParsing: boolean = false;
 	public initialized: boolean = false;
+	public loadingStatus: string = "Loading."
+	public initializationErrorOccurred: boolean = false;
 
 	public documentService: DocumentManagementService;
 	public mappingService: MappingManagementService;

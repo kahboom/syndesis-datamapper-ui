@@ -83,8 +83,7 @@ export class MappingManagementService {
 		  			observer.complete();
 				})
 				.catch((error: any) => { 
-					this.handleError("Error occurred while retrieving mapping files.", error); 
-					observer.throw(error);
+					observer.error(error);
 					observer.complete();
 				} 
 			);
@@ -125,8 +124,7 @@ export class MappingManagementService {
 		      	observer.complete();     	
 		      },
 		      (error:any) => { 
-		      	this.handleError("Error occurred while retrieving a mapping.", error); 
-		      	observer.throw(error);
+		      	observer.error(error);
 		      	observer.complete();
 		      }
 		    );	    

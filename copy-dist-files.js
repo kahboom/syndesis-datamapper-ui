@@ -32,7 +32,6 @@ function copyFile(sourcePath, targetPath) {
 var resources = [
   'node_modules/core-js/client/shim.min.js',
   'node_modules/zone.js/dist/zone.min.js',
-  'src/app/lib/ipaas-data-mapper/styles.css'
 ];
 resources.map(function(f) {
   var path = f.split('/');
@@ -41,3 +40,9 @@ resources.map(function(f) {
 });
 
 copyFile("src/index-aot.html", "aot/dist/index.html");
+
+mkdirp.sync("aot/dist/app/lib/ipaas-data-mapper/", function (err) {
+    	if (err) console.error(err)
+    	else console.log('lib dir created.')
+});
+copyFile("src/app/lib/ipaas-data-mapper/ajax-loader.gif", "aot/dist/app/lib/ipaas-data-mapper/ajax-loader.gif");

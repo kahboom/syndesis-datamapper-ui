@@ -100,8 +100,7 @@ export class DocumentManagementService {
 					observer.complete();
 				})
 				.catch((error: any) => { 
-					this.handleError("Error occurred while retrieving document fields.", error); 
-					observer.throw(error);
+					observer.error(error);
 					observer.complete();
 				} 
 			);
@@ -129,8 +128,7 @@ export class DocumentManagementService {
 					observer.complete();
 				})
 				.catch((error: any) => { 
-					this.handleError("Error occurred while retrieving document fields.", error); 
-					observer.throw(error);
+					observer.error(error);
 					observer.complete();
 				} 
 			);
@@ -139,12 +137,13 @@ export class DocumentManagementService {
 
 	private extractDocumentDefinitionData(res: Response, docDef: DocumentDefinition): void {	  		
   		let body: any = res.json().ClassInspectionResponse;  
-  		console.log("Loading document: " + docDef.name, body);
-  		docDef.name = body.javaClass.className;	
+  		docDef.name = body.javaClass.className;
+  		if (docDef.name == null) {
+  			console.error("Document's className is empty.", body.javaClass);
+  		}
+		console.log("Loading document: " + docDef.name, body);
   		docDef.uri = body.javaClass.uri;
-  		docDef.debugParsing = this.debugParsing;  
-
-  		
+  		docDef.debugParsing = this.debugParsing;    		
   		
   		if (this.debugParsing) {
   			console.log("Document JSON from Service.", body);
