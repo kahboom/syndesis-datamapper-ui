@@ -1,5 +1,5 @@
 <toolbar [buttonClickedHandler]="buttonClickedHandler" #toolbarComponent [cfg]="cfg"></toolbar>
-<div [attr.style]="getSystemInitializedStyle()">
+<div [attr.style]="getSystemInitializedStyle()" class="DataMapperUI">
 	<div class="row"><data-mapper-error #errorPanel [errorService]="cfg.errorService"></data-mapper-error></div>
 	<div class="row"><div class="col-md-12"><modal-window #modalWindow></modal-window></div></div>
 	<div class="row" style='height:100%; position:relative;'>	  				  			
@@ -22,7 +22,7 @@
   		<mapping-detail #mappingDetailComponent [cfg]="cfg"></mapping-detail>
   	</div>
 </div>
-<div class="DataMapperLoadingMessage" *ngIf="!cfg.initialized">
-	<label [attr.style]="getInitializationErrorStyle()">{{cfg.loadingStatus}}</label>
-	<img src="app/lib/ipaas-data-mapper/ajax-loader.gif" *ngIf="!cfg.initializationErrorOccurred">
+<div class="DataMapperLoadingMessage" *ngIf="!cfg.initCfg.initialized">
+	<label [attr.style]="getInitializationErrorStyle()">{{cfg.initCfg.loadingStatus}}</label>
+  <span class="spinner spinner-xs spinner-inline" *ngIf="!cfg.initCfg.initializationErrorOccurred"></span>
 </div>

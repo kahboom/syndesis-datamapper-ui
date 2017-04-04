@@ -14,24 +14,18 @@
     limitations under the License.
 */
 
-.row { margin:0px; }
+.DataMapperUI .form-group { margin-left:auto; margin-right:auto; margin-bottom:10px; margin-top:10px; }
+.DataMapperUI .form-group LABEL { width:75px; }
+.DataMapperUI .form-group SELECT { width:100px; }
 
-.toolbar-pf { background-color:#f5f5f5; border-bottom:1px solid #d1d1d1; }
-.cards-pf { background-color:white; }
-.breadcrumb { margin:0px; padding:0px; padding-bottom:10px; padding-left:20px; }
-.breadcrumb A { color:#5CBADF; font-weight:bold; }
-
-.form-group { margin-left:auto; margin-right:auto; margin-bottom:10px; margin-top:10px; }
-.form-group LABEL { width:75px; }
-.form-group SELECT { width:100px; }
-
-A:hover { cursor:pointer; }
+.DataMapperUI A:hover { cursor:pointer; }
 
 .docDef { margin-top:3%; position:relative; border:1px solid #CAC9C9; height:96%; background-color:white; }
-.docDef .card-pf { padding:0px; margin:0px; }
-.docDef .card-pf-title { padding:10px; margin:0px; text-align:left; font-size:12px; font-weight:bold; height:33px; }
-.docDef .card-pf-heading { background-image:linear-gradient(rgb(250, 250, 250) 0px, rgb(237, 237, 237) 100%); margin:0px; padding:0px; }
-.docDef .card-pf-body { background-color:#FBFBFB; padding:0px; margin:0px; }
+.DataMapperUI .cards-pf { background-color:white; }
+.DataMapperUI .card-pf { padding:0px; margin:0px; }
+.DataMapperUI .card-pf-title { padding:10px; margin:0px; text-align:left; font-size:12px; font-weight:bold; height:33px; }
+.DataMapperUI .card-pf-heading { background-image:linear-gradient(rgb(250, 250, 250) 0px, rgb(237, 237, 237) 100%); margin:0px; padding:0px; }
+.DataMapperUI .card-pf-body { background-color:#FBFBFB; padding:0px; margin:0px; }
 
 .DocumentFieldDetailComponent { width:100%; margin:0px; font-weight:normal; }
 .DocumentFieldDetailComponent .fieldDetail { padding:5px 10px; border-bottom:1px solid #d1d1d1; }
@@ -42,7 +36,7 @@ A:hover { cursor:pointer; }
 .DocumentFieldDetailComponent I { font-size:14px; vertical-align:text-bottom; text-shadow:0 1px 2px rgba(3, 3, 3, 0.24);
     color: #0088ce; }
 .DocumentFieldDetailComponent .parentField I { color: #bbbbbb; }
-.DocumentFieldDetailComponent .parentField I.arrow { font-size:12px; vertical-align:baseline; text-shadow:none;
+.DocumentFieldDetailComponent .parentField I.arrow { font-size:12px; vertical-align:baseline; text-shadow:none; 
     width:8px; display:inline-block; }
 .DocumentFieldDetailComponent .parentField I.parentFolder { color:#363636; text-shadow:none; margin-right:2px; }
 .DocumentFieldDetailComponent I.partOfMappingIcon { }
@@ -50,66 +44,89 @@ A:hover { cursor:pointer; }
 .DocumentFieldDetailComponent .selectedField I.partOfMappingIcon { color:white; }
 .DocumentFieldDetailComponent I.partOfMappingIconHidden { display:hidden; }
 
-.docDef .fieldsCount { padding:4px; font-size:10px; font-weight:bold; text-align:right;
-    width:100%; border-top:1px solid #CAC9C9; padding-right:10px; }
+.docDef .fieldsCount { padding:5px; font-size:10px; font-weight:bold; text-align:right; 
+    width:100%; border-top:1px solid #CAC9C9; padding-right:10px; border-bottom:0px solid black; }
 
-.docDef .searchBox { width:100%; border:1px solid #CAC9C9; border-left:2px solid #FBFBFB; border-right:2px solid #FBFBFB;
+.docDef .searchBox { width:100%; border:1px solid #CAC9C9; border-left:2px solid #FBFBFB; border-right:2px solid #FBFBFB; 
     font-size:12px; padding:5px 10px; }
 .docDef .searchBox:placeholder-shown { font-style:italic; }
-.docDef .searchBoxCloseIcon { position:absolute; right:10px; top:42px; }
+.docDef .searchBoxCloseIcon { position:absolute; right:10px; top:42px; } 
 .docDef .searchBoxCloseIcon I:hover { color:#5CBADF; }
 .docDef .searchBoxCloseIcon I { color:rgb(54,54,54); font-size:12px; }
-.docDef A.searchBoxIcon { position:absolute; right:9px; top:12px; }
-.docDef A.searchBoxIcon I { font-size:12px; vertical-align:text-top; color:rgb(54,54,54); }
+.docDef A.searchBoxIcon { position:absolute; right:9px; top:12px; } 
+.docDef A.searchBoxIcon I { font-size:12px; vertical-align:text-top; color:rgb(54,54,54); } 
 
-.fieldMappingDetail { border-left:1px solid #d1d1d1; padding:10px; height:100%; }
+.fieldMappingDetail { border-left:1px solid #d1d1d1; height:100%; background-color:#d1d1d1; }
+.fieldMappingDetail .card-pf-title { font-size:12px; font-weight:normal; height:auto; padding:7px 10px; }
+.fieldMappingDetail .card-pf-title LABEL { vertical-align:middle; margin:0px; font-weight:normal; }
 .fieldMappingDetail .fieldDetail { display:inline; }
-.fieldMappingDetail .fieldDetail INPUT { margin-bottom:5px; font-size:12px; }
-.fieldMappingDetail .fieldDetail .dropdown-menu { padding:0px; }
-.fieldMappingDetail .fieldDetail .dropdown-menu button.dropdown-item { background-color:white;
+.fieldMappingDetail .fieldDetail INPUT { padding:2px 4px; font-size:12px; width:calc(100% - 5px); font-family: OpenSans;
+  font-size: 12px; color: #4d5258; box-shadow: inset 0 2px 2px 0 rgba(0, 0, 0, 0.08); border:solid 1px #bbbbbb; }
+.fieldMappingDetail .fieldDetail .dropdown { width:calc(100% - 71px);}  
+.fieldMappingDetail .fieldDetail .dropdown-menu { padding:0px; width:100%; }
+.fieldMappingDetail .fieldDetail .dropdown-menu LI A { margin:0px; }
+.fieldMappingDetail .fieldDetail .dropdown-menu button.dropdown-item { background-color:white; 
         display:block; border:0px solid black; width:100%; text-align:left; }
 .fieldMappingDetail .fieldDetail .dropdown-menu button.active { background-color:#F5F5F5; }
-.fieldMappingDetail A { font-size:10px; font-weight:bold; color:#363636; }
-.fieldMappingDetail I { font-size:15px; vertical-align:baseline; }
+.fieldMappingDetail A { margin-left:5px; font-weight:bold; color:#363636; vertical-align:middle; }
+.fieldMappingDetail I { font-size:20px; vertical-align:middle; color: #8b8d8f; }
 .fieldMappingDetail A:hover { color:#0088ce; cursor:pointer; text-decoration:none; }
 .fieldMappingDetail A.button I { margin-right:5px; font-size:10px; }
 .fieldMappingDetail A.button { margin:10px; margin-left:0px; border:1px solid #02A2D7; padding:5px 10px; border-radius:5px; }
 .fieldMappingDetail A.button:hover { border:1px solid #363636; }
 .fieldMappingDetail HR { margin-top:15px; margin-bottom:15px; border-top:1px solid #d1d1d1; }
-.fieldMappingDetail .sectionHeader { font-weight:bold; font-size:150%; }
+.fieldMappingDetail .sectionHeader { font-weight:bold; }
+.fieldMappingDetail .fieldMappingDetail-body { height:calc(100% - 65px); overflow:auto; }
+
+.MappingDetailHeader I { margin-right:0px; vertical-align:middle; width:14px; font-size:12px; }
 
 .DataMapperLoadingMessage { position:absolute; height:30%; top:50%; width:100%; text-align:center; }
 .DataMapperLoadingMessage LABEL { vertical-align:text-top; margin-right:3px; }
 .DataMapperLoadingMessage IMG { height:12px; width:12px; vertical-align:middle; }
+.DataMapperLoadingMessage .spinner { vertical-align:middle; }
 
-.mappingFieldContainer { background-color:#F9F9F9; border-radius:3px; padding:10px; padding-top:10px; margin-bottom:10px; margin-top:10px; }
-.mappingFieldContainer H3 { margin:0; padding:0; margin-bottom:10px; }
+.MappingFieldSection { background-color:white; padding:10px; margin:15px 0px; box-shadow: 0 1px 1px 0 rgba(51, 51, 51, 0.18); }
+.MappingFieldSection LABEL { font-family:OpenSans; font-size:12px; font-weight:600; color:#363636; }
+
+.mappingFieldContainer { padding:0px 10px; }
+.mappingFieldContainer .linkContainer { width:100%; text-align:right; padding-right:15px; padding-bottom:15px; }
 
 .LookupTableComponent LABEL { width:100px; margin-right:10px; }
 .LookupTableComponent SELECT { width:200px; }
 
-.toolbar-pf .form-group .btn-link:focus { color:#252525; outline-style:none; }
 
-#CAC9C9
-.alert { margin-bottom:5px; }
-.alert .close { font-size:18px; color:#888888; }
+.fieldMappingDetail A.small-primary {
+    padding:5px 15px;
+    border-radius: 1px;
+    background-image: linear-gradient(to bottom, #39a5dc, #0088ce);
+    box-shadow: 0 2px 3px 0 rgba(3, 3, 3, 0.1);
+    border: solid 1px #00659c;
+    font-family: OpenSans;
+    font-size: 11px;
+    text-align: center;
+    color: #ffffff;
+}
 
-.mappingFieldSection { border:1px solid gray; padding:2px 4px; margin-top:5px; margin-bottom:10px; border-radius:3px; }
+.fieldMappingDetail A.small-primary:active {
+    background-image: linear-gradient(to bottom, #0088ce, #39a5dc);
+}
+
+.DataMapperUI .cards-pf { background-color:white; }.alert { margin-bottom:5px; }
+.DataMapperUI .cards-pf { background-color:white; }.alert .close { font-size:18px; color:#888888; }
+
 .TransitionSelector { width:100%; }
 .TransitionSelector LABEL { width:20%; }
 .TransitionSelector SELECT { width:73%; }
 
-html, body { height:100%; }
-
-.fill { height:83%; margin:0px; padding:0px; width:100%; }
+.DataMapperUI .fill { height:83%; margin:0px; padding:0px; width:100%; }
 
 /* for app.modal.component.ts */
 
 /* The Modal (background) */
 
-.modalWindow { z-index:1000; position:relative; width:100%; }
+.DataMapperUI .modalWindow { z-index:1000; position:relative; width:100%; }
 
-.modal {
+.DataMapperUI .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
     z-index: 1000; /* Sit on top */
@@ -124,7 +141,7 @@ html, body { height:100%; }
 }
 
 /* Modal Content */
-.modal-content {
+.DataMapperUI .modal-content {
     position: absolute;
     background-color: #fefefe;
     margin: auto;
@@ -140,11 +157,11 @@ html, body { height:100%; }
     animation-duration: 0.4s
 }
 
-.modal-content { width:auto; min-width:250px; margin-left:auto; margin-right:auto; border:0px solid black; }
+.DataMapperUI .modal-content { width:auto; min-width:250px; margin-left:auto; margin-right:auto; border:0px solid black; }
 
 /* Add Animation */
 @-webkit-keyframes animatetop {
-    from {top:-300px; opacity:0}
+    from {top:-300px; opacity:0} 
     to {top:10%; opacity:1}
 }
 
@@ -154,22 +171,22 @@ html, body { height:100%; }
 }
 
 /* The Close Button */
-.modal-header .close {
+.DataMapperUI .modal-header .close {
     color: white;
     float: right;
     font-size: 16px;
     margin-top: 3px;
 }
 
-.modal-header .close:hover,
-.modal-header .close:focus {
+.DataMapperUI .modal-header .close:hover,
+.DataMapperUI .modal-header .close:focus {
     color: white;
     opacity: 1.0;
     text-decoration: none;
     cursor: pointer;
 }
 
-.modal-header {
+.DataMapperUI .modal-header {
     padding: 5px 10px;
     background-color: #030303;
     border-bottom: 1px solid #292929;
@@ -179,12 +196,12 @@ html, body { height:100%; }
     margin:0;
 }
 
-.modal-body { margin:15px 8px; padding:0; margin-bottom:5px; }
-.modal-buttons { width:100%; text-align:right; }
-.modal-buttons A { font-size:16px; margin-left:10px; }
-.modal-buttons A:hover { text-decoration:none; color:#030303; }
+.DataMapperUI .modal-body { margin:15px 8px; padding:0; margin-bottom:5px; }
+.DataMapperUI .modal-buttons { width:100%; text-align:right; }
+.DataMapperUI .modal-buttons A { font-size:16px; margin-left:10px; }
+.DataMapperUI .modal-buttons A:hover { text-decoration:none; color:#030303; }
 
-.modal-footer {
+.DataMapperUI .modal-footer {
     padding:0;
     margin:0;
     background-color: #030303;
@@ -193,7 +210,7 @@ html, body { height:100%; }
     color: #f5f5f5;
 }
 
-.modal-message { padding:10px 20px; }
+.DataMapperUI .modal-message { padding:10px 20px; }
 
 /* end app.modal.component */
 

@@ -79,14 +79,14 @@ export class DocumentManagementService {
 			var requestBody = {
 				"MavenClasspathRequest": {
 					"jsonType": "com.mediadriver.atlas.java.v2.MavenClasspathRequest",
-					"pomXmlData": this.cfg.pomPayload,
-					"executeTimeout": this.cfg.classPathFetchTimeoutInMilliseconds
+					"pomXmlData": this.cfg.initCfg.pomPayload,
+					"executeTimeout": this.cfg.initCfg.classPathFetchTimeoutInMilliseconds
 				}	
 			}
 			if (this.cfg.debugParsing) {
 				console.log("class path payload: " + JSON.stringify(requestBody), requestBody);
 			}
-			var url: string = this.cfg.baseJavaServiceUrl + "mavenclasspath";
+			var url: string = this.cfg.initCfg.baseJavaServiceUrl + "mavenclasspath";
 			this.http.post(url, requestBody, { headers: this.headers }).toPromise()
 				.then((res: Response) => {
 					let body: any = res.json();   
@@ -110,15 +110,9 @@ export class DocumentManagementService {
 	public fetchDocument(docDef: DocumentDefinition, classPath:string): Observable<DocumentDefinition> {
 		return new Observable<DocumentDefinition>((observer:any) => {
 			var startTime: number = Date.now();
-			var className: string = docDef.initCfg.documentIdentifier;
-			var payload: any = {
-				"ClassInspectionRequest": {
-					"jsonType":"com.mediadriver.atlas.java.v2.ClassInspectionRequest",
-					"classpath": classPath,
-					"className": className,
-				}
-			}
-			var url: string = this.cfg.baseJavaServiceUrl + "class";
+			var payload: any = this.createDocumentFetchRequest(docDef, classPath);			
+			var url: string = this.cfg.initCfg.baseJavaServiceUrl + "class";
+			console.log("Fetching document: " + docDef.initCfg.documentIdentifier, payload);
 			this.http.post(url, payload, { headers: this.headers }).toPromise()
 				.then((res: Response) => { 
 					this.extractDocumentDefinitionData(res, docDef); 
@@ -133,6 +127,28 @@ export class DocumentManagementService {
 				} 
 			);
 		});
+	}
+
+	private createDocumentFetchRequest(docDef: DocumentDefinition, classPath:string): any {
+		var className: string = docDef.initCfg.documentIdentifier;
+		var payload: any = {
+			"ClassInspectionRequest": {
+				"jsonType":"com.mediadriver.atlas.java.v2.ClassInspectionRequest",
+				"classpath": classPath,
+				"className": className,
+				"disablePrivateOnlyFields": this.cfg.initCfg.disablePrivateOnlyFields,
+				"disableProtectedOnlyFields": this.cfg.initCfg.disableProtectedOnlyFields,
+				"disablePublicOnlyFields": this.cfg.initCfg.disablePublicOnlyFields,
+				"disablePublicGetterSetterFields": this.cfg.initCfg.disablePublicGetterSetterFields
+			}
+		}
+		if (this.cfg.initCfg.fieldNameBlacklist && this.cfg.initCfg.fieldNameBlacklist.length) {
+			payload["ClassInspectionRequest"]["fieldNameBlacklist"] = { "string": this.cfg.initCfg.fieldNameBlacklist };
+		}
+		if (this.cfg.initCfg.classNameBlacklist && this.cfg.initCfg.classNameBlacklist.length) {
+			payload["ClassInspectionRequest"]["classNameBlacklist"] = { "string": this.cfg.initCfg.classNameBlacklist };
+		}
+		return payload;
 	}
 
 	private extractDocumentDefinitionData(res: Response, docDef: DocumentDefinition): void {	  		
@@ -206,24 +222,6 @@ export class DocumentManagementService {
 	  			}
 	  		}
   		}	
-
-  		//TODO: temp fixes for missing twitter4j classes
-		var className = field.className;
-  		if (className == "User") {
-  			className = "twitter4j.User";
-  		} else if (className == "URLEntity") {
-  			className = "twitter4j.URLEntity";
-  		} else if (className == "Scopes") {
-  			className = "twitter4j.Scopes";
-  		} else if (className == "Status") {
-  			className = "twitter4j.Status";
-  		} else if (className == "GeoLocation") {
-  			className = "twitter4j.GeoLocation";
-  		} else if (className == "Place") {
-  			className = "twitter4j.Place";
-  		}
-  		field.className = className;	  		
-		parsedField.className = className;
 
   		return parsedField;
 	}

@@ -22,23 +22,39 @@ import { DocumentManagementService } from '../services/document.management.servi
 import { MappingManagementService } from '../services/mapping.management.service';
 import { InitializationService } from '../services/initialization.service';
 
-export class ConfigModel {
+export class DataMapperInitializationModel {
+	public initialized: boolean = false;
+	public loadingStatus: string = "Loading."
+	public initializationErrorOccurred: boolean = false;
+
 	public baseJavaServiceUrl: string;
 	public baseMappingServiceUrl: string;
 
-	// class path fetching configuration
+	/* class path fetching configuration */
+	public classPathFetchTimeoutInMilliseconds: number = 30000;
 	// if classPath is specified, maven call to resolve pom will be skipped
 	public pomPayload: string;
-	public classPathFetchTimeoutInMilliseconds: number = 30000;
+	
 	public classPath: string;
 
+	/* inspection service filtering flags */
+	public fieldNameBlacklist: string[] = [];
+	public classNameBlacklist: string[] = [];
+	public disablePrivateOnlyFields: boolean = false;
+	public disableProtectedOnlyFields: boolean = false;
+	public disablePublicOnlyFields: boolean = false;
+	public disablePublicGetterSetterFields: boolean = false;
+
+}
+
+export class ConfigModel {
+	public initCfg: DataMapperInitializationModel = new DataMapperInitializationModel;
+
+	/* current ui state config */
 	public showMappingDetailTray: boolean = false;
 	public showMappingDataType: boolean = false;
 	public showLinesAlways: boolean = false;
 	public debugParsing: boolean = false;
-	public initialized: boolean = false;
-	public loadingStatus: string = "Loading."
-	public initializationErrorOccurred: boolean = false;
 
 	public documentService: DocumentManagementService;
 	public mappingService: MappingManagementService;

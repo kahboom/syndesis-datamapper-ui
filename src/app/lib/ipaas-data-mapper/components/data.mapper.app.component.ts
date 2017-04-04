@@ -86,13 +86,13 @@ export class DataMapperAppComponent implements OnInit {
 	}        
 
 	private getInitializationErrorStyle() {
-		var css: string = this.cfg.initializationErrorOccurred ? "color:red;" : "color: default;";
+		var css: string = this.cfg.initCfg.initializationErrorOccurred ? "color:red;" : "color: default;";
 		return this.sanitizer.bypassSecurityTrustStyle(css);
 	}
 
 	public getSystemInitializedStyle() {
 		var css: string = "display:hidden; height:0px;";
-		if (this.cfg && this.cfg.initialized) {
+		if (this.cfg && this.cfg.initCfg.initialized) {
 			css = "display:normal; height:100%; position:relative;"
 		}
 		return this.sanitizer.bypassSecurityTrustStyle(css);

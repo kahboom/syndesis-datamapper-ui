@@ -45,4 +45,3 @@ mkdirp.sync("aot/dist/app/lib/ipaas-data-mapper/", function (err) {
     	if (err) console.error(err)
     	else console.log('lib dir created.')
 });
-copyFile("src/app/lib/ipaas-data-mapper/ajax-loader.gif", "aot/dist/app/lib/ipaas-data-mapper/ajax-loader.gif");

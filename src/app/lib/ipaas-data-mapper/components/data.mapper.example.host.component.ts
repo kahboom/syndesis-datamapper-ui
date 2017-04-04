@@ -58,15 +58,15 @@ export class DataMapperAppExampleHostComponent {
 		c.initializationService = initializationService;
 
 		//initialize base urls for our service calls
-		c.baseJavaServiceUrl = "http://localhost:8585/v2/atlas/java/";
-		c.baseMappingServiceUrl = "http://localhost:8585/v2/atlas/";
+		c.initCfg.baseJavaServiceUrl = "http://localhost:8585/v2/atlas/java/";
+		c.initCfg.baseMappingServiceUrl = "http://localhost:8585/v2/atlas/";
 
 		//initialize data for our class path service call
 		//note that quotes, newlines, and tabs are escaped
-		c.pomPayload = DataMapperAppExampleHostComponent.createExamplePom();
-		c.classPathFetchTimeoutInMilliseconds = 30000;
+		c.initCfg.pomPayload = DataMapperAppExampleHostComponent.createExamplePom();
+		c.initCfg.classPathFetchTimeoutInMilliseconds = 30000;
 		// if classPath is specified, maven call to resolve pom will be skipped
-		c.classPath = null;
+		c.initCfg.classPath = null;
 		
 		//specify source/target documents
 		var docDef: DocumentDefinition = new DocumentDefinition();
@@ -84,7 +84,7 @@ export class DataMapperAppExampleHostComponent {
 		c.initializationService.cfg = c;		
 		
 		//if you'd like to load our mappings from JSON (rather than mapping service files), turn this on
-		var loadMappingsFromJSON: boolean = true;
+		var loadMappingsFromJSON: boolean = false;
 		if (loadMappingsFromJSON) {
 			var mappingDefinition: MappingDefinition = new MappingDefinition();
 			var mappingJSON: any = DataMapperAppExampleHostComponent.createExampleMappingsJSON();
@@ -97,9 +97,7 @@ export class DataMapperAppExampleHostComponent {
 		console.log("Example config.", c);
 
 		this.cfg = c;
-
-		
-			
+					
 		//initialize system
 		c.initializationService.initialize();
 
@@ -111,7 +109,7 @@ export class DataMapperAppExampleHostComponent {
 			console.log("Mappings to save.", this.cfg.mappings);
 			
 			//turn this on to print out example json
-			var makeExampleJSON: boolean = true;
+			var makeExampleJSON: boolean = false;
 			if (makeExampleJSON) {
 				var jsonObject: any = c.mappingService.serializeMappingsToJSON(this.cfg.mappings);			
 				var jsonVersion = JSON.stringify(jsonObject);
