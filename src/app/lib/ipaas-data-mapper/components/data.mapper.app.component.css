@@ -42,7 +42,7 @@ A:hover { cursor:pointer; }
 .DocumentFieldDetailComponent I { font-size:14px; vertical-align:text-bottom; text-shadow:0 1px 2px rgba(3, 3, 3, 0.24);
     color: #0088ce; }
 .DocumentFieldDetailComponent .parentField I { color: #bbbbbb; }
-.DocumentFieldDetailComponent .parentField I.arrow { font-size:12px; vertical-align:baseline; text-shadow:none; 
+.DocumentFieldDetailComponent .parentField I.arrow { font-size:12px; vertical-align:baseline; text-shadow:none;
     width:8px; display:inline-block; }
 .DocumentFieldDetailComponent .parentField I.parentFolder { color:#363636; text-shadow:none; margin-right:2px; }
 .DocumentFieldDetailComponent I.partOfMappingIcon { }
@@ -50,23 +50,23 @@ A:hover { cursor:pointer; }
 .DocumentFieldDetailComponent .selectedField I.partOfMappingIcon { color:white; }
 .DocumentFieldDetailComponent I.partOfMappingIconHidden { display:hidden; }
 
-.docDef .fieldsCount { padding:4px; font-size:10px; font-weight:bold; text-align:right; 
+.docDef .fieldsCount { padding:4px; font-size:10px; font-weight:bold; text-align:right;
     width:100%; border-top:1px solid #CAC9C9; padding-right:10px; }
 
-.docDef .searchBox { width:100%; border:1px solid #CAC9C9; border-left:2px solid #FBFBFB; border-right:2px solid #FBFBFB; 
+.docDef .searchBox { width:100%; border:1px solid #CAC9C9; border-left:2px solid #FBFBFB; border-right:2px solid #FBFBFB;
     font-size:12px; padding:5px 10px; }
 .docDef .searchBox:placeholder-shown { font-style:italic; }
-.docDef .searchBoxCloseIcon { position:absolute; right:10px; top:42px; } 
+.docDef .searchBoxCloseIcon { position:absolute; right:10px; top:42px; }
 .docDef .searchBoxCloseIcon I:hover { color:#5CBADF; }
 .docDef .searchBoxCloseIcon I { color:rgb(54,54,54); font-size:12px; }
-.docDef A.searchBoxIcon { position:absolute; right:9px; top:12px; } 
-.docDef A.searchBoxIcon I { font-size:12px; vertical-align:text-top; color:rgb(54,54,54); } 
+.docDef A.searchBoxIcon { position:absolute; right:9px; top:12px; }
+.docDef A.searchBoxIcon I { font-size:12px; vertical-align:text-top; color:rgb(54,54,54); }
 
 .fieldMappingDetail { border-left:1px solid #d1d1d1; padding:10px; height:100%; }
 .fieldMappingDetail .fieldDetail { display:inline; }
 .fieldMappingDetail .fieldDetail INPUT { margin-bottom:5px; font-size:12px; }
 .fieldMappingDetail .fieldDetail .dropdown-menu { padding:0px; }
-.fieldMappingDetail .fieldDetail .dropdown-menu button.dropdown-item { background-color:white; 
+.fieldMappingDetail .fieldDetail .dropdown-menu button.dropdown-item { background-color:white;
         display:block; border:0px solid black; width:100%; text-align:left; }
 .fieldMappingDetail .fieldDetail .dropdown-menu button.active { background-color:#F5F5F5; }
 .fieldMappingDetail A { font-size:10px; font-weight:bold; color:#363636; }
@@ -76,7 +76,7 @@ A:hover { cursor:pointer; }
 .fieldMappingDetail A.button { margin:10px; margin-left:0px; border:1px solid #02A2D7; padding:5px 10px; border-radius:5px; }
 .fieldMappingDetail A.button:hover { border:1px solid #363636; }
 .fieldMappingDetail HR { margin-top:15px; margin-bottom:15px; border-top:1px solid #d1d1d1; }
-.fieldMappingDetail .sectionHeader { font-weight:bold; font:size:150%; }
+.fieldMappingDetail .sectionHeader { font-weight:bold; font-size:150%; }
 
 .DataMapperLoadingMessage { position:absolute; height:30%; top:50%; width:100%; text-align:center; }
 .DataMapperLoadingMessage LABEL { vertical-align:text-top; margin-right:3px; }
@@ -144,7 +144,7 @@ html, body { height:100%; }
 
 /* Add Animation */
 @-webkit-keyframes animatetop {
-    from {top:-300px; opacity:0} 
+    from {top:-300px; opacity:0}
     to {top:10%; opacity:1}
 }
 
