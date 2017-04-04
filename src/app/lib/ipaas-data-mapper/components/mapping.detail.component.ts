@@ -14,7 +14,7 @@
 	limitations under the License.
 */
 
-import { Component, Input, ViewChildren, Injectable, QueryList } from '@angular/core';
+import { Component, Input, ViewChildren, Injectable, QueryList, ViewChild } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeUrl, SafeStyle} from '@angular/platform-browser';
 
 import { ConfigModel } from '../models/config.model';
@@ -32,58 +32,121 @@ import { ModalWindowComponent } from './modal.window.component';
 import { TransitionSelectionComponent } from './transition.selection.component';
 
 @Component({
+	selector: 'detail-header',
+	template: `
+		<div class="card-pf-heading MappingDetailHeader" (click)="handleMouseClick()">
+			<div class="card-pf-title">
+				<i [attr.class]="collapseToggleClass"></i>
+				<label>{{ title }}</label>
+			</div>
+	  	</div>
+    `
+})
+
+export class MappingDetailHeaderComponent { 
+	@Input() title: string;
+	public collapsed: boolean = false;
+	private collapseToggleClass: string = "arrow fa fa-angle-down";
+
+	public handleMouseClick(event: MouseEvent): void {
+		this.collapsed = !this.collapsed;
+		this.collapseToggleClass = "arrow fa fa-angle-" + (this.collapsed ? "right" : "down");
+	}	
+}
+
+@Component({
+	selector: 'mapping-field-section',
+	template: `
+		<div class="mappingFieldContainer">
+			<div *ngFor="let field of getMappingFields()" class="MappingFieldSection">
+				<label>{{ isSource ? "Source" : "Target" }}</label>
+	  			<mapping-field-detail #mappingField [selectedFieldPath]="field.path" 
+	  				[originalSelectedFieldPath]="field.path"
+	  				[cfg]="cfg" [docDef]="cfg.getDoc(isSource)"></mapping-field-detail>
+	  			<mapping-field-action [field]="field" [isSource]="isSource" [cfg]="cfg"></mapping-field-action>
+	  		</div>
+	  		<div class="linkContainer" *ngIf="!isSource && mappingIsntEnum()">
+				<a (click)="addField($event)"  
+					class="small-primary">
+					{{ isSource ? "Add Source" : "Add Target" }}
+				</a>
+			</div>
+	  	</div>
+    `
+})
+
+export class MappingFieldSectionComponent { 
+	@Input() cfg: ConfigModel;
+	@Input() isSource: boolean = false;
+
+	private getMappingFields(): Field[] {
+		var docDef: DocumentDefinition = this.cfg.getDoc(this.isSource);
+		var fieldPaths: string[] = this.isSource ? this.cfg.mappings.activeMapping.inputFieldPaths
+			: this.cfg.mappings.activeMapping.outputFieldPaths;
+		if (fieldPaths == null || fieldPaths.length == 0) {
+			return [docDef.getNoneField()];			
+		}
+		return docDef.getFields(fieldPaths);
+	}
+
+	private addField(event: MouseEvent): void {
+		this.cfg.mappingService.addMappedField(null, this.isSource);
+		//if adding a field and only one is now mapped, add another b/c user wants two fields now, not one
+		var mapping: MappingModel = this.cfg.mappings.activeMapping;
+		var mappedFieldCount: number = this.isSource ? mapping.inputFieldPaths.length : mapping.outputFieldPaths.length;
+		if (mappedFieldCount == 1) {
+			this.cfg.mappingService.addMappedField(null, this.isSource);
+		}
+		this.cfg.mappingService.saveCurrentMapping();
+	}	
+
+	private mappingIsntEnum(): boolean {
+		return !(this.cfg.mappings.activeMapping.transition.mode == TransitionMode.ENUM);
+	}	
+}
+
+@Component({
 	selector: 'mapping-detail',
 	template: `
 	  	<div class='fieldMappingDetail'  [attr.style]="detailStyle" 
-	  		*ngIf="cfg.mappings.activeMapping && cfg.showMappingDetailTray">
-	  		<div class="card-pf-title" style="margin:0px;">
-	  			<div style="float:left;"><h2 style="display:inline;">Data Transformation</h2></div>
-	  			<div style="float:right; text-align:right; padding-right:2px;">
-	  			<a (click)="removeMapping($event)" style="font-size:14px;" tooltip="Remove current mapping">
-	  				<i class="fa fa-trash" aria-hidden="true" style="font-size:14px; margin-left:5px;"></i> 
-	  			</a>
-	  			<a (click)="addNewMapping($event)" tooltip="Add New Mapping" style="margin-left:5px;">
-	  				<i style="font-size:14px;" class="fa fa-plus" aria-hidden="true"></i>
-	  			</a>
-	  			<a (click)="toggleDataTypeVisibility($event)" tooltip="Show field data types" style="margin-left:5px;">
-	  				<i style="font-size:14px;" class="fa fa-cog" aria-hidden="true"></i>
-	  			</a>
-	  			<a (click)="deselectMapping($event)" tooltip="Deselect current mapping" style="margin-left:5px;">
-	  				<i style="font-size:16px;" class="fa fa-close" aria-hidden="true"></i>
-	  			</a>	  	
-	  			</div>
-	  			<div style="clear:both; height:0px;"></div>
-	  		</div>
-	  		<div class="mappingFieldContainer">
-		  		<h3 style="font-size:12px; font-weight:bold;">Source</h3>
-		  		<div *ngFor="let field of getMappingFields(true)" style="padding-bottom:10px;">
-		  			<mapping-field-detail #mappingField [selectedFieldPath]="field.path" 
-		  				[originalSelectedFieldPath]="field.path"
-		  				[cfg]="cfg" [docDef]="cfg.getDoc(true)"></mapping-field-detail>
-		  			<mapping-field-action [field]="field" [mapping]="cfg.mappings.activeMapping" 
-		  				[isSource]="true" [cfg]="cfg"></mapping-field-action>
+	  		*ngIf="cfg.mappings.activeMapping && cfg.showMappingDetailTray">	  		
+	  		<div class="card-pf-heading">
+	  			<div class="card-pf-title">
+		  			<div style="float:left;"><label>Data Transformation</label></div>
+		  			<div style="float:right; text-align:right; padding-right:2px;">
+		  			<a (click)="removeMapping($event)" tooltip="Remove current mapping">
+		  				<i class="fa fa-trash" aria-hidden="true"></i> 
+		  			</a>
+		  			<a (click)="addNewMapping($event)" tooltip="Add New Mapping">
+		  				<i class="fa fa-plus" aria-hidden="true"></i>
+		  			</a>
+		  			<a (click)="toggleDataTypeVisibility($event)" tooltip="Show field data types">
+		  				<i class="fa fa-cog" aria-hidden="true"></i>
+		  			</a>
+		  			<a (click)="deselectMapping($event)" tooltip="Deselect current mapping">
+		  				<i class="fa fa-close" aria-hidden="true"></i>
+		  			</a>	  	
+		  			</div>
+		  			<div style="clear:both; height:0px;"></div>
 		  		</div>
-				<!-- <a (click)="addField($event, true)"><i class="fa fa-plus" 
-					aria-hidden="true" style="font-size:10px"></i> Add Field</a> -->
-			</div>
-	  		<div class="mappingFieldContainer" >
-	  			<h3 class="sectionHeader" style="float:left; margin-bottom:10px;">Action:&nbsp;</h3>
-	  			<transition-selector style="float:left; clear:left; width:100%;" [cfg]="cfg"
-	  				[modalWindow]="modalWindow"></transition-selector>
-	  			<div style="clear:both; height:0px;"></div>
 	  		</div>
-	  		<div class="mappingFieldContainer">
-		  		<h3 style="font-size:12px; font-weight:bold;">Target</h3>
-		  		<div *ngFor="let field of getMappingFields(false)" style="padding-bottom:10px;">
-		  			<mapping-field-detail #mappingField [selectedFieldPath]="field.path" 
-		  				[originalSelectedFieldPath]="field.path"
-		  				[cfg]="cfg" [docDef]="cfg.getDoc(false)"></mapping-field-detail>
-		  			<mapping-field-action [field]="field" [mapping]="cfg.mappings.activeMapping" 
-		  				[isSource]="false" [cfg]="cfg"></mapping-field-action>
+	  		<div class="fieldMappingDetail-body">
+		  		<detail-header title="Sources" #sourcesHeader></detail-header>	  		
+			  	<mapping-field-section [cfg]="cfg" [isSource]="true" 
+			  		*ngIf="!sourcesHeader.collapsed"></mapping-field-section>
+				
+				<detail-header title="Action" #actionsHeader></detail-header>
+		  		<div class="mappingFieldContainer" *ngIf="!actionsHeader.collapsed">	  			
+		  			<transition-selector style="float:left; clear:left; width:100%;" [cfg]="cfg"
+		  				[modalWindow]="modalWindow"></transition-selector>
+		  			<div style="clear:both; height:0px;"></div>
 		  		</div>
-				<a (click)="addField($event, false)" *ngIf='mappingIsntEnum()'><i class="fa fa-plus" 
-					aria-hidden="true" style="font-size:10px"></i> Add Field</a>	  		
-			</div>		  				  		
+		  		
+		  		<detail-header title="Targets" #targetsHeader></detail-header>
+		  		<mapping-field-section [cfg]="cfg" [isSource]="false" 
+		  			*ngIf="!targetsHeader.collapsed"></mapping-field-section>  
+	  		</div>
+	  		<div class="card-pf-heading"><div class="card-pf-title">&nbsp;</div></div>
 	    </div>
     `
 })
@@ -92,23 +155,16 @@ export class MappingDetailComponent {
 	@Input() cfg: ConfigModel;
 	@Input() modalWindow: ModalWindowComponent;
 
+	@ViewChild('sourcesHeader')
+  	public sourcesHeader: MappingDetailHeaderComponent;
+  	@ViewChild('actionsHeader')
+  	public actionsHeader: MappingDetailHeaderComponent;
+  	@ViewChild('targetsHeader')
+  	public targetsHeader: MappingDetailHeaderComponent;
+
 	private detailStyle: SafeStyle;
 
 	constructor(private sanitizer: DomSanitizer) {}
-
-	private mappingIsntEnum(): boolean {
-		return !(this.cfg.mappings.activeMapping.transition.mode == TransitionMode.ENUM);
-	}
-
-	private getMappingFields(isSource: boolean): Field[] {
-		var docDef: DocumentDefinition = this.cfg.getDoc(isSource);
-		var fieldPaths: string[] = isSource ? this.cfg.mappings.activeMapping.inputFieldPaths
-			: this.cfg.mappings.activeMapping.outputFieldPaths;
-		if (fieldPaths == null || fieldPaths.length == 0) {
-			return [docDef.getNoneField()];			
-		}
-		return docDef.getFields(fieldPaths);
-	}
 
 	private addNewMapping(event: MouseEvent): void {
 		console.log("Creating new mapping.")
@@ -138,15 +194,4 @@ export class MappingDetailComponent {
 		};
 		this.modalWindow.show();		
 	}
-
-	private addField(event: MouseEvent, isSource: boolean): void {
-		this.cfg.mappingService.addMappedField(null, isSource);
-		//if adding a field and only one is now mapped, add another b/c user wants two fields now, not one
-		var mapping: MappingModel = this.cfg.mappings.activeMapping;
-		var mappedFieldCount: number = isSource ? mapping.inputFieldPaths.length : mapping.outputFieldPaths.length;
-		if (mappedFieldCount == 1) {
-			this.cfg.mappingService.addMappedField(null, isSource);
-		}
-		this.cfg.mappingService.saveCurrentMapping();
-	}	
 }

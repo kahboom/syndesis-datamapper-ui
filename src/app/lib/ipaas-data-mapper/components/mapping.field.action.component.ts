@@ -23,13 +23,14 @@ import { ConfigModel } from '../models/config.model';
 @Component({
 	selector: 'mapping-field-action',
 	template: `
-		<div *ngIf="isSource == false && mapping.transition.isSeparateMode()" class="form-group" style="margin-right:22px;">
-			<div style="float:right">
-				<label style="width:50px;">Index:</label>
-				<input type="text" [(ngModel)]="mapping.fieldSeparatorIndexes[field.path]" 
-					style="width:50px; text-align:right;" (change)="selectionChanged($event)"/>
+		<div *ngIf="isSource == false && cfg.mappings.activeMapping.transition.isSeparateMode()" 
+			class="form-group" style="margin-right:22px;">
+			<label>Transformation</label>
+			<div>
+				<label style="width:32px; font-weight:normal; margin-left:2px;">Index:</label>
+				<input type="text" [(ngModel)]="cfg.mappings.activeMapping.fieldSeparatorIndexes[field.path]" 
+					style="width:50px; text-align:right; font-size:11px;" (change)="selectionChanged($event)"/>
 			</div>
-			<div style="clear:both; height:0px;"></div>
 		</div>
 	`
 })
@@ -37,7 +38,6 @@ import { ConfigModel } from '../models/config.model';
 export class MappingFieldActionComponent { 
 	@Input() cfg: ConfigModel;
 	@Input() field: Field;
-	@Input() mapping: MappingModel;	
 	@Input() isSource: boolean = false;
 
 	selectionChanged(event: MouseEvent):void {			

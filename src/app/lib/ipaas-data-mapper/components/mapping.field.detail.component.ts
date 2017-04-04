@@ -25,11 +25,13 @@ import { DocumentDefinition } from '../models/document.definition.model';
 	selector: 'mapping-field-detail',
 	template: `
 	  	<div class='fieldDetail' *ngIf="docDef && docDef.fields && docDef.fieldPaths" style="margin-bottom:5px;">	  		
-   			<input type="text" style="width:94%; float:left;" [(ngModel)]="selectedFieldPath" 
-   				[typeahead]="dataSource" typeaheadWaitMs="200" (typeaheadOnSelect)="selectionChanged($event)">
-   			<a style='display:inline; float:right;' (click)="remove($event)">
-   				<i class="fa fa-trash" aria-hidden="true"></i>
-   			</a>
+	  		<div style="float:left; width:calc(100% - 25px);">
+   				<input type="text" [(ngModel)]="selectedFieldPath"  [typeahead]="dataSource" typeaheadWaitMs="200" 
+   					(typeaheadOnSelect)="selectionChanged($event)">
+   			</div>
+   			<div stlye="float:right">
+	   			<a (click)="remove($event)"><i class="fa fa-trash" aria-hidden="true"></i></a>
+   			</div>
    			<div style="clear:both; height:0px;">&nbsp;</div>
 	  	</div>
     `

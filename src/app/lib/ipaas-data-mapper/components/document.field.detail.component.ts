@@ -30,7 +30,7 @@ import { LineMachineComponent } from './line.machine.component';
 	selector: 'document-field-detail',
 	template: `
 		<div class="DocumentFieldDetailComponent" #fieldDetailElement on-mouseover='handleMouseOver($event)'>
-			<div [attr.class]='getCssClass()' (click)="handleMouseClick($event)" *ngIf="field.visible">								
+			<div [attr.class]='getCssClass()' (click)="handleMouseClick($event)" *ngIf="field.visible">							
 				<div style="float:left;">														
 					<div style="display:inline-block; width:12px;" *ngIf="!docDef.isSource">
 						<i [attr.class]='getMappingClass()'></i>

@@ -41,14 +41,14 @@ export class InitializationService {
 		this.cfg.mappingService.initialize();
 
 		//load documents
-		if (this.cfg.classPath) {
+		if (this.cfg.initCfg.classPath) {
 			this.fetchDocuments();
 		} else {
-			this.cfg.loadingStatus = "Loading Maven class path.";
+			this.cfg.initCfg.loadingStatus = "Loading Maven class path.";
 			//fetch class path		
 			this.cfg.documentService.fetchClassPath().subscribe(
 				(classPath: string) => { 
-					this.cfg.classPath = classPath;
+					this.cfg.initCfg.classPath = classPath;
 					console.log("ClassPath was fetched: " + classPath);
 					this.fetchDocuments();
 					this.updateStatus();
@@ -77,10 +77,10 @@ export class InitializationService {
 	}	
 
 	private fetchDocuments(): void {
-		this.cfg.loadingStatus = "Loading source/target documents.";
+		this.cfg.initCfg.loadingStatus = "Loading source/target documents.";
 		console.log("Loading source/target documents.");
 		for (let docDef of this.cfg.getAllDocs()) {
-			this.cfg.documentService.fetchDocument(docDef, this.cfg.classPath).subscribe(
+			this.cfg.documentService.fetchDocument(docDef, this.cfg.initCfg.classPath).subscribe(
 				(docDef: DocumentDefinition) => { 
 					console.log("Document was loaded: " + docDef.name, docDef);
 					this.updateStatus();
@@ -127,8 +127,8 @@ export class InitializationService {
 			for (let d of this.cfg.getAllDocs()) {
 				d.updateFromMappings(this.cfg.mappings.mappings);
 			}
-			this.cfg.loadingStatus = "Initialization complete.";
-			this.cfg.initialized = true; 
+			this.cfg.initCfg.loadingStatus = "Initialization complete.";
+			this.cfg.initCfg.initialized = true; 
 			this.systemInitializedSource.next();
 			console.log("System finished initializing.");
 		}
@@ -138,8 +138,8 @@ export class InitializationService {
 	private handleError(message: string, error:any ) {
 		message = "Error: " + message;
 		console.error(message, error); 
-		this.cfg.loadingStatus = message;	
-		this.cfg.initializationErrorOccurred = true;
+		this.cfg.initCfg.loadingStatus = message;	
+		this.cfg.initCfg.initializationErrorOccurred = true;
 		this.updateStatus();
 	}	
 }

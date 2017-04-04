@@ -68,7 +68,7 @@ export class MappingManagementService {
 	public findMappingFiles(filter: string): Observable<string[]> {	
 		return new Observable<string[]>((observer:any) => {
 			var startTime: number = Date.now();
-			var url = this.cfg.baseMappingServiceUrl + "mappings" + (filter == null ? "" : "?filter=" + filter);
+			var url = this.cfg.initCfg.baseMappingServiceUrl + "mappings" + (filter == null ? "" : "?filter=" + filter);
 			this.http.get(url, {headers: this.headers}).toPromise()
 				.then((res:Response) => {
 					let body = res.json();
@@ -99,7 +99,7 @@ export class MappingManagementService {
 	  		}
 	  		var startTime: number = Date.now();
 
-	  		var baseURL: string = this.cfg.baseMappingServiceUrl + "mapping/";
+	  		var baseURL: string = this.cfg.initCfg.baseMappingServiceUrl + "mapping/";
 	  		var operations: any[] = [];
 	  		for (let mappingName of mappingFileNames) {
 		  		var url: string = baseURL + mappingName;
@@ -230,7 +230,7 @@ export class MappingManagementService {
 	public saveMappingToService(saveHandler: Function): void {
 		var startTime: number = Date.now();		
 		var payload: any = this.serializeMappingsToJSON(this.cfg.mappings);
-		var url = this.cfg.baseMappingServiceUrl + "mapping";
+		var url = this.cfg.initCfg.baseMappingServiceUrl + "mapping";
 		this.http.put(url, JSON.stringify(payload), {headers: this.headers}).toPromise()
 			.then((res:Response) => { 
 				if (saveHandler != null) {
