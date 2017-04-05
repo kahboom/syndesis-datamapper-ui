@@ -32,8 +32,7 @@ export class LineModel {
 	public sourceY: string;
 	public targetX: string;
 	public targetY: string;
-	public color: string = "blue";
-	public strokeWidth: string = "1";
+	public stroke: string = "url(#line-gradient-dormant)";
 	public style: SafeStyle;
 }
 
@@ -42,6 +41,16 @@ export class LineModel {
 	template: `
 		<div class="LineMachineComponent" #lineMachineElement on-mousemove="drawLine($event)" style="height:100%; margin-top:6%;">
 			<svg style="width:100%; height:100%;">
+				<defs>
+					<linearGradient id='line-gradient-active' gradientUnits="userSpaceOnUse">
+						<stop stop-color='#0088ce'/>
+						<stop offset='100%' stop-color='#bee1f4'/>
+					</linearGradient>				
+					<linearGradient id='line-gradient-dormant' gradientUnits="userSpaceOnUse">
+						<stop stop-color='#8b8d8f'/>
+						<stop offset='100%' stop-color='#EEEEEE'/>
+					</linearGradient>				
+				</defs>
 				<svg:line *ngFor="let l of lines" 
 					[attr.x1]="l.sourceX" [attr.y1]="l.sourceY" 
 					[attr.x2]="l.targetX" [attr.y2]="l.targetY" 
@@ -80,15 +89,13 @@ export class LineMachineComponent {
 		});				
 	}
 
-	public addLineFromParams(sourceX: string, sourceY: string, targetX: string, targetY: string, 
-		color: string, strokeWidth: string): void {		
+	public addLineFromParams(sourceX: string, sourceY: string, targetX: string, targetY: string, stroke: string): void {		
 		var l: LineModel = new LineModel();
 		l.sourceX = sourceX;
 		l.sourceY = sourceY;
 		l.targetX = targetX;
 		l.targetY = targetY;
-		l.color = color;
-		l.strokeWidth = strokeWidth;
+		l.stroke = stroke;
 		this.addLine(l);
 	}
 
@@ -99,7 +106,7 @@ export class LineMachineComponent {
 
 	private createLineStyle(l: LineModel): void {
 		//angular2 will throw an error if we don't use this sanitizer to signal to angular2 that the css style value is ok.
-		l.style = this.sanitizer.bypassSecurityTrustStyle("stroke:" + l.color + "; stroke-width:" + l.strokeWidth + ";");
+		l.style = this.sanitizer.bypassSecurityTrustStyle("stroke:" + l.stroke + "; stroke-width:2px;");
 	}
 
 	public setLineBeingFormed(l: LineModel): void {
@@ -148,8 +155,6 @@ export class LineMachineComponent {
 			if ((inputSelected && !outputSelected) || (!inputSelected && outputSelected) ) {
 				console.log("active line drawing turned on");				
 				var l: LineModel = new LineModel();
-				l.color = "#02A2D7";
-				l.strokeWidth = "3";
 				var pos: any = null;
 				if (inputSelected) {
 					var fieldPathToFind: string = this.cfg.mappings.activeMapping.inputFieldPaths[0];
@@ -235,11 +240,10 @@ export class LineMachineComponent {
 						continue;
 					}
 					var isSelectedMapping: boolean = (this.cfg.mappings.activeMapping == m);
-					var color: string = isSelectedMapping ? "#02A2D7" : "#A2A2A2";
-					var strokeWidth: string = isSelectedMapping ? "3" : "1";
+					var stroke: string = "url(#line-gradient-" + (isSelectedMapping ? "active" : "dormant") + ")";
 					if (this.cfg.showLinesAlways || isSelectedMapping) {
 						this.addLineFromParams("0", (sourceY + 17).toString(), 
-							"100%", (targetY + 17).toString(), color, strokeWidth);	
+							"100%", (targetY + 17).toString(), stroke);	
 					}
 				}
 			}			

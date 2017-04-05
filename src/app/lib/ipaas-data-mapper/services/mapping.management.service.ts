@@ -118,7 +118,8 @@ export class MappingManagementService {
 		      		this.deserializeMappingServiceJSON(d, mappingDefinition);
 		      	}		      	
 		      	
-		      	console.log("Finished loading mappings in " + (Date.now() - startTime) + "ms.");
+		      	console.log("Finished loading " + mappingDefinition.mappings.length + " mappings in " 
+		      		+ (Date.now() - startTime) + "ms.");
 				this.mappingUpdatedSource.next();
 		      	observer.next(true);	 
 		      	observer.complete();     	
@@ -137,9 +138,9 @@ export class MappingManagementService {
       	}
       	for (let lookupTable of MappingSerializer.deserializeLookupTables(json)) {
       		mappingDefinition.addTable(lookupTable);
-      	}	      	      	
-      	if (json && json.length) {
-      		mappingDefinition.name = json[0].AtlasMapping.name;
+      	}	      	
+      	if (json && json.AtlasMapping && json.AtlasMapping.name) {
+      		mappingDefinition.name = json.AtlasMapping.name;
       	}
 	}	
 

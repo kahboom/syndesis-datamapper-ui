@@ -32,17 +32,22 @@ import { LineMachineComponent } from './line.machine.component';
 		<div class="DocumentFieldDetailComponent" #fieldDetailElement on-mouseover='handleMouseOver($event)'>
 			<div [attr.class]='getCssClass()' (click)="handleMouseClick($event)" *ngIf="field.visible">							
 				<div style="float:left;">														
-					<div style="display:inline-block; width:12px;" *ngIf="!docDef.isSource">
+					<div style="display:inline-block; width:24px;" *ngIf="!docDef.isSource">
 						<i [attr.class]='getMappingClass()'></i>
+						<i [attr.class]='getTransformationClass()'></i>
 					</div>
 					<div class="spacer" [attr.style]="getSpacerWidth()">&nbsp;</div>
 					<div *ngIf="!field.isTerminal()" style="display:inline-block;">					
 						<i [attr.class]="parentToggleClass"></i>
 						<i class="fa fa-folder parentFolder"></i>
 					</div>
+					<div *ngIf="field.isTerminal()" style="display:inline-block;">					
+						<i class="fa fa-file-o"></i>
+					</div>
 		  			<label>{{field.displayName}}</label>
 		  		</div>
-		  		<div style="float:right; width:12px;" *ngIf="docDef.isSource">
+		  		<div style="float:right; width:24px; text-align:right;" *ngIf="docDef.isSource">
+		  			<i [attr.class]='getTransformationClass()'></i>
 		  			<i [attr.class]='getMappingClass()'></i>
 		  		</div>
 		  		<div style="clear:both; height:0px;">&nbsp;</div>
@@ -62,12 +67,19 @@ export class DocumentFieldDetailComponent {
 	@Input() field: Field;	
 	@Input() lineMachine: LineMachineComponent;
 
+	private parentToggleClass: string = "arrow fa fa-angle-right";
+
 	@ViewChild('fieldDetailElement') fieldDetailElement:ElementRef;
 	@ViewChildren('fieldDetail') fieldComponents: QueryList<DocumentFieldDetailComponent>;
 
-	private parentToggleClass: string = "arrow fa fa-angle-right";
-
 	constructor(private sanitizer: DomSanitizer) {}
+
+	private getTransformationClass(): string {
+		if (!this.field.partOfMapping || !this.field.partOfTransformation) {
+			return "partOfMappingIcon partOfMappingIconHidden";
+		}
+		return "partOfMappingIcon fa fa-bolt";
+	}
 
 	private getMappingClass(): string {
 		if (!this.field.partOfMapping) {

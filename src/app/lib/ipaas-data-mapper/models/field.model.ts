@@ -28,6 +28,7 @@ export class Field {
 	serviceObject: any;
 	parentField: Field;
 	partOfMapping: boolean = false;	
+    partOfTransformation: boolean = false;
 	visible:boolean = true;
 	selected:boolean = false;
     enumeration:boolean = false;
@@ -63,6 +64,7 @@ export class Field {
         }
     	copy.parentField = null;
     	copy.partOfMapping = this.partOfMapping;
+        copy.partOfTransformation = this.partOfTransformation;
     	copy.visible = this.visible;
     	copy.selected = this.selected;
         copy.fieldDepth = this.fieldDepth;
@@ -85,6 +87,7 @@ export class Field {
         }
         this.parentField = null;
         this.partOfMapping = that.partOfMapping;
+        this.partOfTransformation = that.partOfTransformation;
         this.visible = that.visible;
         this.selected = that.selected;
         this.fieldDepth = that.fieldDepth;

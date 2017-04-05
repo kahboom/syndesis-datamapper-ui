@@ -34,7 +34,7 @@ import { TransitionSelectionComponent } from './transition.selection.component';
 @Component({
 	selector: 'detail-header',
 	template: `
-		<div class="card-pf-heading MappingDetailHeader" (click)="handleMouseClick()">
+		<div class="card-pf-heading MappingDetailHeader" (click)="handleMouseClick($event)">
 			<div class="card-pf-title">
 				<i [attr.class]="collapseToggleClass"></i>
 				<label>{{ title }}</label>
@@ -46,7 +46,7 @@ import { TransitionSelectionComponent } from './transition.selection.component';
 export class MappingDetailHeaderComponent { 
 	@Input() title: string;
 	public collapsed: boolean = false;
-	private collapseToggleClass: string = "arrow fa fa-angle-down";
+	public collapseToggleClass: string = "arrow fa fa-angle-down";
 
 	public handleMouseClick(event: MouseEvent): void {
 		this.collapsed = !this.collapsed;
@@ -59,9 +59,15 @@ export class MappingDetailHeaderComponent {
 	template: `
 		<div class="mappingFieldContainer">
 			<div *ngFor="let field of getMappingFields()" class="MappingFieldSection">
-				<label>{{ isSource ? "Source" : "Target" }}</label>
-	  			<mapping-field-detail #mappingField [selectedFieldPath]="field.path" 
-	  				[originalSelectedFieldPath]="field.path"
+				<div style="float:left;">
+					<label>{{ isSource ? "Source" : "Target" }}</label>
+				</div>
+				<div style="float:right; margin-right:5px;">
+	   				<a (click)="remove($event, field.path)"><i class="fa fa-trash" aria-hidden="true"></i></a>
+   				</div>
+   				<div style="clear:both; height:0px;"></div>
+	  			<mapping-field-detail #mappingField [selectedFieldPath]="getTypedFieldPath(field)" 
+	  				[originalSelectedFieldPath]="getTypedFieldPath(field)"
 	  				[cfg]="cfg" [docDef]="cfg.getDoc(isSource)"></mapping-field-detail>
 	  			<mapping-field-action [field]="field" [isSource]="isSource" [cfg]="cfg"></mapping-field-action>
 	  		</div>
@@ -79,7 +85,15 @@ export class MappingFieldSectionComponent {
 	@Input() cfg: ConfigModel;
 	@Input() isSource: boolean = false;
 
-	private getMappingFields(): Field[] {
+	private getTypedFieldPath(field: Field): string {
+		var fieldPath: string = field.path;
+		if (fieldPath != "[None]" && this.cfg.showMappingDataType) {
+			fieldPath = fieldPath + " (" + field.type + ")";
+		}
+		return fieldPath;
+	}
+
+	public getMappingFields(): Field[] {
 		var docDef: DocumentDefinition = this.cfg.getDoc(this.isSource);
 		var fieldPaths: string[] = this.isSource ? this.cfg.mappings.activeMapping.inputFieldPaths
 			: this.cfg.mappings.activeMapping.outputFieldPaths;
@@ -100,9 +114,14 @@ export class MappingFieldSectionComponent {
 		this.cfg.mappingService.saveCurrentMapping();
 	}	
 
-	private mappingIsntEnum(): boolean {
+	public mappingIsntEnum(): boolean {
 		return !(this.cfg.mappings.activeMapping.transition.mode == TransitionMode.ENUM);
 	}	
+
+	remove(event: MouseEvent, fieldPath: string): void {
+		this.cfg.mappingService.removeMappedField(fieldPath, this.isSource);
+		this.cfg.mappingService.saveCurrentMapping();
+	}
 }
 
 @Component({
@@ -121,7 +140,7 @@ export class MappingFieldSectionComponent {
 		  				<i class="fa fa-plus" aria-hidden="true"></i>
 		  			</a>
 		  			<a (click)="toggleDataTypeVisibility($event)" tooltip="Show field data types">
-		  				<i class="fa fa-cog" aria-hidden="true"></i>
+		  				<i aria-hidden="true" [attr.class]="'fa fa-cog ' + getDataTypeIconClass()"></i>
 		  			</a>
 		  			<a (click)="deselectMapping($event)" tooltip="Deselect current mapping">
 		  				<i class="fa fa-close" aria-hidden="true"></i>
@@ -136,11 +155,8 @@ export class MappingFieldSectionComponent {
 			  		*ngIf="!sourcesHeader.collapsed"></mapping-field-section>
 				
 				<detail-header title="Action" #actionsHeader></detail-header>
-		  		<div class="mappingFieldContainer" *ngIf="!actionsHeader.collapsed">	  			
-		  			<transition-selector style="float:left; clear:left; width:100%;" [cfg]="cfg"
-		  				[modalWindow]="modalWindow"></transition-selector>
-		  			<div style="clear:both; height:0px;"></div>
-		  		</div>
+		  		<transition-selector style="float:left; clear:left; width:100%; background-color:#d1d1d1" [cfg]="cfg"
+		  			[modalWindow]="modalWindow" *ngIf="!actionsHeader.collapsed"></transition-selector>
 		  		
 		  		<detail-header title="Targets" #targetsHeader></detail-header>
 		  		<mapping-field-section [cfg]="cfg" [isSource]="false" 
@@ -180,6 +196,10 @@ export class MappingDetailComponent {
 
 	private toggleDataTypeVisibility(event: MouseEvent) {
 		this.cfg.showMappingDataType = !this.cfg.showMappingDataType;
+	}
+
+	private getDataTypeIconClass(): string {
+		return this.cfg.showMappingDataType ? "selected" : "";
 	}
 
 	private removeMapping(event: MouseEvent): void {

@@ -27,27 +27,28 @@ import { LookupTableComponent } from './lookup.table.component';
 @Component({
 	selector: 'transition-selector',
 	template: `
-		<div class="TransitionSelector" *ngIf="cfg.mappings.activeMapping">
-			<div class="form-group" *ngIf="modeIsEnum()">
-				<label style="float:left; width:94%;">{{ getMappedValueCount() }} values mapped</label>
-				<a style="float:right;" (click)="showLookupTable()"><i class="fa fa-edit"></i></a>
-				<div style="clear:both; height:0px"></div>
-			</div>
-			<div class="form-group" *ngIf="!modeIsEnum()">
-				<label>Action:</label>
-				<select (change)="selectionChanged($event);" selector="mode" 
-					[ngModel]="cfg.mappings.activeMapping.transition.mode">
-					<option value="{{modes.MAP}}">Map</option>
-					<option value="{{modes.SEPARATE}}">Separate</option>
-				</select>
-			</div>
-			<div class="form-group" *ngIf="cfg.mappings.activeMapping.transition.mode == modes.SEPARATE">
-				<label>Separator:</label>
-				<select (change)="selectionChanged($event);" selector="separator" 
-					[ngModel]="cfg.mappings.activeMapping.transition.delimiter">
-					<option value="{{delimeters.SPACE}}">Space</option>
-					<option value="{{delimeters.COMMA}}">Comma</option>
-				</select>
+		<div class="mappingFieldContainer TransitionSelector">
+			<div class="MappingFieldSection" *ngIf="cfg.mappings.activeMapping">
+				<div *ngIf="modeIsEnum()">
+					<label>{{ getMappedValueCount() }} values mapped</label>
+					<a (click)="showLookupTable()"><i class="fa fa-edit"></i></a>
+				</div>
+				<div *ngIf="!modeIsEnum()">					
+					<label>Action</label>
+					<select (change)="selectionChanged($event);" selector="mode" 
+						[ngModel]="cfg.mappings.activeMapping.transition.mode">
+						<option value="{{modes.MAP}}">Map</option>
+						<option value="{{modes.SEPARATE}}">Separate</option>
+					</select>
+				</div>
+				<div *ngIf="cfg.mappings.activeMapping.transition.mode == modes.SEPARATE" style="margin-top:10px;">
+					<label>Separator:</label>
+					<select (change)="selectionChanged($event);" selector="separator" 
+						[ngModel]="cfg.mappings.activeMapping.transition.delimiter">
+						<option value="{{delimeters.SPACE}}">Space</option>
+						<option value="{{delimeters.COMMA}}">Comma</option>
+					</select>
+				</div>
 			</div>
 		</div>
 	`

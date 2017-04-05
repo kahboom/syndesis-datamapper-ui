@@ -16,6 +16,7 @@
 
 import { Field } from './field.model';
 import { MappingModel } from './mapping.model';
+import { TransitionModel, TransitionMode } from './transition.model';
 
 export class DocumentInitializationConfig {
     documentIdentifier: string;
@@ -320,12 +321,16 @@ export class DocumentDefinition {
             field.hasUnmappedChildren = false;
         }
         for (let mapping of mappings) {
+            var partOfTransformation: boolean = (mapping.transition.mode == TransitionMode.SEPARATE)
+                || (mapping.transition.mode == TransitionMode.ENUM);
             var fieldPaths: string[] = this.isSource ? mapping.inputFieldPaths : mapping.outputFieldPaths;
             for (let field of this.getFields(fieldPaths)) {
                 field.partOfMapping = true;   
+                field.partOfTransformation = partOfTransformation;
                 var parentField: Field = field.parentField;
                 while (parentField != null) {
                     parentField.partOfMapping = true; 
+                    parentField.partOfTransformation = partOfTransformation;
                     parentField = parentField.parentField;
                 }
             }
