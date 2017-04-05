@@ -4,35 +4,44 @@ var mkdirp = require('mkdirp');
 
 ncp.limit = 16;
 
-function copyLibrary(libName) {
-	var srcPath = "src/app/lib/" + libName;
-	var destPath = "./aot/dist/lib/" + libName;
-
-	console.log("Copying lib: " + libName);
-	mkdirp.sync(destPath, function (err) {
+function mkdir(path) {
+	console.log("Creating directory: " + path)
+	mkdirp.sync(path, function (err) {
     	if (err) console.error(err)
     	else console.log('lib dir created.')
 	});
+}
 
-	ncp(srcPath, destPath, function (err) {
+function copyFile(sourcePath, targetPath) {
+	fs.createReadStream(sourcePath).pipe(fs.createWriteStream(targetPath));
+}
+
+function copyPath(sourcePath, targetPath) {
+	console.log("Copying folder: " + sourcePath + " => " + targetPath);
+	mkdir(targetPath);
+	ncp(sourcePath, targetPath, function (err) {
 		if (err) {
-			return console.error(err);
+			return console.error("Could not copy folder: " + sourcePath, err);
 		}
-		console.log('lib files copied.');
+		console.log('Folder copied: ' + sourcePath);
 	});
+}
+
+function copyLibrary(libName) {	
+	var sourcePath = "src/app/lib/" + libName;
+	var targetPath = "./aot/dist/lib/" + libName;
+	copyPath(sourcePath, targetPath);	
 }
 
 copyLibrary("font-awesome-4.7.0");
 copyLibrary("patternfly-3.19.0");
    
-function copyFile(sourcePath, targetPath) {
-	fs.createReadStream(sourcePath).pipe(fs.createWriteStream(targetPath));
-}
 
 var resources = [
   'node_modules/core-js/client/shim.min.js',
   'node_modules/zone.js/dist/zone.min.js',
 ];
+
 resources.map(function(f) {
   var path = f.split('/');
   var t = 'aot/dist/' + path[path.length-1];
@@ -40,8 +49,5 @@ resources.map(function(f) {
 });
 
 copyFile("src/index-aot.html", "aot/dist/index.html");
+copyPath("src/assets", "aot/dist/assets");
 
-mkdirp.sync("aot/dist/app/lib/ipaas-data-mapper/", function (err) {
-    	if (err) console.error(err)
-    	else console.log('lib dir created.')
-});

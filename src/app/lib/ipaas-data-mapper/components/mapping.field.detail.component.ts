@@ -25,14 +25,10 @@ import { DocumentDefinition } from '../models/document.definition.model';
 	selector: 'mapping-field-detail',
 	template: `
 	  	<div class='fieldDetail' *ngIf="docDef && docDef.fields && docDef.fieldPaths" style="margin-bottom:5px;">	  		
-	  		<div style="float:left; width:calc(100% - 25px);">
-   				<input type="text" [(ngModel)]="selectedFieldPath"  [typeahead]="dataSource" typeaheadWaitMs="200" 
+	  		<div style="width:100%;">
+   				<input type="text" [(ngModel)]="selectedFieldPath" [typeahead]="dataSource" typeaheadWaitMs="200" 
    					(typeaheadOnSelect)="selectionChanged($event)">
-   			</div>
-   			<div stlye="float:right">
-	   			<a (click)="remove($event)"><i class="fa fa-trash" aria-hidden="true"></i></a>
-   			</div>
-   			<div style="clear:both; height:0px;">&nbsp;</div>
+   			</div>   			
 	  	</div>
     `
 })
@@ -45,29 +41,41 @@ export class MappingFieldDetailComponent {
 	private lastFieldPath: string;
 	private dataSource: Observable<any>;
 
+	public getSelectedFieldPath(): string {
+		var field: Field = this.docDef.getField(this.selectedFieldPath);
+		var fieldPath: string = field.path;
+		if (fieldPath != "[None]" && this.cfg.showMappingDataType) {
+			fieldPath = fieldPath + " (" + field.type + ")";
+		}
+		return fieldPath;
+	}
+
 	public constructor() {
 		this.dataSource = Observable.create((observer: any) => {
 			observer.next(this.executeSearch(this.selectedFieldPath));
 		});
 	}
 
-	remove(event: MouseEvent): void {
-		this.cfg.mappingService.removeMappedField(this.selectedFieldPath, this.docDef.isSource);
-		this.cfg.mappingService.saveCurrentMapping();
-	}
-
 	selectionChanged(event: any):void {	
 		if (this.lastFieldPath == null) {
 			this.lastFieldPath = this.originalSelectedFieldPath;
 		}
-		this.cfg.mappingService.removeMappedField(this.lastFieldPath, this.docDef.isSource);
-		var fieldPath: string = event.item;
+		var fieldPath: string = this.extractFieldPath(this.lastFieldPath);
+		this.cfg.mappingService.removeMappedField(fieldPath, this.docDef.isSource);
+		fieldPath = this.extractFieldPath(event.item);
 		if (fieldPath != this.docDef.getNoneField().path) {
 			this.cfg.mappingService.addMappedField(fieldPath, this.docDef.isSource);
 			this.lastFieldPath = fieldPath;
 		}
 		console.log("Attempting to save current mapping, mapping detail selection changed.");
 		this.cfg.mappingService.saveCurrentMapping();
+	}
+
+	private extractFieldPath(fieldPath: string): string {
+		if (fieldPath.indexOf(" (") != -1) {
+			fieldPath = fieldPath.substr(0, fieldPath.indexOf(" ("));
+		}
+		return fieldPath;
 	}
 
 	public executeSearch(filter: string): string[] {

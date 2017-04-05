@@ -33,7 +33,10 @@ import { DocumentManagementService } from '../services/document.management.servi
 	  	<div #documentDefinitionElement class='docDef' *ngIf="docDef.initCfg.initialized" 
             style="height:calc(100% - 25px); overflow:hidden;">
   			<div class="card-pf-heading">
-				<h2 class="card-pf-title">{{docDef.name}}</h2>
+				<h2 class="card-pf-title">
+                    <i class="fa {{ docDef.isSource ? 'fa-hdd-o' : 'fa-download' }}"></i>
+                    {{docDef.name}}
+                </h2>
                 <a class="searchBoxIcon" (click)="toggleSearch()">
                     <i class="fa fa-search" [attr.style]="searchIconStyle"></i>
                 </a>

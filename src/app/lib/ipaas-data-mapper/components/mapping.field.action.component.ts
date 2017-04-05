@@ -24,7 +24,7 @@ import { ConfigModel } from '../models/config.model';
 	selector: 'mapping-field-action',
 	template: `
 		<div *ngIf="isSource == false && cfg.mappings.activeMapping.transition.isSeparateMode()" 
-			class="form-group" style="margin-right:22px;">
+			style="margin-right:22px; margin-top:10px;">
 			<label>Transformation</label>
 			<div>
 				<label style="width:32px; font-weight:normal; margin-left:2px;">Index:</label>
