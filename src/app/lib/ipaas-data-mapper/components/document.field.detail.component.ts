@@ -38,7 +38,7 @@ import { LineMachineComponent } from './line.machine.component';
 					</div>
 					<div class="spacer" [attr.style]="getSpacerWidth()">&nbsp;</div>
 					<div *ngIf="!field.isTerminal()" style="display:inline-block;">					
-						<i [attr.class]="parentToggleClass"></i>
+						<i [attr.class]="getParentToggleClass()"></i>
 						<i class="fa fa-folder parentFolder"></i>
 					</div>
 					<div *ngIf="field.isTerminal()" style="display:inline-block;">					
@@ -66,8 +66,6 @@ export class DocumentFieldDetailComponent {
 	@Input() docDef: DocumentDefinition;
 	@Input() field: Field;	
 	@Input() lineMachine: LineMachineComponent;
-
-	private parentToggleClass: string = "arrow fa fa-angle-right";
 
 	@ViewChild('fieldDetailElement') fieldDetailElement:ElementRef;
 	@ViewChildren('fieldDetail') fieldComponents: QueryList<DocumentFieldDetailComponent>;
@@ -125,6 +123,10 @@ export class DocumentFieldDetailComponent {
 		}
 	}
 
+	public getParentToggleClass() {
+		return "arrow fa fa-angle-" + (this.field.collapsed ? "right" : "down");
+	}
+
 	public handleMouseClick(event: MouseEvent): void {
 		if (this.field.isTerminal()) {			
 			if (this.field.selected) {
@@ -143,7 +145,6 @@ export class DocumentFieldDetailComponent {
 		} else { //parent field
 			this.docDef.populateChildren(this.field);
 			this.field.collapsed = !this.field.collapsed;
-			this.parentToggleClass = "arrow fa fa-angle-" + (this.field.collapsed ? "right" : "down");
 		}		
 	}	
 
