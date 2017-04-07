@@ -68,7 +68,9 @@ export class DocumentManagementService {
 	public initialize(): void {
 		this.cfg.mappingService.mappingUpdated$.subscribe(mappingDefinition => {
 			for (var d of this.cfg.getAllDocs()) {
-				d.updateFromMappings(this.cfg.mappings.mappings);
+				if (d.initCfg.initialized) {
+					d.updateFromMappings(this.cfg.mappings.mappings);
+				}
 			}
 		});		
 	}	

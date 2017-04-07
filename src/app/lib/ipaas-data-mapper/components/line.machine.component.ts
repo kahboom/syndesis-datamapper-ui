@@ -144,6 +144,7 @@ export class LineMachineComponent {
     }
 
 	public activeMappingChanged(mappingIsNew: boolean): void {
+		mappingIsNew = false;
 		if (!mappingIsNew) {
 			console.log("active line drawing turned off");
 			this.drawingLine = false;
@@ -179,6 +180,9 @@ export class LineMachineComponent {
 	}
 
 	public redrawLinesForMappings(): void {
+		if (!this.cfg.initCfg.initialized) {
+			return;
+		}
 		if (!this.cfg.mappings.activeMapping) {
 			this.setLineBeingFormed(null);
 		}
