@@ -35,9 +35,9 @@ import { DocumentDefinitionComponent } from './components/document.definition.co
 
 import { MappingFieldDetailComponent } from './components/mapping.field.detail.component';
 import { MappingFieldActionComponent } from './components/mapping.field.action.component';
-import { MappingDetailComponent, MappingDetailHeaderComponent,
+import { MappingDetailComponent, MappingDetailHeaderComponent, 
 	MappingFieldSectionComponent } from './components/mapping.detail.component';
-import { MappingSelectionComponent } from './components/mapping.selection.component';
+import { MappingSelectionComponent, MappingSelectionSectionComponent } from './components/mapping.selection.component';
 
 import { DataMapperAppComponent } from './components/data.mapper.app.component';
 import { DataMapperAppExampleHostComponent } from './components/data.mapper.example.host.component';
@@ -59,10 +59,10 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 
 
 @NgModule({
-	imports: [
-		CommonModule,
-		HttpModule,
-		FormsModule,
+	imports: [ 
+		CommonModule, 
+		HttpModule, 
+		FormsModule, 
 		TypeaheadModule.forRoot()
 	],
 	declarations: [
@@ -80,6 +80,7 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 		TransitionSelectionComponent,
 		LineMachineComponent,
 		MappingSelectionComponent,
+		MappingSelectionSectionComponent,
 		ToolbarComponent,
 		LookupTableComponent
 	],
