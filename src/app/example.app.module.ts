@@ -24,8 +24,6 @@ import { AppComponent } from './app.component';
 
 import { DataMapperModule } from './lib/ipaas-data-mapper/data.mapper.module';
 
-import { TypeaheadModule } from 'ng2-bootstrap';
-
 @NgModule({
   declarations: [
     AppComponent
@@ -34,7 +32,6 @@ import { TypeaheadModule } from 'ng2-bootstrap';
     BrowserModule,
     FormsModule,
     HttpModule,
-    TypeaheadModule.forRoot(),
     RouterModule.forRoot([]),
     DataMapperModule
   ],

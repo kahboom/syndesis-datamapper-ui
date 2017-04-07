@@ -82,6 +82,7 @@ export class DocumentDefinition {
             return this.getNoneField();
         }
         var field: Field = this.fieldsByPath[fieldPath];
+        //if we can't find the field we're looking for, find parent fields and populate their children
         if (field == null && (fieldPath.indexOf(this.pathSeparator) != -1)) {
             var originalPath: string = fieldPath;
             var currentParentPath: string = null;
@@ -91,8 +92,8 @@ export class DocumentDefinition {
                 console.log("Populating children for '" + currentParentPath + "' (from: " + fieldPath + ")");
                 var parentField: Field = this.fieldsByPath[currentParentPath];
                 if (parentField == null) {
-                    console.error("Could not populate parent field with path '" + currentParentPath + "' (for: " + fieldPath + ")");
-                    return null;
+                    throw new Error("Could not populate parent field with path '" 
+                        + currentParentPath + "' (for: " + fieldPath + ")")
                 }
                 this.populateChildren(parentField);
                 if (originalPath.indexOf(this.pathSeparator) != -1) {

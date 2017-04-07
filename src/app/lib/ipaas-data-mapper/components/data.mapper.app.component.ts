@@ -84,12 +84,7 @@ export class DataMapperAppComponent implements OnInit {
 			this.mappingDetailComponent.modalWindow = this.modalWindow;		
 		});	
 	}        
-
-	private getInitializationErrorStyle() {
-		var css: string = this.cfg.initCfg.initializationErrorOccurred ? "color:red;" : "color: default;";
-		return this.sanitizer.bypassSecurityTrustStyle(css);
-	}
-
+	
 	public getSystemInitializedStyle() {
 		var css: string = "display:hidden; height:0px;";
 		if (this.cfg && this.cfg.initCfg.initialized) {
@@ -105,14 +100,23 @@ export class DataMapperAppComponent implements OnInit {
 		this.modalWindow.nestedComponentInitializedCallback = (mw: ModalWindowComponent) => {
 			var self: DataMapperAppComponent = mw.parentComponent as DataMapperAppComponent;
 			var c: MappingSelectionComponent = mw.nestedComponent as MappingSelectionComponent;
+			for (let d of self.cfg.getAllDocs()) {
+				var selectedFields: Field[] = d.getSelectedFields();
+				if (selectedFields.length == 1) {
+					c.selectedField = selectedFields[0];
+					c.selectedFieldIsSource = d.isSource;
+					break;
+				}
+			}
+			c.cfg = self.cfg;
 			c.mappings = mappingsForField;
-			c.selectedMapping = mappingsForField[0];
+			c.modalWindow = this.modalWindow;
 		};
 		this.modalWindow.nestedComponentType = MappingSelectionComponent;	
 		this.modalWindow.okButtonHandler = (mw: ModalWindowComponent) => {
 			var self: DataMapperAppComponent = mw.parentComponent as DataMapperAppComponent;
 			var c: MappingSelectionComponent = mw.nestedComponent as MappingSelectionComponent;
-			var mapping: MappingModel = c.selectedMapping;
+			var mapping: MappingModel = c.getSelectedMapping();
 			self.cfg.mappingService.selectMapping(mapping, false);
 		};
 		this.modalWindow.cancelButtonHandler = (mw: ModalWindowComponent) => {
@@ -132,10 +136,8 @@ export class DataMapperAppComponent implements OnInit {
 		var self = component.parentComponent as DataMapperAppComponent;
 		if ("showDetails" == action) {
 			if (self.cfg.mappings.activeMapping == null) {
-				console.log("Creating new mapping.")
-				this.cfg.mappingService.deselectMapping();
-				this.cfg.mappings.activeMapping = new MappingModel();
-				this.cfg.mappingService.notifyActiveMappingUpdated(true);
+				console.log("Creating new mapping.")				
+				self.cfg.mappingService.selectMapping(new MappingModel(), true);
 			}
 			self.cfg.showMappingDetailTray = !self.cfg.showMappingDetailTray;
 		} else if ("showLines" == action) {
