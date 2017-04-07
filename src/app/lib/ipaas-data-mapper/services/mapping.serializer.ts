@@ -177,23 +177,25 @@ export class MappingSerializer {
   		return mappings;
 	}
 
-	public static deserializeLookupTables(jsonMappings: any[]): LookupTable[] {
+	public static deserializeLookupTables(jsonMapping: any): LookupTable[] {
 		var tables: LookupTable[] = [];
-		for (let jsonMapping of jsonMappings) {	
-			for (let t of jsonMapping.AtlasMapping.lookupTables.lookupTable) {
-				var table: LookupTable = new LookupTable();
-				table.name = t.name;
-				for (let entry of t.lookupEntryList.lookupEntry) {
-					var parsedEntry: LookupTableEntry = new LookupTableEntry();
-					parsedEntry.sourceValue = entry.sourceValue;
-					parsedEntry.sourceType = entry.sourceType;
-					parsedEntry.targetValue = entry.targetValue;
-					parsedEntry.targetType = entry.targetType;
-					table.entries.push(parsedEntry);
-				}				
-				console.log("parsed table:" + table.toString());
-				tables.push(table);
-			}
+		if (!jsonMapping.AtlasMapping || !jsonMapping.AtlasMapping.lookupTables
+			|| !jsonMapping.AtlasMapping.lookupTables.lookupTable) {
+			return tables;
+		}
+		for (let t of jsonMapping.AtlasMapping.lookupTables.lookupTable) {
+			var table: LookupTable = new LookupTable();
+			table.name = t.name;
+			for (let entry of t.lookupEntryList.lookupEntry) {
+				var parsedEntry: LookupTableEntry = new LookupTableEntry();
+				parsedEntry.sourceValue = entry.sourceValue;
+				parsedEntry.sourceType = entry.sourceType;
+				parsedEntry.targetValue = entry.targetValue;
+				parsedEntry.targetType = entry.targetType;
+				table.entries.push(parsedEntry);
+			}				
+			console.log("parsed table:" + table.toString());
+			tables.push(table);
 		}
 		return tables;
 	}

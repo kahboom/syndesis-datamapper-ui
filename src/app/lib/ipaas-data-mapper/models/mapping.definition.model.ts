@@ -25,6 +25,7 @@ export class MappingDefinition {
 	public mappings: MappingModel[] = [];	
 	public activeMapping: MappingModel = null;
 
+	private tables: LookupTable[] = [];
 	private tablesBySourceTargetKey: { [key:string]:LookupTable; } = {};
 	private tablesByName: { [key:string]:LookupTable; } = {};
 
@@ -35,6 +36,7 @@ export class MappingDefinition {
 	public addTable(table: LookupTable): void {
 		this.tablesBySourceTargetKey[table.getInputOutputKey()] = table;
 		this.tablesByName[table.name] = table;
+		this.tables.push(table);
 	}
 
 	public getTableByName(name: string): LookupTable {

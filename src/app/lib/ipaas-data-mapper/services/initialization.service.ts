@@ -130,6 +130,7 @@ export class InitializationService {
 			this.cfg.initCfg.loadingStatus = "Initialization complete.";
 			this.cfg.initCfg.initialized = true; 
 			this.systemInitializedSource.next();
+			console.log("Loaded mappings.", this.cfg.mappings);
 			console.log("System finished initializing.");
 		}
 		
