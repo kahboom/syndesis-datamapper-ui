@@ -14,50 +14,133 @@
 	limitations under the License.
 */
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewChildren, ElementRef, QueryList, } from '@angular/core';
+
 import { MappingModel } from '../models/mapping.model';
+import { ConfigModel } from '../models/config.model';
+import { Field } from '../models/field.model';
+
+import { ModalWindowComponent } from './modal.window.component';
+
+@Component({
+	selector: 'mapping-selection-section',
+	template: `
+		<div [attr.class]="getClass()" (click)="handleMouseClick($event)">			
+			<div class="numberWrapper"><div class="number">{{ outputNumber + 1 }}</div></div>
+			<div class="pathContainer" *ngFor="let path of getPaths()">
+				<div class="path">{{ getFormattedOutputPath(path, false) }}</div>
+				<div class="fieldName">{{ getFormattedOutputPath(path, true) }}</div>
+				<div style="clear:both; height:0px;"></div>
+			</div>
+			<div style="clear:both; height:0px;"></div>
+		</div>
+	`
+})
+
+export class MappingSelectionSectionComponent {
+	@Input() outputNumber: number;
+	@Input() mapping: MappingModel;
+	@Input() selectedCallback: Function;
+	@Input() selected: boolean = false;
+	@Input() selectedFieldIsSource: boolean = false;
+	@Input() parentComponent: Component;
+
+	public getClass(): string {
+		return "MappingSelectionSection" + (this.selected ? " SelectedMappingSelectionSection" : "");
+	}
+
+	public getPaths(): string[] {
+		return this.selectedFieldIsSource ? this.mapping.outputFieldPaths : this.mapping.inputFieldPaths;
+	}
+
+	public getFormattedOutputPath(path: string, nameOnly:boolean) {
+		path = path.replace(".", "/");
+		var index: number = path.lastIndexOf("/");
+		var fieldName: string = (index == -1) ? path : path.substr(path.lastIndexOf("/") + 1);
+		path = (index == -1) ? "" : path.substr(0, path.lastIndexOf("/") + 1)
+		return nameOnly ? fieldName: path;
+	}
+	
+	public handleMouseClick(event: MouseEvent) {
+		this.selectedCallback(this);
+	}
+}
 
 @Component({
 	selector: 'mapping-selection',
 	template: `
-		<div class="MappingSelectionComponent" *ngIf="selectedMapping">
-			<table>
-				<tr class="headers">
-					<th class="radios"></th>
-					<th class="inputFields">Source</th>
-					<th class="outputFields">Target</th>
-				</tr>
-				<tr *ngFor="let m of mappings; let i = index; let odd=odd; let even=even;" 
-					[class]="odd ? 'odd' : 'even'">				
-					<td class="radios">
-						<input name="options" type="radio" 
-							[attr.value]="m.uuid"
-							[attr.checked]="selectedMapping.uuid == m.uuid ? 'checked' : null"
-							(click)="selectionChanged($event)" /><br/>
-					</td>
-					<td class="inputFields">
-						<div class="inputField" *ngFor="let field of m.inputFieldPaths">{{field}}</div>
-					</td>
-					<td class="outputFields">
-						<div class="outputField" *ngFor="let field of m.outputFieldPaths">{{field}}</div>
-					</td>
-				</tr>	
-			</table>		
+		<div class="MappingSelectionComponent" *ngIf="mappings">
+			<div class="header">
+				<div class="sourceTargetHeader">{{ selectedFieldIsSource ? 'Source' : 'Target' }}</div>
+				<div class="pathHeader">
+					<div class="path">{{ getFormattedOutputPath(selectedField.path, false) }}</div>
+					<div class="fieldName">{{ getFormattedOutputPath(selectedField.path, true) }}</div>
+					<div style="clear:both; height:0px;"></div>
+				</div>
+				<div style="clear:both; height:0px;"></div>
+				<a (click)="addMapping()"><i class="fa fa-plus"></i>Add New Mapping</a>
+			</div>
+			<mapping-selection-section *ngFor="let mapping of mappings; let i = index; let odd=odd; let even=even;"
+				[mapping]="mapping" [outputNumber]="i" [selected]="i == 0" [selectedCallback]="selectionChanged" 
+				[selectedFieldIsSource]="selectedFieldIsSource" [parentComponent]="this" #mappingSection>
+			</mapping-selection-section>					
 		</div>
 	`
 })
 
 export class MappingSelectionComponent {
-	@Input() mappings: MappingModel[];
-	@Input() selectedMapping: MappingModel;
+	public modalWindow: ModalWindowComponent;
+	public mappings: MappingModel[];
+	public selectedFieldIsSource: boolean = false;
+	public selectedField: Field = null;
+	public cfg: ConfigModel;
+	private selectedMappingComponent: MappingSelectionSectionComponent = null;
 
-	selectionChanged(event: MouseEvent) {
-		var eventTarget: any = event.target;
-		for (let m of this.mappings) {
-			if (m.uuid == eventTarget.value) {
-				this.selectedMapping = m;
-				break;
+	@ViewChildren('mappingSection') sectionComponents: QueryList<MappingSelectionSectionComponent>;    
+
+	selectionChanged(c: MappingSelectionSectionComponent) {
+		var self: MappingSelectionComponent = c.parentComponent as MappingSelectionComponent;
+		console.log("c", c);
+		console.log("self", self);
+		var oldSelectedItem: MappingSelectionSectionComponent = self.getSelectedMappingComponent();
+		oldSelectedItem.selected = false;
+		c.selected = true;
+		self.selectedMappingComponent = c;
+	}
+
+	public getFormattedOutputPath(path: string, nameOnly:boolean) {
+		path = path.replace(".", "/");
+		var index: number = path.lastIndexOf("/");
+		var fieldName: string = (index == -1) ? path : path.substr(path.lastIndexOf("/") + 1);
+		path = (index == -1) ? "" : path.substr(0, path.lastIndexOf("/") + 1)
+		return nameOnly ? fieldName: path;
+	}
+
+	public addMapping() {
+		console.log("Creating new mapping.")
+		var m: MappingModel = new MappingModel();
+		if (this.selectedFieldIsSource) {
+			m.inputFieldPaths.push(this.selectedField.path);
+		} else {
+			m.outputFieldPaths.push(this.selectedField.path);
+		}
+		this.cfg.mappingService.selectMapping(m, true);
+		this.modalWindow.close();
+	}
+
+	private getSelectedMappingComponent(): MappingSelectionSectionComponent {
+		if (this.selectedMappingComponent == null) {
+			for (let c of this.sectionComponents.toArray()) {
+				if (c.selected) {
+					this.selectedMappingComponent = c;
+					break;
+				}
 			}
 		}
+		return this.selectedMappingComponent;
+	}
+
+	public getSelectedMapping(): MappingModel {
+		return this.getSelectedMappingComponent().mapping;
 	}
 }

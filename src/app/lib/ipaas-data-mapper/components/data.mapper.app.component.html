@@ -6,7 +6,7 @@
       <div class="row"><data-mapper-error #errorPanel [errorService]="cfg.errorService"></data-mapper-error></div>
       <div class="row"><div class="col-md-12" style="min-height:0px;"><modal-window #modalWindow></modal-window></div></div>
       <toolbar [buttonClickedHandler]="buttonClickedHandler" #toolbarComponent [cfg]="cfg"></toolbar>
-      <div class="row" style='height:100%; position:relative;'>                         
+      <div class="row" style='height:calc(100% - 40px); position:relative;'>                         
         <div class="col-md-9" style='height:100%; padding:0;'>      
           <div style="float:left; width:40%; padding-left:10px; height:100%;">
             <document-definition #docDefInput [cfg]="cfg"
@@ -31,7 +31,7 @@
       </div>
     </div>
     <div class="DataMapperLoadingMessage" *ngIf="!cfg.initCfg.initialized">
-      <label [attr.style]="getInitializationErrorStyle()">{{cfg.initCfg.loadingStatus}}</label>
+      <label [attr.class]="this.cfg.initCfg.initializationErrorOccurred ? 'error' : ''">{{cfg.initCfg.loadingStatus}}</label>
       <span class="spinner spinner-xs spinner-inline" *ngIf="!cfg.initCfg.initializationErrorOccurred"></span>
     </div>
   </div>  
