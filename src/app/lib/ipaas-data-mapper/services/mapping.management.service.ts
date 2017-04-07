@@ -175,13 +175,14 @@ export class MappingManagementService {
 	}
 
 	public saveCurrentMapping(): void {
-		var m: MappingModel = this.cfg.mappings.activeMapping;
-		var wasSaved: boolean = this.removeMappingInternal(m);
-		var addCurrentMapping: boolean = true;
+		var m: MappingModel = this.cfg.mappings.activeMapping;		
 		if (m == null) {
 			console.log("Not saving current mapping. No current mapping selected.");
-			addCurrentMapping = false;
+			return;
 		} 
+
+		var wasSaved: boolean = this.removeMappingInternal(m);
+		var addCurrentMapping: boolean = true;
 
 		var hasInputField: boolean = false;
 		for (let fieldPath of m.inputFieldPaths) {
@@ -413,7 +414,7 @@ export class MappingManagementService {
 			this.cfg.sourceDocs[0].selectFields(m.inputFieldPaths);
 			this.cfg.targetDocs[0].selectFields(m.outputFieldPaths);
 		}
-		this.activeMappingChangedSource.next(mappingIsNew);	
+		this.notifyActiveMappingUpdated(mappingIsNew);	
 	}
 
 	public getFieldPaths(fields: Field[]): string[] {
