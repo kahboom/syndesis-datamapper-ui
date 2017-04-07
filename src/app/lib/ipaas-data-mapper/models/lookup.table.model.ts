@@ -42,6 +42,10 @@ export class LookupTable {
     entries: LookupTableEntry[] = [];
     sourceIdentifier: string;
     targetIdentifier: string;
+
+    constructor() {
+        this.name = (new Date().getTime() + "-" + Math.floor(Math.random()*1000000).toString());
+    }
     
     public getInputOutputKey(): string {
         return this.sourceIdentifier + ":" + this.targetIdentifier;

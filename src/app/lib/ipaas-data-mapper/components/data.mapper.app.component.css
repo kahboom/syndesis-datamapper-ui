@@ -100,8 +100,10 @@
 .mappingFieldContainer { padding:0px 10px; }
 .mappingFieldContainer .linkContainer { width:100%; text-align:right; padding-right:15px; padding-bottom:15px; }
 
-.LookupTableComponent LABEL { width:100px; margin-right:10px; }
-.LookupTableComponent SELECT { width:200px; }
+.LookupTableComponent { }
+.LookupTableComponent .lookupTableRow { margin:0px 10px 10px 5px; border-bottom:1px solid #8b8d8f; padding:5px 0px; }
+.LookupTableComponent LABEL { width:150px; margin-right:20px; overflow:hidden; color:#7cdbf3; vertical-align:bottom; }
+.LookupTableComponent SELECT { width:200px; color:#393f44; vertical-align:super; background-color:#fafafa; }
 
 
 .fieldMappingDetail A.small-primary {
@@ -123,6 +125,7 @@
 
 .TransitionSelector { }
 .TransitionSelector LABEL { width:100%; }
+.TransitionSelector .enumSection LABEL { width:calc(100% - 25px); }
 .TransitionSelector SELECT { display:block; width:100%; }
 
 .DataMapperUI .fill { height:83%; margin:0px; padding:0px; width:100%; }
