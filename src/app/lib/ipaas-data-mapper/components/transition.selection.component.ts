@@ -29,7 +29,7 @@ import { LookupTableComponent } from './lookup.table.component';
 	template: `
 		<div class="mappingFieldContainer TransitionSelector">
 			<div class="MappingFieldSection" *ngIf="cfg.mappings.activeMapping">
-				<div *ngIf="modeIsEnum()">
+				<div *ngIf="modeIsEnum()" class="enumSection">
 					<label>{{ getMappedValueCount() }} values mapped</label>
 					<a (click)="showLookupTable()"><i class="fa fa-edit"></i></a>
 				</div>
