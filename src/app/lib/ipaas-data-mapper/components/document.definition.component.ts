@@ -33,7 +33,7 @@ import { DocumentManagementService } from '../services/document.management.servi
 	  	<div #documentDefinitionElement class='docDef' *ngIf="docDef.initCfg.initialized" 
             style="height:calc(100% - 25px); overflow:hidden;">
   			<div class="card-pf-heading">
-				<h2 class="card-pf-title">
+				<h2 class="card-pf-title" tooltip="{{docDef.fullyQualifiedName}}" placement="bottom">
                     <i class="fa {{ docDef.isSource ? 'fa-hdd-o' : 'fa-download' }}"></i>
                     {{docDef.name}}
                 </h2>
