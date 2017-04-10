@@ -24,8 +24,8 @@ import { DOCUMENT, DomSanitizer, SafeResourceUrl, SafeUrl, SafeStyle} from '@ang
 @Component({
 	selector: 'modal-window',
 	template: `
-		<div id="modalWindow" class="modalWindow" *ngIf="visible" [attr.style]="modalStyle">
-			<div class="modal-content">
+		<div id="modalWindow" class="modalWindow" *ngIf="visible" [attr.style]="modalStyle">			
+			<div class="modal-content">				
 				<div class="modal-header">
 					<a (click)="closeClicked($event)"><span class='close'><i class="fa fa-close"></i></span></a>
 					{{headerText}}

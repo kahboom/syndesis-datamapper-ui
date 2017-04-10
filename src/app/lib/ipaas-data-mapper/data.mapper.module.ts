@@ -19,6 +19,7 @@ import { CommonModule } from '@angular/common';
 import { HttpModule } from '@angular/http';
 import { FormsModule } from '@angular/forms';
 import { TypeaheadModule } from 'ng2-bootstrap';
+import { TooltipModule } from 'ng2-bootstrap';
 
 import { DocumentManagementService } from './services/document.management.service';
 import { MappingManagementService } from './services/mapping.management.service';
@@ -63,7 +64,8 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 		CommonModule, 
 		HttpModule, 
 		FormsModule, 
-		TypeaheadModule.forRoot()
+		TypeaheadModule.forRoot(),
+		TooltipModule.forRoot()
 	],
 	declarations: [
 		DataMapperAppComponent,

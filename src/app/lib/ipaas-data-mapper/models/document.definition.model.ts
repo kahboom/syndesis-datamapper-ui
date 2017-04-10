@@ -29,6 +29,7 @@ export class DocumentDefinition {
     public initCfg: DocumentInitializationConfig = new DocumentInitializationConfig();
     
     public name: string;
+    public fullyQualifiedName: string;
     public fields: Field[] = [];
     public allFields: Field[] = [];
     public terminalFields: Field[] = [];

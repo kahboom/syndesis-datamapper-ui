@@ -155,7 +155,14 @@ export class DocumentManagementService {
 
 	private extractDocumentDefinitionData(res: Response, docDef: DocumentDefinition): void {	  		
   		let body: any = res.json().ClassInspectionResponse;  
+
   		docDef.name = body.javaClass.className;
+  		//Make doc name the class name rather than fully qualified name
+  		if (docDef.name && docDef.name.indexOf(".") != -1) {
+  			docDef.name = docDef.name.substr(docDef.name.lastIndexOf(".") + 1);
+  		}
+  		
+  		docDef.fullyQualifiedName = body.javaClass.className;
   		if (docDef.name == null) {
   			console.error("Document's className is empty.", body.javaClass);
   		}
