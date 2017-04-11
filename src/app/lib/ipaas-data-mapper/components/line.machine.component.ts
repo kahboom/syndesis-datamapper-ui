@@ -100,6 +100,7 @@ export class LineMachineComponent {
 	}
 
 	public addLine(l: LineModel): void {
+		console.log("Add line", l);
 		this.createLineStyle(l);
 		this.lines.push(l);
 	}
@@ -139,6 +140,7 @@ export class LineMachineComponent {
 		if (!isOutput) {
 			return;
 		}
+		console.log("Drawing current line from mouse over.");
 		var targetY = this.docDefOutput.getFieldDetailComponentPosition(component.field.path).y;
 		this.drawCurrentLine("100%", (targetY + 17).toString());
     }
@@ -146,7 +148,7 @@ export class LineMachineComponent {
 	public activeMappingChanged(mappingIsNew: boolean): void {
 		mappingIsNew = false;
 		if (!mappingIsNew) {
-			console.log("active line drawing turned off");
+			console.log("Mapping is not new, active line drawing turned off.");
 			this.drawingLine = false;
 			this.setLineBeingFormed(null);		
 		} else {
@@ -170,20 +172,26 @@ export class LineMachineComponent {
 					l.sourceY = (pos.y + 17).toString();							
 					this.setLineBeingFormed(l);
 					this.drawingLine = true;
-				}				
+				}			
 			}
 		}
 				
 		// update the mapping line drawing after our fields have redrawn themselves
         // without this, the x/y from the field dom elements is messed up / misaligned.
-        setTimeout(() => { this.redrawLinesForMappings(); }, 1);  
+        setTimeout(() => { 
+        	console.log("Redraw callback!");
+        	this.redrawLinesForMappings(); 
+        }, 1000);  
 	}
 
-	public redrawLinesForMappings(): void {
+	public redrawLinesForMappings(): void {		
 		if (!this.cfg.initCfg.initialized) {
+			console.log("Not drawing lines, system is not yet initialized.");
 			return;
 		}
+		console.log("Drawing lines");
 		if (!this.cfg.mappings.activeMapping) {
+			console.log("No active mapping for line drawing.");
 			this.setLineBeingFormed(null);
 		}
 		this.clearLines();
@@ -191,6 +199,7 @@ export class LineMachineComponent {
 		var activeMapping: MappingModel = this.cfg.mappings.activeMapping;
 		var foundSelectedMapping: boolean = false;
 		for (let m of mappings) {
+			console.log("Drawing line for mapping.", m);
 			foundSelectedMapping = foundSelectedMapping || (m == activeMapping);
 			this.drawLinesForMapping(m);
 		}			
@@ -202,55 +211,62 @@ export class LineMachineComponent {
 	private drawLinesForMapping(m: MappingModel): void {
 		var el: any = this.lineMachineElement.nativeElement;
 		var lineMachineHeight: number = el.offsetHeight;
-		if (m.inputFieldPaths.length && m.outputFieldPaths.length) {
-			//don't draw mapping for this mapping if any of the fields aren't visible
-			for (let inputFieldPath of m.inputFieldPaths) {
-				var inputField: Field = this.cfg.sourceDocs[0].getField(inputFieldPath);
-				if (!inputField) {
-					console.error("Can't find input field, not drawing line: " + inputFieldPath);
-					return;
-				}
-				if (!inputField.visible) {
-					return;
-				}
-			}
-
-			for (let outputFieldPath of m.outputFieldPaths) {
-				var outputField: Field = this.cfg.targetDocs[0].getField(outputFieldPath);
-				if (!outputField) {
-					console.error("Can't find output field, not drawing line: " + outputFieldPath);
-					return;
-				}
-				if (!outputField.visible) {
-					return;
-				}
-			}
-
-			//draw lines for the given mapping
-			for (let inputFieldPath of m.inputFieldPaths) {
-				for (let outputFieldPath of m.outputFieldPaths) {
-					var pos: any = this.docDefInput.getFieldDetailComponentPosition(inputFieldPath);
-					if (pos == null) {
-						continue;
-					}
-					var sourceY: number = pos.y;
-					pos = this.docDefOutput.getFieldDetailComponentPosition(outputFieldPath);
-					if (pos == null) {
-						continue;
-					}
-					var targetY: number = pos.y;
-					if ((sourceY < 18) || (targetY < 18) || (sourceY > (lineMachineHeight - 58))
-						|| (targetY > (lineMachineHeight - 58))) {
-						continue;
-					}
-					var isSelectedMapping: boolean = (this.cfg.mappings.activeMapping == m);
-					var stroke: string = "url(#line-gradient-" + (isSelectedMapping ? "active" : "dormant") + ")";
-					if (this.cfg.showLinesAlways || isSelectedMapping) {
-						this.addLineFromParams("0", (sourceY + 17).toString(), 
-							"100%", (targetY + 17).toString(), stroke);	
-					}
-				}
-			}			
+		if (!m.inputFieldPaths.length || !m.outputFieldPaths.length) {
+			console.log("Not drawing lines for mapping, input or output fields are empty.", m);
+			return;
 		}
+		
+		for (let inputFieldPath of m.inputFieldPaths) {
+			var inputField: Field = this.cfg.sourceDocs[0].getField(inputFieldPath);
+			if (!inputField) {
+				console.error("Can't find input field, not drawing line: " + inputFieldPath);
+				return;
+			}
+			if (!inputField.visible) {
+				console.log("Input field isn't visible, not drawing line: " + inputFieldPath, m);
+				return;
+			}
+		}
+
+		for (let outputFieldPath of m.outputFieldPaths) {
+			var outputField: Field = this.cfg.targetDocs[0].getField(outputFieldPath);
+			if (!outputField) {
+				console.error("Can't find output field, not drawing line: " + outputFieldPath);
+				return;
+			}
+			if (!outputField.visible) {
+				console.log("Output field isn't visible, not drawing line: " + outputFieldPath, m);
+				return;
+			}
+		}
+
+		//draw lines for the given mapping
+		for (let inputFieldPath of m.inputFieldPaths) {
+			for (let outputFieldPath of m.outputFieldPaths) {
+				var pos: any = this.docDefInput.getFieldDetailComponentPosition(inputFieldPath);
+				if (pos == null) {
+					console.log("Cant find screen position for input field, not drawing line: " + inputFieldPath);
+					continue;
+				}
+				var sourceY: number = pos.y;
+				pos = this.docDefOutput.getFieldDetailComponentPosition(outputFieldPath);
+				if (pos == null) {
+					console.log("Cant find screen position for output field, not drawing line: " + outputFieldPath);
+					continue;
+				}
+				var targetY: number = pos.y;
+				if ((sourceY < 18) || (targetY < 18) || (sourceY > (lineMachineHeight - 58))
+					|| (targetY > (lineMachineHeight - 58))) {
+					console.log("Not drawing line, line coords are out of bounds.", { "sourceY": sourceY, "targetY": targetY} );
+					continue;
+				}
+				var isSelectedMapping: boolean = (this.cfg.mappings.activeMapping == m);
+				var stroke: string = "url(#line-gradient-" + (isSelectedMapping ? "active" : "dormant") + ")";
+				if (this.cfg.showLinesAlways || isSelectedMapping) {
+					this.addLineFromParams("0", (sourceY + 17).toString(), 
+						"100%", (targetY + 17).toString(), stroke);	
+				}
+			}
+		}			
 	}
 }

@@ -37,14 +37,18 @@ export class InitializationService {
 	systemInitialized$ = this.systemInitializedSource.asObservable();	
 	
 	public initialize(): void {
+		console.log("Data Mapper UI is now initializing.");
 		this.cfg.documentService.initialize();
 		this.cfg.mappingService.initialize();
 
 		//load documents
 		if (this.cfg.initCfg.classPath) {
+			console.log("Classpath already provided, skipping Maven loading.");
 			this.fetchDocuments();
 		} else {
+			console.log("Loading class path from Maven.");
 			this.cfg.initCfg.loadingStatus = "Loading Maven class path.";
+			console.log(this.cfg.initCfg.loadingStatus);
 			//fetch class path		
 			this.cfg.documentService.fetchClassPath().subscribe(
 				(classPath: string) => { 
@@ -82,7 +86,7 @@ export class InitializationService {
 		for (let docDef of this.cfg.getAllDocs()) {
 			this.cfg.documentService.fetchDocument(docDef, this.cfg.initCfg.classPath).subscribe(
 				(docDef: DocumentDefinition) => { 
-					console.log("Document was loaded: " + docDef.name, docDef);
+					console.log("Document was loaded: " + docDef.fullyQualifiedName, docDef);
 					this.updateStatus();
 				},
 				(error: any) => { this.handleError("could not load document '" 
@@ -127,17 +131,18 @@ export class InitializationService {
 			for (let d of this.cfg.getAllDocs()) {
 				d.updateFromMappings(this.cfg.mappings.mappings);
 			}
+			this.cfg.mappings.removeStaleMappings(this.cfg);
 			this.cfg.initCfg.loadingStatus = "Initialization complete.";
 			this.cfg.initCfg.initialized = true; 
 			this.systemInitializedSource.next();
 			console.log("Loaded mappings.", this.cfg.mappings);
-			console.log("System finished initializing.");
+			console.log("Data Mapper UI finished initializing.");
 		}
 		
 	}
 
 	private handleError(message: string, error:any ) {
-		message = "Error: " + message;
+		message = "Data Mapper UI Initialization Error: " + message;
 		console.error(message, error); 
 		this.cfg.initCfg.loadingStatus = message;	
 		this.cfg.initCfg.initializationErrorOccurred = true;
