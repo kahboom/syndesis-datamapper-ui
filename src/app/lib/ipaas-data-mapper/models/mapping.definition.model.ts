@@ -19,6 +19,7 @@ import { LookupTable } from '../models/lookup.table.model';
 import { ConfigModel } from '../models/config.model';
 import { Field } from '../models/field.model';
 import { TransitionModel, TransitionMode } from './transition.model';
+import { DocumentDefinition } from '../models/document.definition.model';
 
 export class MappingDefinition {	
 	public name: string = null;
@@ -96,6 +97,34 @@ export class MappingDefinition {
 			}
 		}
 		return null;
+	}
+
+	public removeStaleMappings(cfg: ConfigModel): void {
+		console.log("Removing stale mappings. Current Mappings: " + this.mappings.length + ".", this.mappings);
+		var inputDoc: DocumentDefinition = cfg.sourceDocs[0];
+		var outputDoc: DocumentDefinition = cfg.targetDocs[0];
+		var index = 0;
+		while (index < this.mappings.length) {
+			var mapping: MappingModel = this.mappings[index];
+			console.log("Checking if mapping is stale: " + mapping.uuid, mapping);
+			var mappingIsStale: boolean = this.isMappingStale(mapping, inputDoc, outputDoc);
+			console.log("stale:" + mappingIsStale);
+			if (mappingIsStale) {
+				console.log("Removing stale mapping.", { "mapping": mapping, 
+					"inputDoc": inputDoc, "outputDoc": outputDoc });
+				this.mappings.splice(index, 1);
+			} else {
+				index++;
+			}
+		}
+		console.log("Finished removing stale mappings.");
+	}
+
+	public isMappingStale(mapping: MappingModel, inputDoc: DocumentDefinition, outputDoc: DocumentDefinition): boolean {		
+		var inputFieldsExist: boolean = inputDoc.isFieldsExist(mapping.inputFieldPaths);
+		var outputFieldsExist: boolean = outputDoc.isFieldsExist(mapping.outputFieldPaths);
+		console.log("Blah", { "i": inputFieldsExist, "o": outputFieldsExist} );
+		return !(inputFieldsExist && outputFieldsExist);
 	}
 
 	public initializeMappingLookupTable(m: MappingModel, cfg:ConfigModel): void {

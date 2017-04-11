@@ -117,7 +117,11 @@ export class DataMapperAppExampleHostComponent {
 				console.log("Mappings as JSON: " + jsonPretty);
 			}
 
-			c.mappingService.saveMappingToService(saveHandler);
+			//This is an example callout to save the mapping to the mock java service
+			c.mappingService.saveMappingToService();
+
+			//After you've sucessfully saved you *MUST* call this (don't call on error)
+			c.mappingService.handleMappingSaveSuccess(saveHandler);
 		});		
 	}  	
 

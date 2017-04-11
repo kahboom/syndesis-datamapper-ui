@@ -229,21 +229,24 @@ export class MappingManagementService {
 		return payload;
 	}
 
-	public saveMappingToService(saveHandler: Function): void {
+	public saveMappingToService(): void {
 		var startTime: number = Date.now();		
 		var payload: any = this.serializeMappingsToJSON(this.cfg.mappings);
 		var url = this.cfg.initCfg.baseMappingServiceUrl + "mapping";
 		this.http.put(url, JSON.stringify(payload), {headers: this.headers}).toPromise()
-			.then((res:Response) => { 
-				if (saveHandler != null) {
-					saveHandler();
-				}
+			.then((res:Response) => {
 				this.printMappings("Saved Mappings.");
 				console.log("Saved mappings to service in " + (Date.now() - startTime) + "ms.");
-				this.mappingUpdatedSource.next();
 			})
 			.catch((error: any) => { this.handleError("Error occurred while saving mapping.", error); } 
 		);
+	}
+
+	public handleMappingSaveSuccess(saveHandler: Function): void {
+		if (saveHandler != null) {
+			saveHandler();
+		}
+		this.mappingUpdatedSource.next();
 	}
 
 	public removeMapping(m: MappingModel): void {
@@ -355,9 +358,10 @@ export class MappingManagementService {
 		var mappingIsNew: boolean = false;
 		var selectedInputFields: Field[] = this.cfg.sourceDocs[0].getSelectedFields();
 		var selectedOutputFields: Field[] = this.cfg.targetDocs[0].getSelectedFields();
+		console.log("Selected fields.", { "input": selectedInputFields, "output": selectedOutputFields });
 		if (mapping == null) { // no current mapping shown in detail panel, find or create one		
 			if ((selectedInputFields.length == 0) && (selectedOutputFields.length == 0)) {		
-				//no mapping, exit
+				console.log("Not creating new mapping, no fields selected.");
 				this.selectMapping(mapping, false);
 				return;
 			}

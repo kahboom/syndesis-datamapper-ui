@@ -77,6 +77,14 @@ export class DocumentDefinition {
         }
         return fields;
     }
+
+    public isFieldsExist(fieldPaths: string[]): boolean {
+        if (fieldPaths == null || fieldPaths.length == 0) {
+            return true;
+        }
+        var fields: Field[] = this.getFields(fieldPaths);
+        return (fields != null) && (fields.length == fieldPaths.length);
+    }
 	
     public getField(fieldPath: string): Field {
         if (fieldPath == this.getNoneField().path) {
