@@ -35,6 +35,9 @@ export class InitializationService {
 
 	private systemInitializedSource = new Subject<void>();
 	systemInitialized$ = this.systemInitializedSource.asObservable();	
+
+	private initializationStatusChangedSource = new Subject<void>();
+	initializationStatusChanged$ = this.initializationStatusChangedSource.asObservable();	
 	
 	public initialize(): void {
 		console.log("Data Mapper UI is now initializing.");
@@ -47,7 +50,7 @@ export class InitializationService {
 			this.fetchDocuments();
 		} else {
 			console.log("Loading class path from Maven.");
-			this.cfg.initCfg.loadingStatus = "Loading Maven class path.";
+			this.updateLoadingStatus("Loading Maven class path.");
 			console.log(this.cfg.initCfg.loadingStatus);
 			//fetch class path		
 			this.cfg.documentService.fetchClassPath().subscribe(
@@ -81,7 +84,7 @@ export class InitializationService {
 	}	
 
 	private fetchDocuments(): void {
-		this.cfg.initCfg.loadingStatus = "Loading source/target documents.";
+		this.updateLoadingStatus("Loading source/target documents.");
 		console.log("Loading source/target documents.");
 		for (let docDef of this.cfg.getAllDocs()) {
 			this.cfg.documentService.fetchDocument(docDef, this.cfg.initCfg.classPath).subscribe(
@@ -132,7 +135,7 @@ export class InitializationService {
 				d.updateFromMappings(this.cfg.mappings.mappings);
 			}
 			this.cfg.mappings.removeStaleMappings(this.cfg);
-			this.cfg.initCfg.loadingStatus = "Initialization complete.";
+			this.updateLoadingStatus("Initialization complete.");
 			this.cfg.initCfg.initialized = true; 
 			this.systemInitializedSource.next();
 			console.log("Loaded mappings.", this.cfg.mappings);
@@ -144,8 +147,13 @@ export class InitializationService {
 	private handleError(message: string, error:any ) {
 		message = "Data Mapper UI Initialization Error: " + message;
 		console.error(message, error); 
-		this.cfg.initCfg.loadingStatus = message;	
+		this.updateLoadingStatus(message);	
 		this.cfg.initCfg.initializationErrorOccurred = true;
 		this.updateStatus();
 	}	
+
+	private updateLoadingStatus(status: string): void {
+		this.cfg.initCfg.loadingStatus = status;
+		this.initializationStatusChangedSource.next();
+	}
 }

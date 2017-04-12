@@ -14,7 +14,7 @@
 	limitations under the License.
 */
 
-import { Component, OnInit, Input, ViewChild, Injectable, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, Injectable, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeUrl, SafeStyle} from '@angular/platform-browser';
 
 import { Field } from '../models/field.model';
@@ -71,7 +71,9 @@ export class DataMapperAppComponent implements OnInit {
   	@ViewChild('toolbarComponent')
   	public toolbarComponent: ToolbarComponent;
 
-  	constructor(private sanitizer: DomSanitizer) {}
+  	public loadingStatus: string = "Loading."
+
+  	constructor(private sanitizer: DomSanitizer, public detector: ChangeDetectorRef) {}
 
 	ngOnInit(): void {						
 		this.cfg.mappingService.mappingSelectionRequired$.subscribe((mappings: MappingModel[]) => {
@@ -83,6 +85,13 @@ export class DataMapperAppComponent implements OnInit {
 			this.toolbarComponent.parentComponent = this;		
 			this.mappingDetailComponent.modalWindow = this.modalWindow;		
 		});	
+
+		this.cfg.initializationService.initializationStatusChanged$.subscribe(() => {
+			this.loadingStatus = this.cfg.initCfg.loadingStatus;
+			setTimeout(() => { 
+	        	this.detector.detectChanges();
+	        }, 10);  			
+		});			
 	}        
 	
 	public getSystemInitializedStyle() {
