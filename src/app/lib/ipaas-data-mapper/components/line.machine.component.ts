@@ -75,6 +75,7 @@ export class LineMachineComponent {
 	public lineBeingFormed: LineModel;
 	public drawingLine: boolean = false;
 	public svgStyle: SafeStyle;	
+	private yOffset = 3;
 
 	@ViewChild('lineMachineElement') lineMachineElement: ElementRef;
 
@@ -107,7 +108,7 @@ export class LineMachineComponent {
 
 	private createLineStyle(l: LineModel): void {
 		//angular2 will throw an error if we don't use this sanitizer to signal to angular2 that the css style value is ok.
-		l.style = this.sanitizer.bypassSecurityTrustStyle("stroke:" + l.stroke + "; stroke-width:2px;");
+		l.style = this.sanitizer.bypassSecurityTrustStyle("stroke:" + l.stroke + "; stroke-width:4px;");
 	}
 
 	public setLineBeingFormed(l: LineModel): void {
@@ -142,7 +143,7 @@ export class LineMachineComponent {
 		}
 		console.log("Drawing current line from mouse over.");
 		var targetY = this.docDefOutput.getFieldDetailComponentPosition(component.field.path).y;
-		this.drawCurrentLine("100%", (targetY + 17).toString());
+		this.drawCurrentLine("100%", (targetY + this.yOffset).toString());
     }
 
 	public activeMappingChanged(mappingIsNew: boolean): void {
@@ -169,7 +170,7 @@ export class LineMachineComponent {
 					l.sourceX = "100%";
 				}	
 				if (pos != null) {
-					l.sourceY = (pos.y + 17).toString();							
+					l.sourceY = (pos.y + this.yOffset).toString();							
 					this.setLineBeingFormed(l);
 					this.drawingLine = true;
 				}			
@@ -255,16 +256,16 @@ export class LineMachineComponent {
 					continue;
 				}
 				var targetY: number = pos.y;
-				if ((sourceY < 18) || (targetY < 18) || (sourceY > (lineMachineHeight - 58))
-					|| (targetY > (lineMachineHeight - 58))) {
+				if ((sourceY < 16) || (targetY < 16) || (sourceY > (lineMachineHeight - 40))
+					|| (targetY > (lineMachineHeight - 40))) {
 					console.log("Not drawing line, line coords are out of bounds.", { "sourceY": sourceY, "targetY": targetY} );
 					continue;
 				}
 				var isSelectedMapping: boolean = (this.cfg.mappings.activeMapping == m);
 				var stroke: string = "url(#line-gradient-" + (isSelectedMapping ? "active" : "dormant") + ")";
 				if (this.cfg.showLinesAlways || isSelectedMapping) {
-					this.addLineFromParams("0", (sourceY + 17).toString(), 
-						"100%", (targetY + 17).toString(), stroke);	
+					this.addLineFromParams("0", (sourceY + this.yOffset).toString(), 
+						"100%", (targetY + this.yOffset).toString(), stroke);	
 				}
 			}
 		}			

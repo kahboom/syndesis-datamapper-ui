@@ -15,7 +15,6 @@
 */
 
 import { Component, OnInit, Input, ViewChild, Injectable, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl, SafeUrl, SafeStyle} from '@angular/platform-browser';
 
 import { Field } from '../models/field.model';
 import { DocumentDefinition } from '../models/document.definition.model';
@@ -73,7 +72,7 @@ export class DataMapperAppComponent implements OnInit {
 
   	public loadingStatus: string = "Loading."
 
-  	constructor(private sanitizer: DomSanitizer, public detector: ChangeDetectorRef) {}
+  	constructor(public detector: ChangeDetectorRef) {}
 
 	ngOnInit(): void {						
 		this.cfg.mappingService.mappingSelectionRequired$.subscribe((mappings: MappingModel[]) => {
@@ -94,14 +93,6 @@ export class DataMapperAppComponent implements OnInit {
 		});			
 	}        
 	
-	public getSystemInitializedStyle() {
-		var css: string = "display:hidden; height:0px;";
-		if (this.cfg && this.cfg.initCfg.initialized) {
-			css = "display:normal; height:100%; position:relative;"
-		}
-		return this.sanitizer.bypassSecurityTrustStyle(css);
-	}
-
 	private selectMapping(mappingsForField: MappingModel[]): void {
 		this.modalWindow.reset();
 		this.modalWindow.parentComponent = this;
