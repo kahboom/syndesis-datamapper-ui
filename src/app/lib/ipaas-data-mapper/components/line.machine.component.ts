@@ -14,7 +14,7 @@
 	limitations under the License.
 */
 
-import { Component, Input, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeUrl, SafeStyle} from '@angular/platform-browser';
 
 import { ConfigModel } from '../models/config.model';
@@ -78,7 +78,7 @@ export class LineMachineComponent {
 
 	@ViewChild('lineMachineElement') lineMachineElement: ElementRef;
 
-	constructor(private sanitizer: DomSanitizer) {}
+	constructor(private sanitizer: DomSanitizer, public detector: ChangeDetectorRef) {}
 
 	ngOnInit(): void {
 		this.cfg.mappingService.activeMappingChanged$.subscribe((mappingIsNew: boolean) => {
@@ -176,12 +176,12 @@ export class LineMachineComponent {
 			}
 		}
 				
+		this.redrawLinesForMappings(); 
 		// update the mapping line drawing after our fields have redrawn themselves
         // without this, the x/y from the field dom elements is messed up / misaligned.
         setTimeout(() => { 
-        	console.log("Redraw callback!");
-        	this.redrawLinesForMappings(); 
-        }, 1000);  
+        	this.detector.detectChanges();
+        }, 10);  
 	}
 
 	public redrawLinesForMappings(): void {		
