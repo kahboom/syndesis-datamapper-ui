@@ -69,7 +69,7 @@ export class DocumentManagementService {
 		this.cfg.mappingService.mappingUpdated$.subscribe(mappingDefinition => {
 			for (var d of this.cfg.getAllDocs()) {
 				if (d.initCfg.initialized) {
-					d.updateFromMappings(this.cfg.mappings.mappings);
+					d.updateFromMappings(this.cfg.mappings);
 				}
 			}
 		});		

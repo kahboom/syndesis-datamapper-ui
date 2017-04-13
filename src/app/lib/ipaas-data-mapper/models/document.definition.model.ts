@@ -43,7 +43,6 @@ export class DocumentDefinition {
     public uri: string = null;
     public fieldPaths: string[] = [];
 
-
     public getComplexField(className: string): Field {
         return this.complexFieldsByClassName[className];
     }
@@ -178,7 +177,7 @@ export class DocumentDefinition {
         console.log("Finished populating fields for '" + this.name + "', field count: " + this.allFields.length + ", terminal: " + this.terminalFields.length + ".");
     }
 
-    private alphabetizeFields(fields: Field[]) {
+    private alphabetizeFields(fields: Field[]): void {
         var fieldsByName: { [key:string]:Field; } = {};
         var fieldNames: string[] = [];
         for (let field of fields) {
@@ -216,7 +215,7 @@ export class DocumentDefinition {
         }
     }
 
-    private populateFieldData(field:Field) {
+    private populateFieldData(field:Field): void {
         this.fieldPaths.push(field.path);
         this.allFields.push(field);
         this.fieldsByPath[field.path] = field;
@@ -255,10 +254,9 @@ export class DocumentDefinition {
             field.children.push(childField);
         }
         this.fieldPaths.sort(); 
-
     }
 
-    private prepareComplexFields() {
+    private prepareComplexFields(): void {
         var fields: Field[] = this.fields;
 
         //build complex field cache
@@ -325,12 +323,13 @@ export class DocumentDefinition {
         return result;
     }
 
-    public updateFromMappings(mappings: MappingModel[]): void {
+    public updateFromMappings(mappingDefinition: MappingDefinition): void {
         for (let field of this.allFields) {
             field.partOfMapping = false;
             field.hasUnmappedChildren = false;
         }
-        for (let mapping of mappings) {
+        
+        for (let mapping of mappingDefinition.getAllMappings(true)) {
             var partOfTransformation: boolean = (mapping.transition.mode == TransitionMode.SEPARATE)
                 || (mapping.transition.mode == TransitionMode.ENUM);
             var fieldPaths: string[] = this.isSource ? mapping.inputFieldPaths : mapping.outputFieldPaths;
