@@ -164,6 +164,14 @@ export class MappingDefinition {
 		}
 	}
 
+	public getAllMappings(includeActiveMapping: boolean): MappingModel[] {
+		var mappings: MappingModel[] = [].concat(this.mappings);
+        if (this.activeMapping != null) {
+        	mappings.push(this.activeMapping);
+        }
+        return mappings;
+	}
+
 	public toJSON(): any {
         var mappingsJSON: any[] = [];
         for (let m of this.mappings) {

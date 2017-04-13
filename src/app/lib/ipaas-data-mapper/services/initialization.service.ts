@@ -132,7 +132,7 @@ export class InitializationService {
 			console.log("All documents and mappings are loaded, initializing data.");
 			this.cfg.mappings.detectTableIdentifiers(this.cfg);
 			for (let d of this.cfg.getAllDocs()) {
-				d.updateFromMappings(this.cfg.mappings.mappings);
+				d.updateFromMappings(this.cfg.mappings);
 			}
 			this.cfg.mappings.removeStaleMappings(this.cfg);
 			this.updateLoadingStatus("Initialization complete.");

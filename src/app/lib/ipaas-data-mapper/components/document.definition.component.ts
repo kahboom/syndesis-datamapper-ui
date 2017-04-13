@@ -34,7 +34,7 @@ import { DocumentManagementService } from '../services/document.management.servi
   			<div class="card-pf-heading">
 				<h2 class="card-pf-title" tooltip="{{docDef.fullyQualifiedName}}" placement="bottom">
                     <i class="fa {{ docDef.isSource ? 'fa-hdd-o' : 'fa-download' }}"></i>
-                    {{docDef.name}}
+                    <div class="docName">{{docDef.name}}</div>
                 </h2>
                 <a class="searchBoxIcon" (click)="toggleSearch()">
                     <i class="fa fa-search" [attr.style]="searchIconStyle"></i>

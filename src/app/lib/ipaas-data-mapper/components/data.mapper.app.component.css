@@ -53,16 +53,17 @@
 .DocumentFieldDetailComponent .selectedField I { color:white; }
 .DocumentFieldDetailComponent I { vertical-align:middle; text-shadow:0 1px 2px rgba(3, 3, 3, 0.24); margin-right:2px; }
 .DocumentFieldDetailComponent I.partOfMappingIcon { color:#0088ce; }
-.DocumentFieldDetailComponent I.arrow { text-shadow:none; width:8px; font-size:14px; margin-bottom:2px; margin-right:3px; }
+.DocumentFieldDetailComponent I.arrow { text-shadow:none; width:8px; font-size:14px; margin-bottom:2px; margin-right:3px; margin-left:1px; }
 .DocumentFieldDetailComponent I.parentFolder { color:#363636; text-shadow:none; margin-right:2px; font-size:14px; }
 .DocumentFieldDetailComponent .selectedField I.partOfMappingIcon { color:white; }
 .DocumentFieldDetailComponent I.partOfMappingIconHidden { display:hidden; }
 
 .docDef { position:relative; border:1px solid #CAC9C9; height:100%; background-color:white; overflow:hidden; }
 .docDef .card-pf-title { vertical-align:middle; color:#393f44; }
-.docDef .card-pf-title I { margin-right:5px; font-size:16px; vertical-align:text-bottom; }
+.docDef .card-pf-title I { margin-right:5px; font-size:17px; vertical-align:top; margin-left:3px; }
 .docDef .fieldsCount { padding:5px; font-size:10px; font-weight:bold; text-align:right; 
     width:100%; border-top:1px solid #CAC9C9; padding-right:10px; border-bottom:0px solid black; }
+.docDef .docName { overflow:hidden; display:inline-block; width:calc(100% - 45px); }
 
 .docDef .searchBox { width:100%; border:1px solid #CAC9C9; border-left:2px solid #FBFBFB; border-right:2px solid #FBFBFB; 
     padding:5px 10px; }
