@@ -22,14 +22,12 @@ import { ConfigModel } from '../models/config.model';
   template: `
     <div class="dm-toolbar">          
       <div class="dm-toolbar-icons" style="float:right;">
-          <button class="btn btn-link" (click)="buttonClicked('showLines');">
-            <i class="fa fa-share-alt" *ngIf="!cfg.showLinesAlways" ></i>
-            <i class="fa fa-share-alt" style="color:#0088ce;" *ngIf="cfg.showLinesAlways"></i>
-          </button>
-          <button class="btn btn-link" (click)="buttonClicked('showDetails');">
-            <i class="fa fa-exchange" *ngIf="!cfg.showMappingDetailTray" ></i>
-            <i class="fa fa-exchange" style="color:#0088ce;" *ngIf="cfg.showMappingDetailTray"></i>
-          </button>
+          <i class="fa fa-share-alt" *ngIf="!cfg.showLinesAlways" (click)="buttonClicked('showLines');"></i>
+          <i class="fa fa-share-alt" style="color:#0088ce;" *ngIf="cfg.showLinesAlways" 
+            (click)="buttonClicked('showLines');"></i>
+          <i class="fa fa-exchange" *ngIf="!cfg.showMappingDetailTray" (click)="buttonClicked('showDetails');"></i>
+          <i class="fa fa-exchange" style="color:#0088ce;" *ngIf="cfg.showMappingDetailTray" 
+            (click)="buttonClicked('showDetails');"></i>
       </div>
       <div style="clear:both; height:0px;"></div>
     </div>
