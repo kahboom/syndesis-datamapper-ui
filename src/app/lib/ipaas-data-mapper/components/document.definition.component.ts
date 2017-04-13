@@ -31,27 +31,33 @@ import { DocumentManagementService } from '../services/document.management.servi
 	selector: 'document-definition',
 	template: `
 	  	<div #documentDefinitionElement class='docDef' *ngIf="docDef.initCfg.initialized">
-  			<div class="card-pf-heading">
-				<h2 class="card-pf-title" tooltip="{{docDef.fullyQualifiedName}}" placement="bottom">
-                    <i class="fa {{ docDef.isSource ? 'fa-hdd-o' : 'fa-download' }}"></i>
-                    <div class="docName">{{docDef.name}}</div>
-                </h2>
-                <a class="searchBoxIcon" (click)="toggleSearch()">
-                    <i class="fa fa-search" [attr.style]="searchIconStyle"></i>
-                </a>
-			</div>
-            <div *ngIf="searchMode">
-                <input type="text" class="searchBox" #searchFilterBox 
-                    id="search-filter-box" (keyup)="search(searchFilterBox.value)" placeholder="Search"
-                    [(ngModel)]="searchFilter" />
-                <a class="searchBoxCloseIcon" (click)="clearSearch()"><i class="fa fa-close"></i></a>
+            <div class="card-pf">
+      			<div class="card-pf-heading">
+    				<h2 class="card-pf-title" tooltip="{{docDef.fullyQualifiedName}}" placement="bottom">
+                        <div class="docName">
+                            <i class="fa {{ docDef.isSource ? 'fa-hdd-o' : 'fa-download' }}"></i>
+                            {{docDef.name}}                            
+                        </div>
+                        <i class="fa fa-search searchBoxIcon" (click)="toggleSearch()" [attr.style]="searchIconStyle"></i>
+                        <div class="clear"></div>
+                    </h2>
+                    
+    			</div>
+                <div *ngIf="searchMode" class="searchBox">
+                    <input type="text" #searchFilterBox 
+                        id="search-filter-box" (keyup)="search(searchFilterBox.value)" placeholder="Search"
+                        [(ngModel)]="searchFilter" />
+                    <i class="fa fa-close searchBoxCloseIcon" (click)="clearSearch()"></i>
+                    <div class="clear"></div>
+                </div>
+    			<div [attr.class]="searchMode ? 'fieldListSearchOpen' : 'fieldList'" style="overflow:auto;" 
+                    (scroll)="handleScroll($event)">                
+                    <document-field-detail #fieldDetail *ngFor="let f of docDef.fields" 
+                        [field]="f" [docDef]="docDef" [cfg]="cfg" 
+                        [lineMachine]="lineMachine"></document-field-detail>
+    		    </div>
+                <div class="card-pf-heading fieldsCount">{{getFieldCount()}} fields</div>
             </div>
-			<div style="overflow:auto; height:calc(100% - 60px);" (scroll)="handleScroll($event)" >                
-                <document-field-detail #fieldDetail *ngFor="let f of docDef.fields" 
-                    [field]="f" [docDef]="docDef" [cfg]="cfg" 
-                    [lineMachine]="lineMachine"></document-field-detail>
-		    </div>
-            <div class="card-pf-heading fieldsCount">{{getFieldCount()}} fields</div>
 	    </div>
     `
 })

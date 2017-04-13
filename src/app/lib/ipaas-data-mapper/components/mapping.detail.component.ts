@@ -34,11 +34,10 @@ import { TransitionSelectionComponent } from './transition.selection.component';
 @Component({
 	selector: 'detail-header',
 	template: `
-		<div class="card-pf-heading MappingDetailHeader" (click)="handleMouseClick($event)">
-			<div class="card-pf-title">
-				<i [attr.class]="collapseToggleClass"></i>
-				<label>{{ title }}</label>
-			</div>
+		<div class="MappingDetailHeader">
+			<div class="card-pf-heading" (click)="handleMouseClick($event)">
+				<h2 class="card-pf-title"><i [attr.class]="collapseToggleClass"></i>{{ title }}</h2>
+		  	</div>
 	  	</div>
     `
 })
@@ -63,7 +62,7 @@ export class MappingDetailHeaderComponent {
 					<label>{{ isSource ? "Source" : "Target" }}</label>
 				</div>
 				<div style="float:right; margin-right:5px;">
-	   				<a (click)="remove($event, field.path)"><i class="fa fa-trash" aria-hidden="true"></i></a>
+	   				<i class="fa fa-trash" aria-hidden="true" (click)="remove($event, field.path)"></i>
    				</div>
    				<div style="clear:both; height:0px;"></div>
 	  			<mapping-field-detail #mappingField [selectedFieldPath]="getTypedFieldPath(field)" 
@@ -128,41 +127,36 @@ export class MappingFieldSectionComponent {
 	selector: 'mapping-detail',
 	template: `
 	  	<div class='fieldMappingDetail'  [attr.style]="detailStyle" 
-	  		*ngIf="cfg.mappings.activeMapping && cfg.showMappingDetailTray">	  		
-	  		<div class="card-pf-heading">
-	  			<div class="card-pf-title">
-		  			<div style="float:left;"><label>Data Transformation</label></div>
-		  			<div style="float:right; text-align:right; padding-right:2px;">
-		  			<a (click)="removeMapping($event)" tooltip="Remove current mapping">
-		  				<i class="fa fa-trash" aria-hidden="true"></i> 
-		  			</a>
-		  			<a (click)="addNewMapping($event)" tooltip="Add New Mapping">
-		  				<i class="fa fa-plus" aria-hidden="true"></i>
-		  			</a>
-		  			<a (click)="toggleDataTypeVisibility($event)" tooltip="Show field data types">
-		  				<i aria-hidden="true" [attr.class]="'fa fa-cog ' + getDataTypeIconClass()"></i>
-		  			</a>
-		  			<a (click)="deselectMapping($event)" tooltip="Deselect current mapping">
-		  				<i class="fa fa-close" aria-hidden="true"></i>
-		  			</a>	  	
-		  			</div>
-		  			<div style="clear:both; height:0px;"></div>
+	  		*ngIf="cfg.mappings.activeMapping && cfg.showMappingDetailTray">	 
+	  		<div class="card-pf"> 		
+		  		<div class="card-pf-heading">
+	  				<h2 class="card-pf-title">
+			  			<div style="float:left;">Data Transformation</div>
+			  			<div style="float:right; text-align:right;">
+			  				<i class="fa fa-trash" aria-hidden="true" (click)="removeMapping($event)" 
+			  					tooltip="Remove current mapping"></i> 
+			  				<i class="fa fa-plus" aria-hidden="true" (click)="addNewMapping($event)" 
+			  					tooltip="Add New Mapping"></i>
+			  				<i aria-hidden="true" [attr.class]="'fa fa-cog ' + getDataTypeIconClass()" 
+			  					(click)="toggleDataTypeVisibility($event)" tooltip="Show field data types"></i>
+			  				<i class="fa fa-close" aria-hidden="true" (click)="deselectMapping($event)" 
+			  					tooltip="Deselect current mapping"></i>
+			  			</div>
+			  			<div style="clear:both; height:0px;"></div>
+		  			</h2>
 		  		</div>
-	  		</div>
-	  		<div class="fieldMappingDetail-body">
-		  		<detail-header title="Sources" #sourcesHeader></detail-header>	  		
-			  	<mapping-field-section [cfg]="cfg" [isSource]="true" 
-			  		*ngIf="!sourcesHeader.collapsed"></mapping-field-section>
-				
-				<detail-header title="Action" #actionsHeader></detail-header>
-		  		<transition-selector style="float:left; clear:left; width:100%; background-color:#d1d1d1" [cfg]="cfg"
-		  			[modalWindow]="modalWindow" *ngIf="!actionsHeader.collapsed"></transition-selector>
-		  		
-		  		<detail-header title="Targets" #targetsHeader></detail-header>
-		  		<mapping-field-section [cfg]="cfg" [isSource]="false" 
-		  			*ngIf="!targetsHeader.collapsed"></mapping-field-section>  
-	  		</div>
-	  		<div class="card-pf-heading"><div class="card-pf-title">&nbsp;</div></div>
+		  		<div class="fieldMappingDetail-body">
+			  		<detail-header title="Sources" #sourcesHeader class="sources"></detail-header>	  		
+				  	<mapping-field-section [cfg]="cfg" [isSource]="true" 
+				  		*ngIf="!sourcesHeader.collapsed"></mapping-field-section>					
+					<detail-header title="Action" #actionsHeader></detail-header>
+			  		<transition-selector [cfg]="cfg" [modalWindow]="modalWindow" 
+			  			*ngIf="!actionsHeader.collapsed"></transition-selector>			  		
+			  		<detail-header title="Targets" #targetsHeader></detail-header>
+			  		<mapping-field-section [cfg]="cfg" [isSource]="false" 
+			  			*ngIf="!targetsHeader.collapsed"></mapping-field-section>  
+		  		</div>
+		  	</div>
 	    </div>
     `
 })
