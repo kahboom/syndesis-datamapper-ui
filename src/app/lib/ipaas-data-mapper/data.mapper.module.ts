@@ -26,7 +26,7 @@ import { MappingManagementService } from './services/mapping.management.service'
 import { ErrorHandlerService } from './services/error.handler.service';
 import { InitializationService } from './services/initialization.service';
 
-import { ModalWindowComponent } from './components/modal.window.component';
+import { ModalWindowComponent, EmptyModalBodyComponent } from './components/modal.window.component';
 import { TransitionSelectionComponent } from './components/transition.selection.component';
 import { LookupTableComponent } from './components/lookup.table.component';
 import { DataMapperErrorComponent } from './components/data.mapper.error.component';
@@ -84,7 +84,8 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 		MappingSelectionComponent,
 		MappingSelectionSectionComponent,
 		ToolbarComponent,
-		LookupTableComponent
+		LookupTableComponent,
+		EmptyModalBodyComponent		
 	],
 	exports: [
 		DataMapperAppExampleHostComponent,
@@ -99,7 +100,8 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 	],
 	entryComponents: [
 		MappingSelectionComponent,
-		LookupTableComponent
+		LookupTableComponent,
+		EmptyModalBodyComponent
 	],
  	bootstrap: [ DataMapperAppExampleHostComponent ]
 })

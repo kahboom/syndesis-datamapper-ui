@@ -20,6 +20,14 @@ import { Component, OnInit, Input, ViewChild, ViewChildren, DoCheck, QueryList,
 
 // source: http://www.w3schools.com/howto/howto_css_modals.asp
 
+
+@Component({
+	selector: 'empty-modal-body',
+	template: ""
+})
+
+export class EmptyModalBodyComponent { }
+
 @Component({
 	selector: 'modal-window',
 	template: `
@@ -82,7 +90,9 @@ export class ModalWindowComponent implements AfterViewInit {
 		viewContainerRef.clear();
 	    let componentFactory = this.componentFactoryResolver.resolveComponentFactory(this.nestedComponentType);
 	    this.nestedComponent = viewContainerRef.createComponent(componentFactory).instance;
-	    this.nestedComponentInitializedCallback(this);
+	    if (this.nestedComponentInitializedCallback != null) {
+	    	this.nestedComponentInitializedCallback(this);
+	    }
   	}
 
 	public closeClicked(event: MouseEvent): void { this.buttonClicked(false); }
@@ -110,7 +120,7 @@ export class ModalWindowComponent implements AfterViewInit {
 		this.headerText = "";
 		this.parentComponent = null;
 		this.componentLoaded = false;
-		this.nestedComponentType = null;
+		this.nestedComponentType = EmptyModalBodyComponent;
 		this.okButtonHandler = null;
 		this.cancelButtonHandler = null;
 	}

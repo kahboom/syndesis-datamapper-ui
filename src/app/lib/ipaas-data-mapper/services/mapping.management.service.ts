@@ -243,6 +243,7 @@ export class MappingManagementService {
 	}
 
 	public handleMappingSaveSuccess(saveHandler: Function): void {
+		console.log("Handling mapping save success.");
 		if (saveHandler != null) {
 			saveHandler();
 		}
@@ -259,6 +260,7 @@ export class MappingManagementService {
 			this.saveMappingSource.next(saveHandler);					
 		} else {	
 			this.deselectMapping();
+			this.mappingUpdatedSource.next();
 		}
 	}
 
@@ -321,7 +323,7 @@ export class MappingManagementService {
     	}
     	var field: Field = this.cfg.getDoc(isSource).getField(fieldPath);
     	field.selected = false;
-    	this.activeMappingChangedSource.next(false);
+    	this.notifyActiveMappingUpdated(false);	
 	}
 
 	public addMappedField(fieldPath:string, isSource: boolean): void {
@@ -341,7 +343,7 @@ export class MappingManagementService {
             }
 		}    	
     	this.cfg.mappings.activeMapping.updateSeparatorIndexes();
-		this.activeMappingChangedSource.next(false);  	
+		this.notifyActiveMappingUpdated(false);
 	}
 
 	public deselectMapping(): void {
@@ -349,7 +351,7 @@ export class MappingManagementService {
 		for (let d of this.cfg.getAllDocs()) {
 			d.clearSelectedFields();
 		}
-		this.activeMappingChangedSource.next(false);
+		this.notifyActiveMappingUpdated(false);	
 	}
 
 	public fieldSelectionChanged(): void {
