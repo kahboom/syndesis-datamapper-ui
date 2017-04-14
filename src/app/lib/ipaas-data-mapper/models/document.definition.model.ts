@@ -17,6 +17,7 @@
 import { Field } from './field.model';
 import { MappingModel } from './mapping.model';
 import { TransitionModel, TransitionMode } from './transition.model';
+import { MappingDefinition } from '../models/mapping.definition.model';
 
 export class DocumentInitializationConfig {
     documentIdentifier: string;

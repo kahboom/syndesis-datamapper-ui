@@ -28,7 +28,7 @@ export class LookupTableData {
 }
 
 @Component({
-	selector: 'hello-world',
+	selector: 'lookup-table',
 	template: `
 		<div class="LookupTableComponent" *ngIf="data">
 			<div class="lookupTableRow" *ngFor="let d of data">

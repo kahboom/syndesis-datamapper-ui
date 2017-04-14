@@ -98,7 +98,6 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 		InitializationService
 	],
 	entryComponents: [
-		TransitionSelectionComponent,
 		MappingSelectionComponent,
 		LookupTableComponent
 	],

@@ -31,13 +31,21 @@
 
 .DataMapperUI .row { margin:0px; }
 
-.DataMapperUI .card-pf { margin:0; padding-left:0; padding-right:0; height:100%; }
+.DataMapperUI .card-pf { margin:0; padding-left:0; padding-right:0; height:100%; 
+    -webkit-animation-name:dm-fade-in; -webkit-animation-duration: 0.4s;
+    animation-name:dm-fade-in; animation-duration: 0.8s}
 .DataMapperUI .card-pf-title { font-size:20px; padding:0px 12px; }
 .DataMapperUI .card-pf-heading { margin:0; }
 .DataMapperUI .card-pf-body { padding:0px; margin:0px; }
 
 .DataMapperUI .alert { margin-bottom:5px; }
 .DataMapperUI .alert .close { font-size:18px; color:#888888; }
+
+@-webkit-keyframes dm-fade-in { from {opacity:0} to {opacity:1} }
+@keyframes dm-fade-in { from {opacity:0} to {opacity:1} }
+
+@-webkit-keyframes dm-fade-out { from {opacity:1} to {opacity:0} }
+@keyframes dm-fade-out { from {opacity:1} to {opacity:0} }
 
 /* background styles */
 .DataMapperUIBackgroundCover { height:100%; width:100%; position:absolute; top:0px; left:0px;
@@ -95,22 +103,16 @@
 .fieldMappingDetail .fieldDetail .dropdown-menu button.dropdown-item { background-color:white; 
         display:block; border:0px solid black; width:100%; text-align:left; }
 .fieldMappingDetail .fieldDetail .dropdown-menu button.active { background-color:#F5F5F5; }
-.fieldMappingDetail I { margin-left:5px; vertical-align:middle; }
+.fieldMappingDetail I { vertical-align:middle; }
 .fieldMappingDetail A.button I { margin-right:5px; font-size:10px; }
 .fieldMappingDetail A.button { margin:10px; margin-left:0px; border:1px solid #02A2D7; padding:5px 10px; border-radius:5px; }
 .fieldMappingDetail A.button:hover { border:1px solid #363636; }
 .fieldMappingDetail HR { margin-top:15px; margin-bottom:15px; border-top:1px solid #d1d1d1; }
 .fieldMappingDetail .sectionHeader { font-weight:bold; }
 .fieldMappingDetail .fieldMappingDetail-body { height:calc(100% - 65px); overflow:auto; }
-.fieldMappingDetail A.small-primary {
-    padding:5px 15px;
-    border-radius:1px;
-    background-image:linear-gradient(to bottom, #39a5dc, #0088ce);
-    box-shadow:0 2px 3px 0 rgba(3, 3, 3, 0.1);
-    border:solid 1px #00659c;
-    text-align:center;
-    color:#ffffff;
-}
+.fieldMappingDetail A.small-primary { padding:5px 15px; border-radius:1px; border:solid 1px #00659c;
+    background-image:linear-gradient(to bottom, #39a5dc, #0088ce); box-shadow:0 2px 3px 0 rgba(3, 3, 3, 0.1);
+    text-align:center; color:#ffffff; }
 .fieldMappingDetail A.small-primary:active { background-image:linear-gradient(to bottom, #0088ce, #39a5dc); }
 
 .MappingDetailHeader { }
@@ -125,112 +127,25 @@
 .MappingFieldSection { background-color:white; padding:10px; margin:0; margin-bottom:15px; box-shadow:0 0 1px 1px rgba(51, 51, 51, 0.25); }
 .MappingFieldSection LABEL { color:#363636; }
 
-.LookupTableComponent .lookupTableRow { margin:0px 10px 10px 5px; border-bottom:1px solid #8b8d8f; padding:5px 0px; }
-.LookupTableComponent LABEL { width:150px; margin-right:20px; overflow:hidden; color:#7cdbf3; vertical-align:bottom; }
-.LookupTableComponent SELECT { width:200px; color:#393f44; vertical-align:super; background-color:#fafafa; }
-
 .TransitionSelector LABEL { width:100%; }
-.TransitionSelector .enumSection LABEL { width:calc(100% - 25px); }
+.TransitionSelector .enumSection LABEL { width:calc(100% - 25px); margin-bottom:0; }
 .TransitionSelector SELECT { display:block; width:100%; }
 
 /* modal window */
-.DataMapperUI .modalWindow { z-index:1000; position:relative; width:100%; }
-.DataMapperUI .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
-    padding-top: 100px; /* Location of the box */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
-.DataMapperUI .modal-content {
-    position: absolute;
-    background-color: #fefefe;
-    margin: auto;
-    padding: 0;
-    border: 1px solid #888;
-    width: auto;
-    left:25%;
-    top:10%;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-    -webkit-animation-name: animatetop;
-    -webkit-animation-duration: 0.4s;
-    animation-name: animatetop;
-    animation-duration: 0.4s
-}
-.DataMapperUI .modal-content { width:auto; min-width:250px; margin-left:auto; margin-right:auto; 
-        border:0px solid black; background-color:#393f44; }
+.DataMapperUI .modal { z-index:1000; width:100%; height:100%; overflow:auto; display:block; }
 
-/* Add Animation */
-@-webkit-keyframes animatetop {
-    from {top:-300px; opacity:0} 
-    to {top:10%; opacity:1}
-}
+.DataMapperUI .modal-content { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); 
+    -webkit-animation-name:dm-animatetop; -webkit-animation-duration:0.8s;
+    animation-name:dm-animatetop; animation-duration:0.8s }
+.DataMapperUI .modal-footer .btn { margin-left:10px; }
 
-@keyframes animatetop {
-    from {top:-300px; opacity:0}
-    to {top:10%; opacity:1}
-}
-
-/* The Close Button */
-.DataMapperUI .modal-header .close I {
-    color: white;
-    float: right;
-    font-size: 20px;
-}
-
-.DataMapperUI .modal-header .close { opacity:1; }
-.DataMapperUI .modal-header .close:hover,
-.DataMapperUI .modal-header .close:focus {
-    color: white;
-    opacity: 0.6;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.DataMapperUI .modal-header {
-    padding: 5px 10px;
-    background-color: #030303;
-    border-bottom: 1px solid #292929;
-    color: #f5f5f5;
-    border-top: 1px solid #39a5dc;
-    margin:0;
-}
-
-.DataMapperUI .modal-header {
-    background-color:#0088ce;
-    color:#fafafa;
-    font-weight:bold;
-    font-size:16px;
-}
-
-.DataMapperUI .modal-body { margin:15px 8px; padding:0; margin-bottom:5px; color:white; }
-.DataMapperUI .modal-buttons { width:100%; text-align:right; padding-right:20px; }
-.DataMapperUI .modal-buttons A { font-size:16px; margin-left:10px; }
-.DataMapperUI .modal-buttons A:hover { text-decoration:none; }
-.DataMapperUI .modal-buttons A I { font-size:16px; color:#7cdbf3;}
-.DataMapperUI .modal-buttons A I:hover { color:#0088ce; }
-
-.DataMapperUI .modal-footer {
-    padding:0;
-    margin:0;
-    background-color: #030303;
-    border-top: 1px solid #292929;
-    border-bottom: 1px solid #39a5dc;
-    color: #f5f5f5;
-}
+@-webkit-keyframes dm-animatetop { from {top:-300px; opacity:0}  to {top:50%; opacity:1} }
+@keyframes dm-animatetop { from {top:-300px; opacity:0} to {top:50%; opacity:1} }
 
 .DataMapperUI .modal-message { padding:10px 20px; }
 
-/* end app.modal.component */
-
 .MappingSelectionComponent { margin-left:20px; margin-right:20px; margin-bottom:10px; max-height:400px; 
-    overflow:auto; width:500px; color:#7cdbf3; }
+    overflow:auto; width:500px; }
 .MappingSelectionComponent TR { border:1px solid #F6F6F6; }
 .MappingSelectionComponent TR.headers { border:1px solid transparent; border-bottom:1px solid #F6F6F6;}
 .MappingSelectionComponent TR.odd { background-color:#F6F6F6; }
@@ -239,28 +154,29 @@
 .MappingSelectionComponent .inputFields,
     .MappingSelectionComponent .outputFields { width:200px; padding:5px; padding-left:10px; vertical-align:top; }
 
-.MappingSelectionSection { background-color:transparent; padding:15px 8px; border-bottom:1px solid #8b8d8f; }
+.MappingSelectionSection { padding:15px 8px; }
 .SelectedMappingSelectionSection { background-color:#0088ce; color:#fafafa; }
 .MappingSelectionSection .path, .MappingSelectionSection .pathContainer, 
     .MappingSelectionSection .fieldName, .MappingSelectionSection .numberWrapper { display:inline; padding:0; margin:0; float:left; }
 .MappingSelectionSection .numberWrapper { width:30px; height:30px; text-align:center; color:#fafafa; background-color:#0088ce; 
-    border-radius:15px; font-size:16px; margin-right:10px; }
+    border-radius:15px; font-size:16px; margin-right:10px; margin-left:5px; }
 .MappingSelectionSection .number { display:block; font-weight:bold; margin-top:2px; }
 .SelectedMappingSelectionSection .numberWrapper { background-color:white; color:#0088ce; }
-.MappingSelectionSection .fieldName { font-weight:bold; }
+.MappingSelectionSection .fieldName { }
 .MappingSelectionSection .path { word-break:break-word; }
-.MappingSelectionSection .pathContainer { display:inline-block; width:calc(100% - 45px); margin-top:2px; }
+.MappingSelectionSection .pathContainer { display:inline-block; width:calc(100% - 45px); padding-top:5px; }
 
 .MappingSelectionComponent .pathHeader .path, .MappingSelectionComponent .pathHeader, 
     .MappingSelectionComponent .pathHeader .fieldName, { display:inline; padding:0; margin:0; float:left; }
 .MappingSelectionComponent .pathHeader .path { word-break:break-word; }
-.MappingSelectionComponent .pathHeader { display:inline-block; width:100%; margin-top:2px; color:#fafafa; margin-bottom:20px; }
-.MappingSelectionComponent .pathHeader .fieldName { font-weight:bold; }
-.MappingSelectionComponent .sourceTargetHeader { font-weight:bold; font-size:16px; color:#fafafa; }
+.MappingSelectionComponent .pathHeader { display:inline-block; width:100%; margin-top:2px; margin-bottom:20px; }
+.MappingSelectionComponent .pathHeader .fieldName { }
+.MappingSelectionComponent .sourceTargetHeader { font-size:16px; }
 
-.MappingSelectionComponent A { color:#4d5258; background-image:linear-gradient(to bottom, #fafafa, #ededed); width:100%;
-  box-shadow:0 2px 3px 0 rgba(3, 3, 3, 0.1); border:solid 1px #bbbbbb; padding:8px 12px; font-size:14px; font-weight:bold; }
-.MappingSelectionComponent A:hover { background-image:linear-gradient(to bottom, #ededed, #fafafa); } 
-.MappingSelectionComponent A:active { text-decoration:none; background-image:linear-gradient(to bottom, #fafafa, #adadad); } 
-.MappingSelectionComponent A I { color:#4d5258; font-size:16px; margin-right:10px; }
+.MappingSelectionComponent BUTTON.addButton I { margin-right:5px; }
 .MappingSelectionComponent .header { margin-bottom:20px; }
+
+/* enum lookup table creation */
+.LookupTableComponent .lookupTableRow { margin:0px 10px 10px 5px; padding:5px 0px; }
+.LookupTableComponent LABEL { width:150px; margin-right:20px; overflow:hidden; vertical-align:bottom; }
+.LookupTableComponent SELECT { width:200px; vertical-align:super; }

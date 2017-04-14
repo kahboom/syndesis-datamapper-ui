@@ -44,6 +44,12 @@ export class InitializationService {
 		this.cfg.documentService.initialize();
 		this.cfg.mappingService.initialize();
 
+		var testEnumMapping: boolean = false;
+		if (testEnumMapping) {
+			this.cfg.mappings = new MappingDefinition();
+			this.cfg.sourceDocs[0].initCfg.documentIdentifier = "com.redhat.ipaas.connector.salesforce.Contact";
+		}
+
 		//load documents
 		if (this.cfg.initCfg.classPath) {
 			console.log("Classpath already provided, skipping Maven loading.");
