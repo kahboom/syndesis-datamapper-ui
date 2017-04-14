@@ -133,14 +133,11 @@ export class MappingFieldSectionComponent {
 	  				<h2 class="card-pf-title">
 			  			<div style="float:left;">Data Transformation</div>
 			  			<div style="float:right; text-align:right;">
-			  				<i class="fa fa-trash" aria-hidden="true" (click)="removeMapping($event)" 
-			  					tooltip="Remove current mapping"></i> 
-			  				<i class="fa fa-plus" aria-hidden="true" (click)="addNewMapping($event)" 
-			  					tooltip="Add New Mapping"></i>
+			  				<i class="fa fa-trash" aria-hidden="true" (click)="removeMapping($event)"></i> 
+			  				<i class="fa fa-plus" aria-hidden="true" (click)="addNewMapping($event)"></i>
 			  				<i aria-hidden="true" [attr.class]="'fa fa-cog ' + getDataTypeIconClass()" 
-			  					(click)="toggleDataTypeVisibility($event)" tooltip="Show field data types"></i>
-			  				<i class="fa fa-close" aria-hidden="true" (click)="deselectMapping($event)" 
-			  					tooltip="Deselect current mapping"></i>
+			  					(click)="toggleDataTypeVisibility($event)"></i>
+			  				<i class="fa fa-close" aria-hidden="true" (click)="deselectMapping($event)"></i>
 			  			</div>
 			  			<div style="clear:both; height:0px;"></div>
 		  			</h2>
@@ -198,6 +195,7 @@ export class MappingDetailComponent {
 
 	private removeMapping(event: MouseEvent): void {
 		this.modalWindow.reset();
+		this.modalWindow.confirmButtonText = "Remove";
 		this.modalWindow.parentComponent = this;
 		this.modalWindow.headerText = "Delete Mapping?";
 		this.modalWindow.message = "Are you sure you want to remove the current mapping?";

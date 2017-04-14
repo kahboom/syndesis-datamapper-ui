@@ -95,6 +95,7 @@ export class DataMapperAppComponent implements OnInit {
 	
 	private selectMapping(mappingsForField: MappingModel[]): void {
 		this.modalWindow.reset();
+		this.modalWindow.confirmButtonText = "Select";
 		this.modalWindow.parentComponent = this;
 		this.modalWindow.headerText = "Select Mapping";
 		this.modalWindow.nestedComponentInitializedCallback = (mw: ModalWindowComponent) => {

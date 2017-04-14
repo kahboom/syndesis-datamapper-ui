@@ -30,7 +30,7 @@ import { ModalWindowComponent } from './modal.window.component';
 			<div class="pathContainer" *ngFor="let path of getPaths()">
 				<div class="path">{{ getFormattedOutputPath(path, false) }}</div>
 				<div class="fieldName">{{ getFormattedOutputPath(path, true) }}</div>
-				<div style="clear:both; height:0px;"></div>
+				<div class="clear"></div>
 			</div>
 			<div style="clear:both; height:0px;"></div>
 		</div>
@@ -57,7 +57,7 @@ export class MappingSelectionSectionComponent {
 		path = path.replace(".", "/");
 		var index: number = path.lastIndexOf("/");
 		var fieldName: string = (index == -1) ? path : path.substr(path.lastIndexOf("/") + 1);
-		path = (index == -1) ? "" : path.substr(0, path.lastIndexOf("/") + 1)
+		path = (index == -1) ? "" : path.substr(0, path.lastIndexOf("/") + 1)		
 		return nameOnly ? fieldName: path;
 	}
 	
@@ -78,7 +78,9 @@ export class MappingSelectionSectionComponent {
 					<div style="clear:both; height:0px;"></div>
 				</div>
 				<div style="clear:both; height:0px;"></div>
-				<a (click)="addMapping()"><i class="fa fa-plus"></i>Add New Mapping</a>
+				<button class="btn btn-primary addButton" (click)="addMapping()">
+					<i class="fa fa-plus"></i>Add New Mapping
+				</button>
 			</div>
 			<mapping-selection-section *ngFor="let mapping of mappings; let i = index; let odd=odd; let even=even;"
 				[mapping]="mapping" [outputNumber]="i" [selected]="i == 0" [selectedCallback]="selectionChanged" 

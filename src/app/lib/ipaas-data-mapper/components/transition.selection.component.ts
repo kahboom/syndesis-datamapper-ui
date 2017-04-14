@@ -31,7 +31,7 @@ import { LookupTableComponent } from './lookup.table.component';
 			<div class="MappingFieldSection" *ngIf="cfg.mappings.activeMapping">
 				<div *ngIf="modeIsEnum()" class="enumSection">
 					<label>{{ getMappedValueCount() }} values mapped</label>
-					<a (click)="showLookupTable()"><i class="fa fa-edit"></i></a>
+					<i class="fa fa-edit" (click)="showLookupTable()"></i>
 				</div>
 				<div *ngIf="!modeIsEnum()">					
 					<label>Action</label>
@@ -97,6 +97,7 @@ export class TransitionSelectionComponent {
 			return;
 		}
 		this.modalWindow.reset();
+		this.modalWindow.confirmButtonText = "Finish";
 		this.modalWindow.parentComponent = this;
 		this.modalWindow.headerText = "Map Enumeration Values";
 		this.modalWindow.nestedComponentInitializedCallback = (mw: ModalWindowComponent) => {
