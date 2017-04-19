@@ -44,11 +44,11 @@ export class LineModel {
 				<defs>
 					<linearGradient id='line-gradient-active' gradientUnits="userSpaceOnUse">
 						<stop stop-color='#0088ce'/>
-						<stop offset='100%' stop-color='#bee1f4'/>
+						<stop offset='100%' stop-color='#0088ce'/> <!-- was #bee1f4 -->
 					</linearGradient>				
 					<linearGradient id='line-gradient-dormant' gradientUnits="userSpaceOnUse">
 						<stop stop-color='#8b8d8f'/>
-						<stop offset='100%' stop-color='#EEEEEE'/>
+						<stop offset='100%' stop-color='#8b8d8f'/> <!-- was #EEEEEE -->
 					</linearGradient>				
 				</defs>
 				<svg:line *ngFor="let l of lines" 
