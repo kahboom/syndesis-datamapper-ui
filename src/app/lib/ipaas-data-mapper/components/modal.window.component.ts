@@ -76,12 +76,14 @@ export class ModalWindowComponent implements AfterViewInit {
 	ngAfterViewInit() {
 		//from: http://stackoverflow.com/questions/40811809/add-component-dynamically-inside-an-ngif
 		this.myTarget.changes.subscribe(changes => {
-			if (!this.componentLoaded && this.visible && this.myTarget && (this.myTarget.toArray().length)) {
-				this.loadComponent()
+			setTimeout(() => { 
+				if (!this.componentLoaded && this.visible && this.myTarget && (this.myTarget.toArray().length)) {
+					this.loadComponent()				        		
+				}
 				setTimeout(() => { 
-        			this.detector.detectChanges();
-        		}, 10);  
-			}
+					this.detector.detectChanges();
+				}, 10);
+			}, 10);  
   		});
 	}
 

@@ -336,11 +336,11 @@ export class DocumentDefinition {
             var fieldPaths: string[] = this.isSource ? mapping.inputFieldPaths : mapping.outputFieldPaths;
             for (let field of this.getFields(fieldPaths)) {
                 field.partOfMapping = true;   
-                field.partOfTransformation = partOfTransformation;
+                field.partOfTransformation = field.partOfTransformation || partOfTransformation;
                 var parentField: Field = field.parentField;
                 while (parentField != null) {
                     parentField.partOfMapping = true; 
-                    parentField.partOfTransformation = partOfTransformation;
+                    parentField.partOfTransformation = parentField.partOfTransformation || partOfTransformation;
                     parentField = parentField.parentField;
                 }
             }
