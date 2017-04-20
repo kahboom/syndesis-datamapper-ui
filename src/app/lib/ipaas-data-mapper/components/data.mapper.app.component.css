@@ -69,7 +69,7 @@
 /* document cards */
 .docDef { position:relative; border:1px solid #CAC9C9; height:100%; background-color:white; overflow:hidden; }
 .docDef .docName { overflow:hidden; display:inline-block; width:calc(100% - 45px); margin-left:3px; float:left; }
-.docDef .docName I { margin-right:5px; vertical-align:baseline; }
+.docDef .docName I { margin-right:5px; vertical-align:baseline; margin-bottom:4px; }
 .docDef I.searchBoxIcon { float:right; } 
 .docDef .searchBox { position:relative; }
 .docDef .searchBox INPUT { width:100%; border:1px solid #FBFBFB; border-bottom:1px solid #CAC9C9; padding:5px 10px; float:left;}
