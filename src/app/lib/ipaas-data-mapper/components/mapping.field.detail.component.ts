@@ -20,6 +20,7 @@ import { Observable } from 'rxjs/Observable';
 import { ConfigModel } from '../models/config.model';
 import { Field } from '../models/field.model';
 import { DocumentDefinition } from '../models/document.definition.model';
+import { MappingModel, FieldMappingPair } from '../models/mapping.model';
 
 @Component({
 	selector: 'mapping-field-detail',
@@ -38,6 +39,7 @@ export class MappingFieldDetailComponent {
 	@Input() selectedFieldPath: string;
 	@Input() originalSelectedFieldPath: string;
 	@Input() docDef: DocumentDefinition; 
+	@Input() fieldPair: FieldMappingPair;
 	private lastFieldPath: string;
 	private dataSource: Observable<any>;
 
@@ -61,10 +63,10 @@ export class MappingFieldDetailComponent {
 			this.lastFieldPath = this.originalSelectedFieldPath;
 		}
 		var fieldPath: string = this.extractFieldPath(this.lastFieldPath);
-		this.cfg.mappingService.removeMappedField(fieldPath, this.docDef.isSource);
+		this.cfg.mappingService.removeMappedField(fieldPath, this.fieldPair, this.docDef.isSource);
 		fieldPath = this.extractFieldPath(event.item);
-		if (fieldPath != this.docDef.getNoneField().path) {
-			this.cfg.mappingService.addMappedField(fieldPath, this.docDef.isSource);
+		if (fieldPath != DocumentDefinition.getNoneField().path) {
+			this.cfg.mappingService.addMappedField(fieldPath, this.fieldPair, this.docDef.isSource);
 			this.lastFieldPath = fieldPath;
 		}
 		console.log("Attempting to save current mapping, mapping detail selection changed.");
@@ -80,7 +82,11 @@ export class MappingFieldDetailComponent {
 
 	public executeSearch(filter: string): string[] {
 		var fieldNames: string[] = [];
-		for (let field of this.docDef.getTerminalFields(true)) {
+		var fields: Field[] = [DocumentDefinition.getNoneField()].concat(this.docDef.getTerminalFields());
+		for (let field of fields) {
+			if (!field.availableForSelection) {
+				continue;
+			}
 			if (filter == null || filter == "" 
 				|| field.displayName.toLowerCase().indexOf(filter.toLowerCase()) != -1) {
 				var fieldPath = field.path;

@@ -53,14 +53,14 @@ export class MappingDefinition {
 			var m: MappingModel = this.getMappingForLookupTable(t.name);
 			if (m != null) {
 				if (cfg.sourceDocs[0] && !t.sourceIdentifier) {
-					var inputField: Field = cfg.sourceDocs[0].getField(m.inputFieldPaths[0]);
+					var inputField: Field = cfg.sourceDocs[0].getField(m.getMappedFieldPaths(true)[0]);
 					if (inputField) {
 						t.sourceIdentifier = inputField.className;
 						tableChanged = true;
 					}
 				}
 				if (cfg.targetDocs[0] && !t.targetIdentifier) {
-					var outputField: Field = cfg.targetDocs[0].getField(m.outputFieldPaths[0]);
+					var outputField: Field = cfg.targetDocs[0].getField(m.getMappedFieldPaths(false)[0]);
 					if (outputField) {						
 						t.targetIdentifier = outputField.className;
 						tableChanged = true;
@@ -121,8 +121,8 @@ export class MappingDefinition {
 	}
 
 	public isMappingStale(mapping: MappingModel, inputDoc: DocumentDefinition, outputDoc: DocumentDefinition): boolean {		
-		var inputFieldsExist: boolean = inputDoc.isFieldsExist(mapping.inputFieldPaths);
-		var outputFieldsExist: boolean = outputDoc.isFieldsExist(mapping.outputFieldPaths);
+		var inputFieldsExist: boolean = inputDoc.isFieldsExist(mapping.getMappedFieldPaths(true));
+		var outputFieldsExist: boolean = outputDoc.isFieldsExist(mapping.getMappedFieldPaths(false));
 		console.log("Blah", { "i": inputFieldsExist, "o": outputFieldsExist} );
 		return !(inputFieldsExist && outputFieldsExist);
 	}
@@ -131,8 +131,8 @@ export class MappingDefinition {
 		console.log("Checking mapping for lookup table initialization: " + m.toString());
 		if (!(m.transition.mode == TransitionMode.ENUM
 			&& m.transition.lookupTableName == null 
-			&& m.inputFieldPaths.length == 1
-			&& m.outputFieldPaths.length == 1)) {
+			&& m.getMappedFieldPaths(true).length == 1
+			&& m.getMappedFieldPaths(false).length == 1)) {
 				console.log("Not looking for lookuptable for mapping: " + m.toString());
 			return;
 		}
@@ -140,11 +140,11 @@ export class MappingDefinition {
 		var inputClassName: string = null;
 		var outputClassName: string = null;
 
-		var inputField: Field = cfg.sourceDocs[0].getField(m.inputFieldPaths[0]);
+		var inputField: Field = cfg.sourceDocs[0].getField(m.getMappedFieldPaths(true)[0]);
 		if (inputField) {
 			inputClassName = inputField.className;		
 		}
-		var outputField: Field = cfg.targetDocs[0].getField(m.outputFieldPaths[0]);
+		var outputField: Field = cfg.targetDocs[0].getField(m.getMappedFieldPaths(false)[0]);
 		if (outputField) {
 			outputClassName = outputField.className;		
 		}
@@ -170,6 +170,25 @@ export class MappingDefinition {
         	mappings.push(this.activeMapping);
         }
         return mappings;
+	}
+
+	public getAllMappedFieldPaths(isSource: boolean) : string[] {
+		var result: string[] = [];
+		for (let m of this.mappings) {
+			result = result.concat(m.getMappedFieldPaths(isSource));
+		}
+		return result;		
+	}
+
+	public removeMapping(m: MappingModel): boolean {
+		var mappings: MappingModel[] = this.mappings;
+		for (var i = 0; i < mappings.length; i++) {
+			if (mappings[i].uuid == m.uuid) {
+				mappings.splice(i, 1);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public toJSON(): any {

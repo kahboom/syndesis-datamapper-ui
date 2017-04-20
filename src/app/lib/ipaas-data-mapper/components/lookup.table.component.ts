@@ -52,7 +52,7 @@ export class LookupTableComponent {
 	public initialize(cfg: ConfigModel): void {
 		var mapping: MappingModel = cfg.mappings.activeMapping;
 		
-		var targetField: Field = cfg.targetDocs[0].getField(mapping.outputFieldPaths[0]);
+		var targetField: Field = mapping.getMappedFields(false, cfg)[0];
 		var targetFieldClass: string = targetField.className;
 
 		var targetValues: string[] = [];
@@ -67,7 +67,7 @@ export class LookupTableComponent {
 		}
 
 		var d: LookupTableData[] = [];
-		var sourceField: Field = cfg.sourceDocs[0].getField(mapping.inputFieldPaths[0]);
+		var sourceField: Field = mapping.getMappedFields(true, cfg)[0];
 		for (let e of sourceField.enumValues) {
 			var tableData: LookupTableData = new LookupTableData();
 			tableData.sourceEnumValue = e.name;

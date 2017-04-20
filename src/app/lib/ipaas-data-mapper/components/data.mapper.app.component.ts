@@ -118,11 +118,11 @@ export class DataMapperAppComponent implements OnInit {
 			var self: DataMapperAppComponent = mw.parentComponent as DataMapperAppComponent;
 			var c: MappingSelectionComponent = mw.nestedComponent as MappingSelectionComponent;
 			var mapping: MappingModel = c.getSelectedMapping();
-			self.cfg.mappingService.selectMapping(mapping, false);
+			self.cfg.mappingService.selectMapping(mapping);
 		};
 		this.modalWindow.cancelButtonHandler = (mw: ModalWindowComponent) => {
 			var self: DataMapperAppComponent = mw.parentComponent as DataMapperAppComponent;	
-			self.cfg.mappingService.selectMapping(null, false);
+			self.cfg.mappingService.selectMapping(null);
 		};
 		this.modalWindow.show();
 	}	
@@ -138,7 +138,7 @@ export class DataMapperAppComponent implements OnInit {
 		if ("showDetails" == action) {
 			if (self.cfg.mappings.activeMapping == null) {
 				console.log("Creating new mapping.")				
-				self.cfg.mappingService.selectMapping(new MappingModel(), true);
+				self.cfg.mappingService.selectMapping(new MappingModel());
 			}
 			self.cfg.showMappingDetailTray = !self.cfg.showMappingDetailTray;
 		} else if ("showLines" == action) {

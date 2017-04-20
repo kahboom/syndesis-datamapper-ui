@@ -31,45 +31,17 @@ export class DocumentManagementService {
 	public cfg: ConfigModel;	
 	public debugParsing: boolean = false;
 
-	private updateFromSelectedFieldsSource = new Subject<void>();
-	updateFromSelectedFields$ = this.updateFromSelectedFieldsSource.asObservable();	
-
 	private headers: Headers = new Headers();
 
 	constructor(private http: Http) { 
 		this.headers.append("Content-Type", "application/json");		
 	}
 
-	public updateSearch(searchFilter: string, isSource: boolean): void {
-		var docDef: DocumentDefinition = this.cfg.getDoc(isSource);
-
-		for (let field of docDef.getAllFields()) {
-			field.visible = false;
-		}
-		for (let field of docDef.getTerminalFields(false)) {
-			this.updateSearchVisibilityForField(searchFilter, field);			
-		}
-
-		this.notifyUpdateFromSelectedFields();
-	}
-
-	private updateSearchVisibilityForField(searchFilter: string, field: Field): void {
-		field.visible = (searchFilter == null || "" == searchFilter || field.name.toLowerCase().includes(searchFilter.toLowerCase()));
-		if (field.visible) {
-			var parentField = field.parentField;
-			while (parentField != null) {
-				parentField.visible = true;
-				parentField.collapsed = false;
-				parentField = parentField.parentField;
-			}
-		}
-	}
-
 	public initialize(): void {
 		this.cfg.mappingService.mappingUpdated$.subscribe(mappingDefinition => {
 			for (var d of this.cfg.getAllDocs()) {
 				if (d.initCfg.initialized) {
-					d.updateFromMappings(this.cfg.mappings);
+					d.updateFromMappings(this.cfg.mappings, this.cfg);
 				}
 			}
 		});		
@@ -235,20 +207,7 @@ export class DocumentManagementService {
   		return parsedField;
 	}
 
-	public notifyUpdateFromSelectedFields(): void {
-		this.updateFromSelectedFieldsSource.next();
-	}	
-
 	private handleError(message:string, error: any): void {
-		if (error != null && error instanceof Response) {
-			if (error.status == 230) {
-				message += " (Connection refused)";
-			} else if (error.status == 500) {
-				message += " (Internal Server Error)";
-			} else if (error.status == 404) {
-				message += " (Not Found)";
-			}
-		}
 		this.cfg.errorService.error(message, error);
 	}	
 }

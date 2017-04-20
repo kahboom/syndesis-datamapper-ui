@@ -19,7 +19,7 @@ import { DomSanitizer, SafeResourceUrl, SafeUrl, SafeStyle} from '@angular/platf
 
 import { ConfigModel } from '../models/config.model';
 import { Field } from '../models/field.model';
-import { MappingModel } from '../models/mapping.model';
+import { MappingModel, FieldMappingPair } from '../models/mapping.model';
 import { TransitionModel, TransitionMode, TransitionDelimiter } from '../models/transition.model';
 import { DocumentDefinition } from '../models/document.definition.model';
 
@@ -57,24 +57,49 @@ export class MappingDetailHeaderComponent {
 	selector: 'mapping-field-section',
 	template: `
 		<div class="mappingFieldContainer">
-			<div *ngFor="let field of getMappingFields()" class="MappingFieldSection">
-				<div style="float:left;">
-					<label>{{ isSource ? "Source" : "Target" }}</label>
-				</div>
-				<div style="float:right; margin-right:5px;">
-	   				<i class="fa fa-trash" aria-hidden="true" (click)="remove($event, field.path)"></i>
-   				</div>
-   				<div style="clear:both; height:0px;"></div>
-	  			<mapping-field-detail #mappingField [selectedFieldPath]="getTypedFieldPath(field)" 
-	  				[originalSelectedFieldPath]="getTypedFieldPath(field)"
-	  				[cfg]="cfg" [docDef]="cfg.getDoc(isSource)"></mapping-field-detail>
-	  			<mapping-field-action [field]="field" [isSource]="isSource" [cfg]="cfg"></mapping-field-action>
-	  		</div>
+			<div *ngFor="let fieldPair of getFieldPairs()" class="MappingFieldSection">				
+   				<!-- non-collection field detail / action children -->
+   				<div *ngIf="!isCollection">
+					<div *ngFor="let field of getMappingFields(fieldPair, isSource)">
+						<!-- header label / trash icon -->
+						<div style="float:left;"><label>{{ getTopFieldTypeLabel() }}</label></div>
+						<div style="float:right; margin-right:5px;">
+			   				<i class="fa fa-trash" aria-hidden="true" (click)="removeField($event, field.path, fieldPair)"></i>
+		   				</div>
+		   				<div style="clear:both; height:0px;"></div>
+
+			  			<mapping-field-detail [selectedFieldPath]="getTypedFieldPath(field)" 
+			  				[originalSelectedFieldPath]="getTypedFieldPath(field)"
+			  				[fieldPair]="fieldPair" [cfg]="cfg" [docDef]="cfg.getDoc(isSource)"></mapping-field-detail>
+			  			<mapping-field-action [field]="field" [isSource]="isSource" [cfg]="cfg"></mapping-field-action>
+			  		</div>
+		  		</div>
+
+		  		<!-- collection field pairing detail -->
+		  		<div *ngIf="isCollection">
+		  			<!-- header label / trash icon -->
+					<div style="float:left;"><label>Source</label></div>
+					<div style="float:right; margin-right:5px;">
+		   				<i class="fa fa-trash" aria-hidden="true" (click)="removePair($event, fieldPair)"></i>
+	   				</div>
+	   				<div style="clear:both; height:0px;"></div>
+
+		  			<mapping-field-detail *ngFor="let field of getMappingFields(fieldPair, true)" 
+		  				[selectedFieldPath]="getTypedFieldPath(field)" 
+		  				[originalSelectedFieldPath]="getTypedFieldPath(field)"
+		  				[fieldPair]="fieldPair" [cfg]="cfg" [docDef]="cfg.getDoc(true)"></mapping-field-detail>		  			
+		  			<div style="float:left;"><label>Target</label></div>
+		  			<div style="clear:both; height:0px;"></div>
+		  			<mapping-field-detail *ngFor="let field of getMappingFields(fieldPair, false)" 
+		  				[selectedFieldPath]="getTypedFieldPath(field)" 
+		  				[originalSelectedFieldPath]="getTypedFieldPath(field)"
+		  				[fieldPair]="fieldPair" [cfg]="cfg" [docDef]="cfg.getDoc(false)"></mapping-field-detail>
+		  		</div>
+		  	</div>
+
+		  	<!-- add button -->
 	  		<div class="linkContainer" *ngIf="!isSource && mappingIsntEnum()">
-				<a (click)="addField($event)"  
-					class="small-primary">
-					{{ isSource ? "Add Source" : "Add Target" }}
-				</a>
+				<a (click)="addClicked($event)" class="small-primary">{{ getAddButtonLabel() }}</a>
 			</div>
 	  	</div>
     `
@@ -83,6 +108,22 @@ export class MappingDetailHeaderComponent {
 export class MappingFieldSectionComponent { 
 	@Input() cfg: ConfigModel;
 	@Input() isSource: boolean = false;
+	@Input() isCollection: boolean = false;
+
+	public getFieldPairs(): FieldMappingPair[] {
+		return this.cfg.mappings.activeMapping.fieldMappings;
+	}
+
+	public getTopFieldTypeLabel(): string {
+		return (this.isCollection || this.isSource) ? "Source" : "Target";
+	}
+
+	public getAddButtonLabel(): string {
+		if (this.isCollection) {
+			return "Add Mapping";
+		}
+		return this.isSource ? "Add Source" : "Add Target"
+	}
 
 	private getTypedFieldPath(field: Field): string {
 		var fieldPath: string = field.path;
@@ -92,24 +133,27 @@ export class MappingFieldSectionComponent {
 		return fieldPath;
 	}
 
-	public getMappingFields(): Field[] {
-		var docDef: DocumentDefinition = this.cfg.getDoc(this.isSource);
-		var fieldPaths: string[] = this.isSource ? this.cfg.mappings.activeMapping.inputFieldPaths
-			: this.cfg.mappings.activeMapping.outputFieldPaths;
-		if (fieldPaths == null || fieldPaths.length == 0) {
-			return [docDef.getNoneField()];			
+	public getMappingFields(fieldPair: FieldMappingPair, isSource: boolean): Field[] {
+		var fields: Field[] = this.cfg.mappings.activeMapping.gettMappedFieldsFromPair(fieldPair, isSource, this.cfg);
+		if (fields == null || fields.length == 0) {
+			return [DocumentDefinition.getNoneField()];			
 		}
-		return docDef.getFields(fieldPaths);
+		return fields;
 	}
 
-	private addField(event: MouseEvent): void {
-		this.cfg.mappingService.addMappedField(null, this.isSource);
-		//if adding a field and only one is now mapped, add another b/c user wants two fields now, not one
-		var mapping: MappingModel = this.cfg.mappings.activeMapping;
-		var mappedFieldCount: number = this.isSource ? mapping.inputFieldPaths.length : mapping.outputFieldPaths.length;
-		if (mappedFieldCount == 1) {
-			this.cfg.mappingService.addMappedField(null, this.isSource);
-		}
+	private addClicked(event: MouseEvent): void {
+		if (this.isCollection) {
+			this.cfg.mappingService.addMappedPair();
+		} else { //not collection
+			var fieldPair: FieldMappingPair = this.cfg.mappings.activeMapping.getFirstFieldMapping();
+			this.cfg.mappingService.addMappedField(null, fieldPair, this.isSource);
+		
+			//if adding a field and only one is now mapped, add another b/c user wants two fields now, not one
+			var mappedFieldCount: number = this.cfg.mappings.activeMapping.getMappedFieldPaths(this.isSource).length;
+			if (mappedFieldCount == 1) {
+				this.cfg.mappingService.addMappedField(null, fieldPair, this.isSource);
+			}
+		}		
 		this.cfg.mappingService.saveCurrentMapping();
 	}	
 
@@ -117,8 +161,13 @@ export class MappingFieldSectionComponent {
 		return !(this.cfg.mappings.activeMapping.transition.mode == TransitionMode.ENUM);
 	}	
 
-	remove(event: MouseEvent, fieldPath: string): void {
-		this.cfg.mappingService.removeMappedField(fieldPath, this.isSource);
+	public removePair(event: MouseEvent, fieldPair: FieldMappingPair): void {
+		this.cfg.mappingService.removeMappedPair(fieldPair);		
+		this.cfg.mappingService.saveCurrentMapping();
+	}
+
+	public removeField(event: MouseEvent, fieldPath: string, fieldPair: FieldMappingPair): void {
+		this.cfg.mappingService.removeMappedField(fieldPath, fieldPair, this.isSource);		
 		this.cfg.mappingService.saveCurrentMapping();
 	}
 }
@@ -143,15 +192,22 @@ export class MappingFieldSectionComponent {
 		  			</h2>
 		  		</div>
 		  		<div class="fieldMappingDetail-body">
-			  		<detail-header title="Sources" #sourcesHeader class="sources"></detail-header>	  		
-				  	<mapping-field-section [cfg]="cfg" [isSource]="true" 
-				  		*ngIf="!sourcesHeader.collapsed"></mapping-field-section>					
-					<detail-header title="Action" #actionsHeader></detail-header>
-			  		<transition-selector [cfg]="cfg" [modalWindow]="modalWindow" 
-			  			*ngIf="!actionsHeader.collapsed"></transition-selector>			  		
-			  		<detail-header title="Targets" #targetsHeader></detail-header>
-			  		<mapping-field-section [cfg]="cfg" [isSource]="false" 
-			  			*ngIf="!targetsHeader.collapsed"></mapping-field-section>  
+		  			<div *ngIf="!isMappingCollection()">
+				  		<detail-header title="Sources" #sourcesHeader class="sources"></detail-header>	  		
+					  	<mapping-field-section [cfg]="cfg" [isSource]="true" [isCollection]="false"
+					  		*ngIf="!sourcesHeader.collapsed"></mapping-field-section>					
+						<detail-header title="Action" #actionsHeader></detail-header>
+				  		<transition-selector [cfg]="cfg" [modalWindow]="modalWindow" 
+				  			*ngIf="!actionsHeader.collapsed"></transition-selector>			  		
+				  		<detail-header title="Targets" #targetsHeader></detail-header>
+				  		<mapping-field-section [cfg]="cfg" [isSource]="false" [isCollection]="false"
+				  			*ngIf="!targetsHeader.collapsed"></mapping-field-section>  
+			  		</div>
+			  		<div *ngIf="isMappingCollection()">
+			  			<detail-header title="Mappings" #mappingsHeader class="mappingsHeader"></detail-header>	  		
+			  			<mapping-field-section [cfg]="cfg" [isSource]="false" [isCollection]="true"
+				  			*ngIf="!mappingsHeader.collapsed"></mapping-field-section>  
+			  		</div>
 		  		</div>
 		  	</div>
 	    </div>
@@ -168,16 +224,22 @@ export class MappingDetailComponent {
   	public actionsHeader: MappingDetailHeaderComponent;
   	@ViewChild('targetsHeader')
   	public targetsHeader: MappingDetailHeaderComponent;
+  	@ViewChild('mappingsHeader')
+  	public mappingsHeader: MappingDetailHeaderComponent;
 
 	private detailStyle: SafeStyle;
 
 	constructor(private sanitizer: DomSanitizer) {}
 
+	public isMappingCollection(): boolean {
+		return this.cfg.mappings.activeMapping.isCollectionMode(this.cfg);
+	}
+
 	private addNewMapping(event: MouseEvent): void {
 		console.log("Creating new mapping.")
 		this.cfg.mappingService.deselectMapping();
 		this.cfg.mappings.activeMapping = new MappingModel();
-		this.cfg.mappingService.notifyActiveMappingUpdated(true);
+		this.cfg.mappingService.notifyMappingUpdated();
 	}
 
 	private deselectMapping(event: MouseEvent): void {

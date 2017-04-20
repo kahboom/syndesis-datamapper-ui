@@ -16,6 +16,7 @@
 
 import { Field } from './field.model';
 import { MappingModel } from './mapping.model';
+import { ConfigModel } from '../models/config.model';
 import { TransitionModel, TransitionMode } from './transition.model';
 import { MappingDefinition } from '../models/mapping.definition.model';
 
@@ -39,10 +40,11 @@ export class DocumentDefinition {
     public enumFieldsByClassName: { [key:string]:Field; } = {};
     public debugParsing: boolean = false;    
     public fieldsByPath: { [key:string]:Field; } = {};
-    private pathSeparator: string = ".";
-    private static noneField: Field = null;
+    private pathSeparator: string = ".";    
     public uri: string = null;
     public fieldPaths: string[] = [];
+
+    private static noneField: Field = null;
 
     public getComplexField(className: string): Field {
         return this.complexFieldsByClassName[className];
@@ -56,7 +58,7 @@ export class DocumentDefinition {
         return [].concat(this.allFields);
     }
 
-    public getNoneField(): Field {
+    public static getNoneField(): Field {
         if (DocumentDefinition.noneField == null) {
             DocumentDefinition.noneField = new Field();
             DocumentDefinition.noneField.name = "[None]";
@@ -87,8 +89,8 @@ export class DocumentDefinition {
     }
 	
     public getField(fieldPath: string): Field {
-        if (fieldPath == this.getNoneField().path) {
-            return this.getNoneField();
+        if (fieldPath == DocumentDefinition.getNoneField().path) {
+            return DocumentDefinition.getNoneField();
         }
         var field: Field = this.fieldsByPath[fieldPath];
         //if we can't find the field we're looking for, find parent fields and populate their children
@@ -114,10 +116,7 @@ export class DocumentDefinition {
         return field;
     }   
 
-    public getTerminalFields(includeNoneOption: boolean): Field[] {
-        if (includeNoneOption) {            
-            return [this.getNoneField()].concat(this.terminalFields);
-        }
+    public getTerminalFields(): Field[] {        
         return [].concat(this.terminalFields);
     }
 
@@ -152,7 +151,44 @@ export class DocumentDefinition {
         }
     }  
 
+    public addMockCollectionFields(parentField: Field): void {
+        var parents: string[] = ["LatestOrder", "RefOrder", "LinkedOrder"];
+        var children: string[] = ["OrderId", "Sku", "Amount", "Description"];
+        for (let parentName of parents) {
+            var collectionField: Field = new Field();
+            collectionField.name = parentName;
+            collectionField.displayName = collectionField.name;
+            collectionField.path = collectionField.name;
+            collectionField.fieldDepth = 0;
+            collectionField.type = "COLLECTION";
+            collectionField.serviceObject = new Object();
+            collectionField.isCollection = true;
+
+            for (let childName of children) {
+                var childField: Field = new Field();
+                childField.name = childName;
+                childField.displayName = childField.name;
+                childField.path = collectionField.path + "." + childField.name;
+                childField.fieldDepth = 1;
+                childField.type = "STRING"
+                childField.serviceObject = new Object();
+                collectionField.children.push(childField);
+            }
+            if (parentField == null) {
+                this.fields.push(collectionField);                
+                if (parentName == "RefOrder") {
+                    this.addMockCollectionFields(collectionField);
+                }
+            } else {
+                parentField.children.push(collectionField);
+            }
+        }        
+    }
+
     public populateFromFields(): void {
+        //FIXME: remove mock data
+        this.addMockCollectionFields(null);
+
         this.prepareComplexFields();
 
         this.alphabetizeFields(this.fields);
@@ -285,8 +321,12 @@ export class DocumentDefinition {
         }
 
         //remove children more than one layer deep in root fields
-        for (let field of fields) {
+        for (let field of fields) {            
             for (let childField of field.children) {
+                //FIXME: collection field parsing vs complex.
+                if (field.isCollection || childField.isCollection) {
+                    continue;
+                }
                 childField.children = [];
             }
         }        
@@ -324,21 +364,85 @@ export class DocumentDefinition {
         return result;
     }
 
-    public updateFromMappings(mappingDefinition: MappingDefinition): void {
+    public updateFromMappings(mappingDefinition: MappingDefinition, cfg: ConfigModel): void {
+        var activeMapping: MappingModel = mappingDefinition.activeMapping;
+        var collectionMode: boolean = (activeMapping != null && activeMapping.isCollectionMode(cfg));
+        var fieldsInMapping: Field[] = null;
+        if (collectionMode) {
+            fieldsInMapping = activeMapping.getMappedFields(this.isSource, cfg);
+            //don't disable this document's fields if there isn't a selected field from this document yet.
+            if (fieldsInMapping.length == 0) {
+                collectionMode = false;
+            }
+        }
         for (let field of this.allFields) {
             field.partOfMapping = false;
             field.hasUnmappedChildren = false;
+            field.selected = false;
+            field.partOfTransformation = false;
+            field.availableForSelection = !collectionMode;
+        }
+
+        if (collectionMode) {
+            var collectionPrimitiveMode: boolean = !fieldsInMapping[0].isInCollection();
+            var parentCollectionPath: string = null;
+            var parentCollectionDisplayName: string = null;               
+            if (!collectionPrimitiveMode) {
+                parentCollectionPath = fieldsInMapping[0].parentField.path;
+                parentCollectionDisplayName = fieldsInMapping[0].parentField.displayName;
+            }
+            for (let field of this.getTerminalFields()) {
+                if (collectionPrimitiveMode) { 
+                    //our document is in primitive mode, only allow primitives not in collection to be mapped
+                    if (field.isInCollection()) {
+                        field.selectionExclusionReason = 
+                            "primitive collection mode (cannot select fields within collection)";                        
+                        continue;
+                    }
+                    var parentField: Field = field;
+                    while (parentField != null) {
+                        parentField.availableForSelection = true;
+                        parentField.selectionExclusionReason = null;
+                        parentField = parentField.parentField;
+                    }                    
+                } else {
+                    //our document is in collection mode, only allow direct children of the selected collection to be mapped
+                    if (!field.isInCollection()) {
+                        field.selectionExclusionReason = 
+                            "collection mode (only children of " + parentCollectionDisplayName + " may be selected)";  
+                        continue;
+                    }
+                    //only direct children of the selected collection are selectable
+                    if (!(field.parentField.path == parentCollectionPath)) {
+                        field.selectionExclusionReason = 
+                            "collection mode (only children of " + parentCollectionDisplayName + " may be selected)";
+                        continue;
+                    }
+                    var parentField: Field = field;
+                    while (parentField != null) {
+                        parentField.availableForSelection = true;
+                        parentField.selectionExclusionReason = null;
+                        parentField = parentField.parentField;
+                    }
+                }                
+            }            
         }
         
         for (let mapping of mappingDefinition.getAllMappings(true)) {
+            var mappingIsActive: boolean = (mapping == mappingDefinition.activeMapping);
             var partOfTransformation: boolean = (mapping.transition.mode == TransitionMode.SEPARATE)
                 || (mapping.transition.mode == TransitionMode.ENUM);
-            var fieldPaths: string[] = this.isSource ? mapping.inputFieldPaths : mapping.outputFieldPaths;
-            for (let field of this.getFields(fieldPaths)) {
-                field.partOfMapping = true;   
-                field.partOfTransformation = field.partOfTransformation || partOfTransformation;
-                var parentField: Field = field.parentField;
+            var fieldPaths: string[] = mapping.getMappedFieldPaths(this.isSource);
+            for (let field of this.getFields(fieldPaths)) {                
+                var parentField: Field = field;
+                field.selected = mappingIsActive && field.isTerminal();
+                if (field.selected) {
+                    console.log("field selected: " + field.path);
+                }
                 while (parentField != null) {
+                    if (field.selected && parentField != field) {
+                        parentField.collapsed = false;
+                    }
                     parentField.partOfMapping = true; 
                     parentField.partOfTransformation = parentField.partOfTransformation || partOfTransformation;
                     parentField = parentField.parentField;

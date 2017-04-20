@@ -119,12 +119,26 @@ export class DocumentDefinitionComponent {
     }
 
     private search(searchFilter: string): void {
-        this.cfg.documentService.updateSearch(searchFilter, this.docDef.isSource);
-    }  
+        for (let field of this.docDef.getAllFields()) {
+            field.visible = false;
+        }
+        for (let field of this.docDef.getTerminalFields()) {
+            field.visible = (searchFilter == null || "" == searchFilter 
+                || field.name.toLowerCase().includes(searchFilter.  toLowerCase()));
+            if (field.visible) {
+                var parentField = field.parentField;
+                while (parentField != null) {
+                    parentField.visible = true;
+                    parentField.collapsed = false;
+                    parentField = parentField.parentField;
+                }
+            }
+        }
+    }
 
     private clearSearch(): void  {
-        this.cfg.documentService.updateSearch(null, this.docDef.isSource);
         this.searchFilter = "";
+        this.search(this.searchFilter);
     }
 
     private handleScroll(event: MouseEvent) {

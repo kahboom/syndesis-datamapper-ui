@@ -20,6 +20,7 @@ import { TransitionModel, TransitionMode, TransitionDelimiter } from '../models/
 import { ConfigModel } from '../models/config.model';
 import { Field, EnumValue } from '../models/field.model';
 import { LookupTable, LookupTableEntry } from '../models/lookup.table.model';
+import { MappingModel } from '../models/mapping.model';
 
 import { ModalWindowComponent } from './modal.window.component';
 import { LookupTableComponent } from './lookup.table.component';
@@ -86,13 +87,13 @@ export class TransitionSelectionComponent {
 		} else {
 			this.cfg.mappings.activeMapping.transition.delimiter = parseInt(selectedValue);
 		}	
-		this.cfg.mappings.activeMapping.updateSeparatorIndexes();	
+		this.cfg.mappings.activeMapping.getFirstFieldMapping().updateSeparatorIndexes();	
 		this.cfg.mappingService.saveCurrentMapping();
 	}
 
 	private showLookupTable() {
-		if (!this.cfg.mappings.activeMapping.inputFieldPaths.length 
-			|| !this.cfg.mappings.activeMapping.outputFieldPaths.length) {
+		var mapping: MappingModel = this.cfg.mappings.activeMapping;
+		if (!mapping.hasMappedFields(true) || !mapping.hasMappedFields(false)) { 
 			this.cfg.errorService.warn("Please select source and target fields before mapping values.", null);
 			return;
 		}

@@ -50,7 +50,7 @@ export class MappingSelectionSectionComponent {
 	}
 
 	public getPaths(): string[] {
-		return this.selectedFieldIsSource ? this.mapping.outputFieldPaths : this.mapping.inputFieldPaths;
+		return this.mapping.getMappedFieldPaths(this.selectedFieldIsSource);
 	}
 
 	public getFormattedOutputPath(path: string, nameOnly:boolean) {
@@ -121,12 +121,8 @@ export class MappingSelectionComponent {
 	public addMapping() {
 		console.log("Creating new mapping.")
 		var m: MappingModel = new MappingModel();
-		if (this.selectedFieldIsSource) {
-			m.inputFieldPaths.push(this.selectedField.path);
-		} else {
-			m.outputFieldPaths.push(this.selectedField.path);
-		}
-		this.cfg.mappingService.selectMapping(m, true);
+		m.addMappedFieldPath(this.selectedField.path, m.getFirstFieldMapping(), this.selectedFieldIsSource);
+		this.cfg.mappingService.selectMapping(m);
 		this.modalWindow.close();
 	}
 

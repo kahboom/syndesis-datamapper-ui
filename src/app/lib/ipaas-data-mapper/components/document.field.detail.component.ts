@@ -39,7 +39,8 @@ import { LineMachineComponent } from './line.machine.component';
 					<div class="spacer" [attr.style]="getSpacerWidth()">&nbsp;</div>
 					<div *ngIf="!field.isTerminal()" style="display:inline-block;">					
 						<i [attr.class]="getParentToggleClass()"></i>
-						<i class="fa fa-folder parentFolder"></i>
+						<i *ngIf="!field.isCollection" class="fa fa-folder parentFolder"></i>
+						<i *ngIf="field.isCollection" class="fa fa-list-ul parentFolder"></i>
 					</div>
 					<div *ngIf="field.isTerminal()" style="display:inline-block;">					
 						<i class="fa fa-file-o"></i>
@@ -101,6 +102,9 @@ export class DocumentFieldDetailComponent {
 		if (!this.docDef.isSource) {
 			cssClass += " outputField";
 		}
+		if (!this.field.availableForSelection) {
+			cssClass += " disableSelection";
+		}
 		return cssClass;
 	}
 
@@ -128,24 +132,35 @@ export class DocumentFieldDetailComponent {
 	}
 
 	public handleMouseClick(event: MouseEvent): void {
-		if (this.field.isTerminal()) {			
-			if (this.field.selected) {
+		if (this.field.isTerminal()) {	
+			if (!this.field.availableForSelection) {
+				this.cfg.errorService.warn("This field cannot be selected, " 
+					+ this.field.selectionExclusionReason + ": " + this.field.displayName, null);
+				return;
+			}		
+			var mapping: MappingModel = this.cfg.mappings.activeMapping;
+			var isSource: boolean = this.docDef.isSource;
+			if (mapping != null && mapping.isFieldPathMapped(this.field.path, isSource)) {
 				// don't do anything, field is already a part of current mapping
 				return;
 			}
-			var isSource: boolean = this.docDef.isSource;
-			var mapping: MappingModel = this.cfg.mappings.activeMapping;
-			if (mapping != null && (this.docDef.getSelectedFields().length != 0) 
-				&& !mapping.isFieldInMapping(this.field.path, isSource)) {
+
+			//field isn't part of current mapping, if we already have fields selected for this source/target
+			// we should create a new mapping (deselect the old)					
+			if (mapping != null && (this.docDef.getSelectedFields().length != 0)) {
 				this.cfg.mappingService.deselectMapping();
 			}			
-			this.field.selected = !this.field.selected;		
-			this.cfg.documentService.notifyUpdateFromSelectedFields();
+
+			this.field.selected = true;		
+			this.cfg.mappingService.fieldSelectionChanged();
 			this.cfg.mappingService.saveCurrentMapping();
 		} else { //parent field
 			this.docDef.populateChildren(this.field);
-			this.field.collapsed = !this.field.collapsed;
+			this.field.collapsed = !this.field.collapsed;			
 		}		
+		setTimeout(() => { 
+			this.lineMachine.redrawLinesForMappings();
+		}, 10);  				
 	}	
 
 	public getFieldDetailComponent(fieldPath: string): DocumentFieldDetailComponent {

@@ -39,6 +39,9 @@ export class Field {
     static uuidCounter: number = 0;
     collapsed: boolean = true;
     hasUnmappedChildren: boolean = false;
+    isCollection: boolean = false;
+    availableForSelection: boolean = true;
+    selectionExclusionReason: string = null;
 
     constructor() {
         this.uuid = Field.uuidCounter.toString();
@@ -48,6 +51,9 @@ export class Field {
     public isTerminal(): boolean {
         if (this.enumeration) {
             return true;
+        }
+        if (this.isCollection) {
+            return false;
         }
     	return (this.type != "COMPLEX");
     }
@@ -70,6 +76,7 @@ export class Field {
         copy.fieldDepth = this.fieldDepth;
         copy.collapsed = this.collapsed;
         copy.hasUnmappedChildren = this.hasUnmappedChildren;
+        copy.isCollection = this.isCollection;
     	for (let childField of this.children) {
     		copy.children.push(childField.copy());
     	}
@@ -93,8 +100,19 @@ export class Field {
         this.fieldDepth = that.fieldDepth;
         this.collapsed = that.collapsed;
         this.hasUnmappedChildren = that.hasUnmappedChildren;
+        this.isCollection = that.isCollection;
         for (let childField of that.children) {
             this.children.push(childField.copy());
+        }
+    }
+
+    public isInCollection(): boolean {
+        var parent: Field = this;
+        while (parent != null) {
+            if (parent.isCollection) {
+                return true;
+            }
+            parent = parent.parentField;
         }
     }
 }

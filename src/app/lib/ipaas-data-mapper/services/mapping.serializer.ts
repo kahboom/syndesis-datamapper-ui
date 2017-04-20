@@ -15,62 +15,79 @@
 */
 
 import { TransitionModel, TransitionMode, TransitionDelimiter } from '../models/transition.model';
-import { MappingModel } from '../models/mapping.model';
+import { MappingModel, FieldMappingPair } from '../models/mapping.model';
 import { Field } from '../models/field.model';
 import { MappingDefinition } from '../models/mapping.definition.model';
 import { DocumentDefinition } from '../models/document.definition.model';
 import { LookupTable, LookupTableEntry } from '../models/lookup.table.model';
+import { ConfigModel } from '../models/config.model';
 
 export class MappingSerializer {
-	public static serializeMappings(mappingDefinition: MappingDefinition, 
-		sourceDoc: DocumentDefinition, targetDoc: DocumentDefinition): any {						
+	public static serializeMappings(cfg: ConfigModel): any {						
 		var jsonMappings: any[] = [];
 		var tables: LookupTable[] = [];
-		for (let m of mappingDefinition.mappings) {
+		for (let m of cfg.mappings.mappings) {
 			try {
+				//FIXME: remove when collections is serializable
+				var fieldsInMapping: Field[] = m.getAllMappedFields(cfg);
+				var collectionInMapping: boolean = false;
+				for (let f of fieldsInMapping) {
+					if (f.isInCollection()) {
+						console.error("Skipping mapping, it has collection field: " + f.path, m);
+						collectionInMapping = true;
+						break;
+					}
+				}
+				if (collectionInMapping) {
+					continue;
+				}
+				//END FIXME
+
+				var inputFields: Field[] = m.getMappedFields(true, cfg);
+				var outputFields: Field[] = m.getMappedFields(false, cfg);
 				var jsonMapping: any;
 				if (m.transition.mode == TransitionMode.SEPARATE) {				
 					var delimiter: string = (m.transition.delimiter == TransitionDelimiter.SPACE) ? "SPACE" : "COMMA";
 					jsonMapping = {
 						"jsonType": "com.mediadriver.atlas.v2.SeparateFieldMapping", 
-						"inputField": MappingSerializer.serializeFields(m.inputFieldPaths, sourceDoc, m, false)[0],
+						"inputField": MappingSerializer.serializeFields(inputFields, m, false)[0],
 						"outputFields": {
-							"mappedField": MappingSerializer.serializeFields(m.outputFieldPaths, targetDoc, m, true)
+							"mappedField": MappingSerializer.serializeFields(outputFields, m, true)
 						},
 						"strategy": delimiter
 					};	
 				} else if (m.transition.mode == TransitionMode.ENUM) {
 					jsonMapping = {
 						"jsonType": "com.mediadriver.atlas.v2.LookupFieldMapping", 
-						"inputField": MappingSerializer.serializeFields(m.inputFieldPaths, sourceDoc, m, false)[0],
-						"outputField": MappingSerializer.serializeFields(m.outputFieldPaths, targetDoc, m, false)[0],
+						"inputField": MappingSerializer.serializeFields(inputFields, m, false)[0],
+						"outputField": MappingSerializer.serializeFields(outputFields, m, false)[0],
 						"lookupTableName": m.transition.lookupTableName
 					};
 				} else {			
 					jsonMapping = {
 						"jsonType": "com.mediadriver.atlas.v2.MapFieldMapping", 
-						"inputField": MappingSerializer.serializeFields(m.inputFieldPaths, sourceDoc, m, false)[0],
-						"outputField": MappingSerializer.serializeFields(m.outputFieldPaths, targetDoc, m, false)[0]
+						"inputField": MappingSerializer.serializeFields(inputFields, m, false)[0],
+						"outputField": MappingSerializer.serializeFields(outputFields, m, false)[0]
 					};								
 				}
 				jsonMappings.push(jsonMapping);
 			} catch (e) {
-				var input: any = { "sourceDoc": sourceDoc, "targetDoc": targetDoc, 
-					"mapping": m, "mapping def": mappingDefinition};
+				var input: any = { "sourceDoc": cfg.sourceDocs[0], "targetDoc": cfg.targetDocs[0], 
+					"mapping": m, "mapping def": cfg.mappings};
 				console.error("Caught exception while attempting to serialize mapping, skipping. ", { "input": input, "error": e})
 			}
 		}
 				
-		var serializedLookupTables: any[] = MappingSerializer.serializeLookupTables(mappingDefinition);
+		var serializedLookupTables: any[] = MappingSerializer.serializeLookupTables(cfg.mappings);
 		let payload = {
 			"AtlasMapping": {
 				"jsonType": "com.mediadriver.atlas.v2.AtlasMapping",				
 				"fieldMappings": {
 					"fieldMapping": jsonMappings 
 				},
-				"name": mappingDefinition.name,
-				"sourceUri": sourceDoc.uri,
-				"targetUri": targetDoc.uri,
+				"name": cfg.mappings.name,
+				"sourceUri": cfg.sourceDocs[0].uri,
+				"targetUri": cfg.targetDocs[0].uri,
 				"lookupTables": {
 					"lookupTable": serializedLookupTables
 				}
@@ -110,21 +127,16 @@ export class MappingSerializer {
 		return serializedTables;
 	}
 
-	private static serializeFields(fieldPaths: string[], docDef: DocumentDefinition, 
-		mapping:MappingModel, includeIndexes:boolean): any {
+	private static serializeFields(fields: Field[], mapping:MappingModel, includeIndexes:boolean): any {
 		var mappingFieldActions: any = null;		
 		var fieldsJson: any[] = [];
-		for (let fieldPath of fieldPaths) {
-			if (docDef.getNoneField().path == fieldPath) {
+		for (let field of fields) {
+			if (DocumentDefinition.getNoneField().path == field.path) {
 				//do not include "none" options from drop downs in mapping
 				continue;
 			}
-			var field: Field = docDef.getField(fieldPath);
-			if (field == null) {
-				throw new Error("Cannot find field with path: " + fieldPath);
-			}
 			if (includeIndexes) {
-				var separatorIndex: string = mapping.fieldSeparatorIndexes[field.path];
+				var separatorIndex: string = mapping.getFirstFieldMapping().fieldSeparatorIndexes[field.path];
 				mappingFieldActions = {
 					"fieldAction":[
 						{
@@ -148,10 +160,11 @@ export class MappingSerializer {
 		var mappings: MappingModel[] = [];
 		for (let fieldMapping of json.AtlasMapping.fieldMappings.fieldMapping) {
 			var m: MappingModel = new MappingModel();
+			var fieldPair: FieldMappingPair = m.getFirstFieldMapping();
 			var isSeparateMapping = (fieldMapping.jsonType == "com.mediadriver.atlas.v2.SeparateFieldMapping");
   			var isLookupMapping = (fieldMapping.jsonType == "com.mediadriver.atlas.v2.LookupFieldMapping");
-  			var fieldPath: string = fieldMapping.inputField.field.path
-  			MappingSerializer.addFieldIfDoesntExist(m.inputFieldPaths, fieldPath);
+  			var fieldPath: string = fieldMapping.inputField.field.path;
+  			MappingSerializer.addFieldIfDoesntExist(fieldPair.inputFieldPaths, fieldPath);
   			if (isSeparateMapping) {
   				m.transition.mode = TransitionMode.SEPARATE;
   				var d: TransitionDelimiter = TransitionDelimiter.COMMA;
@@ -166,20 +179,20 @@ export class MappingSerializer {
   						&& outputField.fieldActions.fieldAction.length
   						&& outputField.fieldActions.fieldAction[0].index) {
   						var index: number = (outputField.fieldActions.fieldAction[0].index + 1)
-  						m.fieldSeparatorIndexes[fieldName] = index.toString();
+  						fieldPair.fieldSeparatorIndexes[fieldName] = index.toString();
   					} else {
-  						m.fieldSeparatorIndexes[fieldName] = "1";
+  						fieldPair.fieldSeparatorIndexes[fieldName] = "1";
   					}
-		  			MappingSerializer.addFieldIfDoesntExist(m.outputFieldPaths, fieldPath);
+		  			MappingSerializer.addFieldIfDoesntExist(fieldPair.outputFieldPaths, fieldPath);
   				}
   			} else if (isLookupMapping) {
   				console.log(fieldMapping);
   				m.transition.lookupTableName = fieldMapping.lookupTableName;
   				m.transition.mode = TransitionMode.ENUM;	  	
-  				MappingSerializer.addFieldIfDoesntExist(m.outputFieldPaths, fieldMapping.outputField.field.path);
+  				MappingSerializer.addFieldIfDoesntExist(fieldPair.outputFieldPaths, fieldMapping.outputField.field.path);
   			} else {
   				m.transition.mode = TransitionMode.MAP;	  			
-	  			MappingSerializer.addFieldIfDoesntExist(m.outputFieldPaths, fieldMapping.outputField.field.path);
+	  			MappingSerializer.addFieldIfDoesntExist(fieldPair.outputFieldPaths, fieldMapping.outputField.field.path);
   			}	 	  					  			
   			mappings.push(m);
   		}	  	

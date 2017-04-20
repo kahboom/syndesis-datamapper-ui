@@ -27,7 +27,7 @@ import 'rxjs/add/operator/map';
 import { ConfigModel } from '../models/config.model';
 import { Field } from '../models/field.model';
 import { DocumentDefinition } from '../models/document.definition.model';
-import { MappingModel } from '../models/mapping.model';
+import { MappingModel, FieldMappingPair } from '../models/mapping.model';
 import { TransitionModel, TransitionMode, TransitionDelimiter } from '../models/transition.model';
 import { MappingDefinition } from '../models/mapping.definition.model';
 import { LookupTable } from '../models/lookup.table.model';
@@ -47,9 +47,6 @@ export class MappingManagementService {
 	private saveMappingSource = new Subject<Function>();
 	saveMappingOutput$ = this.saveMappingSource.asObservable();	
 
-	private activeMappingChangedSource = new Subject<boolean>();
-	activeMappingChanged$ = this.activeMappingChangedSource.asObservable();	
-
 	private mappingSelectionRequiredSource = new Subject<MappingModel[]>();
 	mappingSelectionRequired$ = this.mappingSelectionRequiredSource.asObservable();	
 
@@ -59,11 +56,7 @@ export class MappingManagementService {
 		this.headers.append("Content-Type", "application/json");		
 	}	
 
-	public initialize(): void {		
-		this.cfg.documentService.updateFromSelectedFields$.subscribe(() => {
-			this.fieldSelectionChanged();
-		});				          
-	}
+	public initialize(): void {	}
 
 	public findMappingFiles(filter: string): Observable<string[]> {	
 		return new Observable<string[]>((observer:any) => {
@@ -120,7 +113,7 @@ export class MappingManagementService {
 		      	
 		      	console.log("Finished loading " + mappingDefinition.mappings.length + " mappings in " 
 		      		+ (Date.now() - startTime) + "ms.");
-				this.mappingUpdatedSource.next();
+				this.notifyMappingUpdated();
 		      	observer.next(true);	 
 		      	observer.complete();     	
 		      },
@@ -144,36 +137,6 @@ export class MappingManagementService {
       	}
 	}	
 
-	public notifyActiveMappingUpdated(mappingIsNew: boolean): void {
-		this.activeMappingChangedSource.next(mappingIsNew);
-	}
-
-	public printMappings(reason: string): void {
-		var mappings: MappingModel[] = this.cfg.mappings.mappings;
-		var msg: string = "Mapping status for '" + reason + 
-			"', current mapping count: " + mappings.length;
-		for (var i = 0; i < mappings.length; i++) {
-			msg += "\n\tMapping #" + i + ": " + this.printMapping(mappings[i]);
-		}
-		console.log(msg);
-	}
-
-	public printMapping(m: MappingModel): string {
-		if (m == null) {
-			return "[no mapping]";
-		}
-		var inputs: string = "";
-		for (let fieldPath of m.inputFieldPaths) {
-			inputs += fieldPath + ", ";
-		}
-		var outputs: string = "";
-		for (let fieldPath of m.outputFieldPaths) {
-			outputs += fieldPath + ", ";
-		}
-		return "Mapping uuid: " + m.uuid + ", inputs: {" + inputs + "}, outputs {" + outputs + "}, transition: "
-			+ m.transition.getPrettyName() + "}.";
-	}
-
 	public saveCurrentMapping(): void {
 		var m: MappingModel = this.cfg.mappings.activeMapping;		
 		if (m == null) {
@@ -181,12 +144,12 @@ export class MappingManagementService {
 			return;
 		} 
 
-		var wasSaved: boolean = this.removeMappingInternal(m);
+		var wasSaved: boolean = this.cfg.mappings.removeMapping(m);
 		var addCurrentMapping: boolean = true;
 
 		var hasInputField: boolean = false;
-		for (let fieldPath of m.inputFieldPaths) {
-			if (fieldPath != this.cfg.sourceDocs[0].getNoneField().path) {
+		for (let fieldPath of m.getMappedFieldPaths(true)) {
+			if (fieldPath != DocumentDefinition.getNoneField().path) {
 				hasInputField = true;
 				break;
 			}
@@ -197,8 +160,8 @@ export class MappingManagementService {
 		}
 
 		var hasOutputField: boolean = false;
-		for (let fieldPath of m.outputFieldPaths) {
-			if (fieldPath != this.cfg.targetDocs[0].getNoneField().path) {
+		for (let fieldPath of m.getMappedFieldPaths(false)) {
+			if (fieldPath != DocumentDefinition.getNoneField().path) {
 				hasOutputField = true;
 				break;
 			}
@@ -218,8 +181,7 @@ export class MappingManagementService {
 	}
 
 	public serializeMappingsToJSON(mappingDefinition: MappingDefinition): any {
-		var payload: any = MappingSerializer.serializeMappings(mappingDefinition, 
-			this.cfg.sourceDocs[0], this.cfg.targetDocs[0]);
+		var payload: any = MappingSerializer.serializeMappings(this.cfg);
 		
 		/*
 			var jsonVersion = JSON.stringify(payload);
@@ -235,8 +197,7 @@ export class MappingManagementService {
 		var url = this.cfg.initCfg.baseMappingServiceUrl + "mapping";
 		this.http.put(url, JSON.stringify(payload), {headers: this.headers}).toPromise()
 			.then((res:Response) => {
-				this.printMappings("Saved Mappings.");
-				console.log("Saved mappings to service in " + (Date.now() - startTime) + "ms.");
+				console.log("Saved mappings to service in " + (Date.now() - startTime) + "ms.", this.cfg.mappings);
 			})
 			.catch((error: any) => { this.handleError("Error occurred while saving mapping.", error); } 
 		);
@@ -247,12 +208,12 @@ export class MappingManagementService {
 		if (saveHandler != null) {
 			saveHandler();
 		}
-		this.mappingUpdatedSource.next();
+		this.notifyMappingUpdated();
 	}
 
 	public removeMapping(m: MappingModel): void {
-		console.log("Removing mapping: " + this.printMapping(m));
-		var mappingWasSaved: boolean = this.removeMappingInternal(m);		
+		console.log("Removing mapping.", m);
+		var mappingWasSaved: boolean = this.cfg.mappings.removeMapping(m);		
 		if (mappingWasSaved) {
 			var saveHandler: Function = (() => {
 				this.deselectMapping();
@@ -260,111 +221,67 @@ export class MappingManagementService {
 			this.saveMappingSource.next(saveHandler);					
 		} else {	
 			this.deselectMapping();
-			this.mappingUpdatedSource.next();
 		}
-	}
-
-	private removeMappingInternal(m: MappingModel): boolean {
-		var mappings: MappingModel[] = this.cfg.mappings.mappings;
-		for (var i = 0; i < mappings.length; i++) {
-			if (mappings[i].uuid == m.uuid) {
-				mappings.splice(i, 1);
-				return true;
-			}
-		}
-		return false;
-	}
+	}	
 
 	public findMappingsForField(fieldPath: string, isSource:boolean): MappingModel[] {	
 		var mappingsForField: MappingModel[] = [];	
 		for (let m of this.cfg.mappings.mappings) {
-			var fieldPaths: string[] = isSource ? m.inputFieldPaths : m.outputFieldPaths;		
-			for (let currentFieldPath of fieldPaths) {
-				if (currentFieldPath == fieldPath) {
-					mappingsForField.push(m);
-				}
+			if (m.isFieldPathMapped(fieldPath, isSource)) {
+				mappingsForField.push(m);
 			}
 		}
 		return mappingsForField;
 	}
 
-	private handleError(message:string, error: any): void {
-		if (error instanceof Response) {
-			if (error.status == 230) {
-				message += " (Connection refused)";
-			} else if (error.status == 500) {
-				message += " (Internal Server Error)";
-			} else if (error.status == 404) {
-				message += " (Not Found)";
-			}
-		}
-		this.cfg.errorService.error(message, error);
+	public removeMappedField(fieldPath: string, fieldPair: FieldMappingPair, isSource: boolean): void {
+		this.cfg.mappings.activeMapping.removeMappedFieldPath(fieldPath, fieldPair, isSource);     	
+    	this.notifyMappingUpdated();	
 	}
 
-	public getMappedFields(isSource: boolean) : string[] {
-		var result: string[] = [];
-		for (let m of this.cfg.mappings.mappings) {
-			var fieldPaths: string[] = isSource ? m.inputFieldPaths : m.outputFieldPaths;
-			for (let fieldPath of fieldPaths) {
-				result.push(fieldPath);
-			}
-		}
-		return result;		
-	}
-
-	public removeMappedField(fieldPath:string, isSource: boolean): void {
-		var fieldPaths: string[] = (isSource ? this.cfg.mappings.activeMapping.inputFieldPaths 
-			: this.cfg.mappings.activeMapping.outputFieldPaths);
-    	for (var i = 0; i < fieldPaths.length; i++) {
-    		if (fieldPaths[i] == fieldPath) {
-    			fieldPaths.splice(i, 1);
-    			break;
-    		}
+	public removeMappedPair(fieldPair: FieldMappingPair): void {
+		this.cfg.mappings.activeMapping.removeMappedPair(fieldPair);
+		if (this.cfg.mappings.activeMapping.fieldMappings.length == 0) {
+			this.addMappedPair();
+		} else {
+    		this.notifyMappingUpdated();	
     	}
-    	var field: Field = this.cfg.getDoc(isSource).getField(fieldPath);
-    	field.selected = false;
-    	this.notifyActiveMappingUpdated(false);	
 	}
 
-	public addMappedField(fieldPath:string, isSource: boolean): void {
-		var docDef: DocumentDefinition = this.cfg.getDoc(isSource);
-		fieldPath = (fieldPath == null) ? docDef.getNoneField().path : fieldPath;
-		var fieldsPaths: string[] = (isSource ? this.cfg.mappings.activeMapping.inputFieldPaths 
-			: this.cfg.mappings.activeMapping.outputFieldPaths);
-		fieldsPaths.push(fieldPath);  		
-		var field: Field = docDef.getField(fieldPath);
-		if (field != null) {
-			field.selected = true;
-			//make all parent fields visible too
-            var parentField: Field = field.parentField;
-            while (parentField != null) {
-                parentField.collapsed = false;
-                parentField = parentField.parentField;
-            }
-		}    	
-    	this.cfg.mappings.activeMapping.updateSeparatorIndexes();
-		this.notifyActiveMappingUpdated(false);
+	public addMappedPair(): void {
+		var fieldPair: FieldMappingPair = new FieldMappingPair();
+		fieldPair.inputFieldPaths.push(DocumentDefinition.getNoneField().path);
+		fieldPair.outputFieldPaths.push(DocumentDefinition.getNoneField().path);
+		this.cfg.mappings.activeMapping.fieldMappings.push(fieldPair);
+		this.notifyMappingUpdated();
+	}
+
+	public addMappedField(fieldPath: string, fieldPair: FieldMappingPair, isSource: boolean): void {
+		fieldPath = (fieldPath == null) ? DocumentDefinition.getNoneField().path : fieldPath;
+		this.cfg.mappings.activeMapping.addMappedFieldPath(fieldPath, fieldPair, isSource);
+    	this.cfg.mappings.activeMapping.getFirstFieldMapping().updateSeparatorIndexes();
+		this.notifyMappingUpdated();
 	}
 
 	public deselectMapping(): void {
+		console.log("Deselecting active mapping.");
 		this.cfg.mappings.activeMapping = null;
 		for (let d of this.cfg.getAllDocs()) {
 			d.clearSelectedFields();
 		}
-		this.notifyActiveMappingUpdated(false);	
+		this.notifyMappingUpdated();	
 	}
 
 	public fieldSelectionChanged(): void {
 		var mapping: MappingModel = this.cfg.mappings.activeMapping;
-		this.printMapping(mapping);
-		var mappingIsNew: boolean = false;
 		var selectedInputFields: Field[] = this.cfg.sourceDocs[0].getSelectedFields();
 		var selectedOutputFields: Field[] = this.cfg.targetDocs[0].getSelectedFields();
+		var mappingIsNew: boolean = false;
 		console.log("Selected fields.", { "input": selectedInputFields, "output": selectedOutputFields });
 		if (mapping == null) { // no current mapping shown in detail panel, find or create one		
 			if ((selectedInputFields.length == 0) && (selectedOutputFields.length == 0)) {		
 				console.log("Not creating new mapping, no fields selected.");
-				this.selectMapping(mapping, false);
+				this.selectMapping(mapping);
 				return;
 			}
 			var fieldToFind: Field = null;		
@@ -391,8 +308,9 @@ export class MappingManagementService {
 			} else if (mappingsForField == null || mappingsForField.length == 0) { //new mapping
 				mappingIsNew = true;
 				mapping = new MappingModel();
-				mapping.inputFieldPaths = [].concat(this.getFieldPaths(selectedInputFields));
-				mapping.outputFieldPaths = [].concat(this.getFieldPaths(selectedOutputFields));		
+				var fieldPair: FieldMappingPair = mapping.getFirstFieldMapping();
+				fieldPair.inputFieldPaths = [].concat(this.getFieldPaths(selectedInputFields));
+				fieldPair.outputFieldPaths = [].concat(this.getFieldPaths(selectedOutputFields));		
 				for (let field of [].concat(selectedInputFields).concat(selectedOutputFields)) {
 					if (field.enumeration) {
 						mapping.transition.mode = TransitionMode.ENUM;							
@@ -401,26 +319,27 @@ export class MappingManagementService {
 				console.log("Created new mapping.", mapping);
 			}	
 		} else { //mapping already selected, add/remove from it	
-			mapping.inputFieldPaths = [].concat(this.getFieldPaths(selectedInputFields));
-			mapping.outputFieldPaths = [].concat(this.getFieldPaths(selectedOutputFields));					
+			var fieldPair: FieldMappingPair = mapping.getFirstFieldMapping();
+			fieldPair.inputFieldPaths = [].concat(this.getFieldPaths(selectedInputFields));
+			fieldPair.outputFieldPaths = [].concat(this.getFieldPaths(selectedOutputFields));					
 		}		
 
 		this.cfg.mappings.initializeMappingLookupTable(mapping, this.cfg);
 
-		this.selectMapping(mapping, mappingIsNew);
+		this.selectMapping(mapping);
 	}
 
-	public selectMapping(m: MappingModel, mappingIsNew: boolean) {
+	public selectMapping(m: MappingModel) {
 		this.cfg.mappings.activeMapping = m;
 		this.cfg.showMappingDetailTray = true;
 		if (m == null) {
 			this.cfg.sourceDocs[0].clearSelectedFields();
 			this.cfg.targetDocs[0].clearSelectedFields();
 		} else {
-			this.cfg.sourceDocs[0].selectFields(m.inputFieldPaths);
-			this.cfg.targetDocs[0].selectFields(m.outputFieldPaths);
+			this.cfg.sourceDocs[0].selectFields(m.getMappedFieldPaths(true));
+			this.cfg.targetDocs[0].selectFields(m.getMappedFieldPaths(false));
 		}
-		this.notifyActiveMappingUpdated(mappingIsNew);	
+		this.notifyMappingUpdated();	
 	}
 
 	public getFieldPaths(fields: Field[]): string[] {
@@ -430,4 +349,13 @@ export class MappingManagementService {
 			}
 		return paths;
 	}
+
+	public notifyMappingUpdated(): void {
+		this.mappingUpdatedSource.next();
+	}
+
+	private handleError(message:string, error: any): void {
+		this.cfg.errorService.error(message, error);
+	}	
+
 }

@@ -91,6 +91,7 @@
 .DocumentFieldDetailComponent I.parentFolder { color:#363636; text-shadow:none; margin-right:2px; font-size:12px; }
 .DocumentFieldDetailComponent .selectedField I.partOfMappingIcon { color:white; }
 .DocumentFieldDetailComponent I.partOfMappingIconHidden { visibility:hidden; }
+.DocumentFieldDetailComponent .disableSelection LABEL { text-decoration:line-through; color: rgb(220,220,220); }
 
 /* mapping detail panel */
 .fieldMappingDetail { border-left:1px solid #d1d1d1; height:100%; background-color:#d1d1d1; border:1px solid #CAC9C9; }
