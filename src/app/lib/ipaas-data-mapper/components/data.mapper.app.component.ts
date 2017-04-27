@@ -27,15 +27,15 @@ import { MappingManagementService } from '../services/mapping.management.service
 import { DocumentManagementService } from '../services/document.management.service';
 import { ErrorHandlerService } from '../services/error.handler.service';
 
-import { DocumentDefinitionComponent } from './document.definition.component';
-import { MappingDetailComponent } from './mapping.detail.component';
-import { ModalWindowComponent } from './modal.window.component';
-import { DataMapperErrorComponent } from './data.mapper.error.component';
-import { TransitionSelectionComponent } from './transition.selection.component';
-import { LineMachineComponent } from './line.machine.component';
-import { DocumentFieldDetailComponent } from './document.field.detail.component';
-import { MappingSelectionComponent } from './mapping.selection.component';
 import { ToolbarComponent } from './toolbar.component';
+import { DataMapperErrorComponent } from './data.mapper.error.component';
+import { LineMachineComponent } from './line.machine.component';
+import { ModalWindowComponent } from './modal.window.component';
+
+import { DocumentDefinitionComponent } from './document.definition.component';
+import { DocumentFieldDetailComponent } from './document.field.detail.component';
+
+import { MappingDetailComponent } from './mapping/mapping.detail.component';
 
 @Component({
 	selector: 'data-mapper',
@@ -75,10 +75,6 @@ export class DataMapperAppComponent implements OnInit {
   	constructor(public detector: ChangeDetectorRef) {}
 
 	ngOnInit(): void {						
-		this.cfg.mappingService.mappingSelectionRequired$.subscribe((mappings: MappingModel[]) => {
-			this.selectMapping(mappings);
-		});		
-
 		this.cfg.initializationService.systemInitialized$.subscribe(() => {
 			this.updateFromConfig();
 			this.toolbarComponent.parentComponent = this;		
@@ -91,59 +87,11 @@ export class DataMapperAppComponent implements OnInit {
 	        	this.detector.detectChanges();
 	        }, 10);  			
 		});			
-	}        
-	
-	private selectMapping(mappingsForField: MappingModel[]): void {
-		this.modalWindow.reset();
-		this.modalWindow.confirmButtonText = "Select";
-		this.modalWindow.parentComponent = this;
-		this.modalWindow.headerText = "Select Mapping";
-		this.modalWindow.nestedComponentInitializedCallback = (mw: ModalWindowComponent) => {
-			var self: DataMapperAppComponent = mw.parentComponent as DataMapperAppComponent;
-			var c: MappingSelectionComponent = mw.nestedComponent as MappingSelectionComponent;
-			for (let d of self.cfg.getAllDocs()) {
-				var selectedFields: Field[] = d.getSelectedFields();
-				if (selectedFields.length == 1) {
-					c.selectedField = selectedFields[0];
-					c.selectedFieldIsSource = d.isSource;
-					break;
-				}
-			}
-			c.cfg = self.cfg;
-			c.mappings = mappingsForField;
-			c.modalWindow = this.modalWindow;
-		};
-		this.modalWindow.nestedComponentType = MappingSelectionComponent;	
-		this.modalWindow.okButtonHandler = (mw: ModalWindowComponent) => {
-			var self: DataMapperAppComponent = mw.parentComponent as DataMapperAppComponent;
-			var c: MappingSelectionComponent = mw.nestedComponent as MappingSelectionComponent;
-			var mapping: MappingModel = c.getSelectedMapping();
-			self.cfg.mappingService.selectMapping(mapping);
-		};
-		this.modalWindow.cancelButtonHandler = (mw: ModalWindowComponent) => {
-			var self: DataMapperAppComponent = mw.parentComponent as DataMapperAppComponent;	
-			self.cfg.mappingService.selectMapping(null);
-		};
-		this.modalWindow.show();
-	}	
+	}        		
 
 	public updateFromConfig(): void {
 		// update the mapping line drawing after our fields have redrawn themselves
         // without this, the x/y from the field dom elements is messed up / misaligned.
         setTimeout(()=> { this.lineMachine.redrawLinesForMappings(); }, 1);        
-	}
-
-	public buttonClickedHandler(action: string, component: ToolbarComponent): void {
-		var self = component.parentComponent as DataMapperAppComponent;
-		if ("showDetails" == action) {
-			if (self.cfg.mappings.activeMapping == null) {
-				console.log("Creating new mapping.")				
-				self.cfg.mappingService.selectMapping(new MappingModel());
-			}
-			self.cfg.showMappingDetailTray = !self.cfg.showMappingDetailTray;
-		} else if ("showLines" == action) {
-			self.cfg.showLinesAlways = !self.cfg.showLinesAlways;
-			self.lineMachine.redrawLinesForMappings();
-		}
-	}
+	}	
 }

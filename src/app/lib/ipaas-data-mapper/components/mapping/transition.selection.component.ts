@@ -16,20 +16,20 @@
 
 import { Component, Input } from '@angular/core';
 
-import { TransitionModel, TransitionMode, TransitionDelimiter } from '../models/transition.model';
-import { ConfigModel } from '../models/config.model';
-import { Field, EnumValue } from '../models/field.model';
-import { LookupTable, LookupTableEntry } from '../models/lookup.table.model';
-import { MappingModel } from '../models/mapping.model';
+import { TransitionModel, TransitionMode, TransitionDelimiter } from '../../models/transition.model';
+import { ConfigModel } from '../../models/config.model';
+import { Field, EnumValue } from '../../models/field.model';
+import { LookupTable, LookupTableEntry } from '../../models/lookup.table.model';
+import { MappingModel, FieldMappingPair } from '../../models/mapping.model';
 
-import { ModalWindowComponent } from './modal.window.component';
+import { ModalWindowComponent } from '../modal.window.component';
 import { LookupTableComponent } from './lookup.table.component';
 
 @Component({
 	selector: 'transition-selector',
 	template: `
-		<div class="mappingFieldContainer TransitionSelector">
-			<div class="MappingFieldSection" *ngIf="cfg.mappings.activeMapping">
+		<div class="mappingFieldContainer TransitionSelector" *ngIf="cfg.mappings.activeMapping">
+			<div class="MappingFieldSection">
 				<div *ngIf="modeIsEnum()" class="enumSection">
 					<label>{{ getMappedValueCount() }} values mapped</label>
 					<i class="fa fa-edit" (click)="showLookupTable()"></i>
@@ -37,15 +37,15 @@ import { LookupTableComponent } from './lookup.table.component';
 				<div *ngIf="!modeIsEnum()">					
 					<label>Action</label>
 					<select (change)="selectionChanged($event);" selector="mode" 
-						[ngModel]="cfg.mappings.activeMapping.transition.mode">
+						[ngModel]="fieldPair.transition.mode">
 						<option value="{{modes.MAP}}">Map</option>
 						<option value="{{modes.SEPARATE}}">Separate</option>
 					</select>
 				</div>
-				<div *ngIf="cfg.mappings.activeMapping.transition.mode == modes.SEPARATE" style="margin-top:10px;">
+				<div *ngIf="fieldPair.transition.mode == modes.SEPARATE" style="margin-top:10px;">
 					<label>Separator:</label>
 					<select (change)="selectionChanged($event);" selector="separator" 
-						[ngModel]="cfg.mappings.activeMapping.transition.delimiter">
+						[ngModel]="fieldPair.transition.delimiter">
 						<option value="{{delimeters.SPACE}}">Space</option>
 						<option value="{{delimeters.COMMA}}">Comma</option>
 					</select>
@@ -58,16 +58,17 @@ import { LookupTableComponent } from './lookup.table.component';
 export class TransitionSelectionComponent {
 	@Input() cfg: ConfigModel;
 	@Input() modalWindow: ModalWindowComponent;
+	@Input() fieldPair: FieldMappingPair;
 
 	private modes: any = TransitionMode;
 	private delimeters: any = TransitionDelimiter;	
 
 	private modeIsEnum(): boolean {
-		return this.cfg.mappings.activeMapping.transition.mode == TransitionMode.ENUM;
+		return this.fieldPair.transition.mode == TransitionMode.ENUM;
 	}
 
 	private getMappedValueCount(): number {
-		var tableName: string = this.cfg.mappings.activeMapping.transition.lookupTableName;
+		var tableName: string = this.fieldPair.transition.lookupTableName;
 		if (tableName == null) {
 			return 0;
 		}
@@ -83,11 +84,11 @@ export class TransitionSelectionComponent {
 		var selectorIsMode: boolean = "mode" == eventTarget.attributes.getNamedItem("selector").value
 		var selectedValue: any = eventTarget.selectedOptions.item(0).attributes.getNamedItem("value").value;
 		if (selectorIsMode) {
-			this.cfg.mappings.activeMapping.transition.mode = parseInt(selectedValue);
+			this.fieldPair.transition.mode = parseInt(selectedValue);
 		} else {
-			this.cfg.mappings.activeMapping.transition.delimiter = parseInt(selectedValue);
+			this.fieldPair.transition.delimiter = parseInt(selectedValue);
 		}	
-		this.cfg.mappings.activeMapping.getFirstFieldMapping().updateSeparatorIndexes();	
+		this.fieldPair.transition.updateSeparatorIndexes();	
 		this.cfg.mappingService.saveCurrentMapping();
 	}
 
@@ -104,7 +105,7 @@ export class TransitionSelectionComponent {
 		this.modalWindow.nestedComponentInitializedCallback = (mw: ModalWindowComponent) => {
 			var self: TransitionSelectionComponent = mw.parentComponent as TransitionSelectionComponent;
 			var c: LookupTableComponent = mw.nestedComponent as LookupTableComponent;		
-			c.initialize(self.cfg);
+			c.initialize(self.cfg, this.fieldPair);
 		};
 		this.modalWindow.nestedComponentType = LookupTableComponent;	
 		this.modalWindow.okButtonHandler = (mw: ModalWindowComponent) => {

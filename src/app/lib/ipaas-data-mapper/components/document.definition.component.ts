@@ -38,7 +38,7 @@ import { DocumentManagementService } from '../services/document.management.servi
                             <i class="fa {{ docDef.isSource ? 'fa-hdd-o' : 'fa-download' }}"></i>
                             {{docDef.name}}                            
                         </div>
-                        <i class="fa fa-search searchBoxIcon" (click)="toggleSearch()" [attr.style]="searchIconStyle"></i>
+                        <i class="fa fa-search searchBoxIcon link" (click)="toggleSearch()" [attr.style]="searchIconStyle"></i>
                         <div class="clear"></div>
                     </h2>
                     
@@ -47,7 +47,7 @@ import { DocumentManagementService } from '../services/document.management.servi
                     <input type="text" #searchFilterBox 
                         id="search-filter-box" (keyup)="search(searchFilterBox.value)" placeholder="Search"
                         [(ngModel)]="searchFilter" />
-                    <i class="fa fa-close searchBoxCloseIcon" (click)="clearSearch()"></i>
+                    <i class="fa fa-close searchBoxCloseIcon link" (click)="clearSearch()"></i>
                     <div class="clear"></div>
                 </div>
     			<div [attr.class]="searchMode ? 'fieldListSearchOpen' : 'fieldList'" style="overflow:auto;" 

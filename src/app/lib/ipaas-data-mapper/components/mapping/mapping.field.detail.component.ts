@@ -17,10 +17,10 @@
 import { Component, Input } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-import { ConfigModel } from '../models/config.model';
-import { Field } from '../models/field.model';
-import { DocumentDefinition } from '../models/document.definition.model';
-import { MappingModel, FieldMappingPair } from '../models/mapping.model';
+import { ConfigModel } from '../../models/config.model';
+import { Field } from '../../models/field.model';
+import { DocumentDefinition } from '../../models/document.definition.model';
+import { MappingModel, FieldMappingPair } from '../../models/mapping.model';
 
 @Component({
 	selector: 'mapping-field-detail',
@@ -59,17 +59,31 @@ export class MappingFieldDetailComponent {
 	}
 
 	selectionChanged(event: any):void {	
+		//remove old field
 		if (this.lastFieldPath == null) {
 			this.lastFieldPath = this.originalSelectedFieldPath;
 		}
 		var fieldPath: string = this.extractFieldPath(this.lastFieldPath);
-		this.cfg.mappingService.removeMappedField(fieldPath, this.fieldPair, this.docDef.isSource);
+		var field: Field = this.docDef.getField(fieldPath);
+		if (field == null) {
+			console.error("Cannot find field to remove from mapping for path: '" + fieldPath + "'");
+			return;
+		}
+		this.cfg.mappingService.removeMappedField(field, this.fieldPair, this.docDef.isSource);
+		
+		//add selected field
 		fieldPath = this.extractFieldPath(event.item);
 		if (fieldPath != DocumentDefinition.getNoneField().path) {
-			this.cfg.mappingService.addMappedField(fieldPath, this.fieldPair, this.docDef.isSource);
+			field = this.docDef.getField(fieldPath);
+			if (field == null) {
+				console.error("Cannot find field to add to mapping for path: '" + fieldPath + "'");
+				return;
+			}
+			this.cfg.mappingService.addMappedField(field, this.fieldPair, this.docDef.isSource);
 			this.lastFieldPath = fieldPath;
 		}
-		console.log("Attempting to save current mapping, mapping detail selection changed.");
+		//console.log("Attempting to save current mapping, mapping detail selection changed.");
+
 		this.cfg.mappingService.saveCurrentMapping();
 	}
 

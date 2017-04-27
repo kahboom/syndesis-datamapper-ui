@@ -16,19 +16,19 @@
 
 import { Component, Input } from '@angular/core';
 
-import { Field } from '../models/field.model';
-import { MappingModel } from '../models/mapping.model';
-import { ConfigModel } from '../models/config.model';
+import { Field } from '../../models/field.model';
+import { MappingModel, FieldMappingPair } from '../../models/mapping.model';
+import { ConfigModel } from '../../models/config.model';
 
 @Component({
 	selector: 'mapping-field-action',
 	template: `
-		<div *ngIf="isSource == false && cfg.mappings.activeMapping.transition.isSeparateMode()" 
+		<div *ngIf="isSource == false && fieldPair && fieldPair.transition.isSeparateMode()" 
 			style="margin-right:22px; margin-top:10px;">
 			<label>Transformation</label>
 			<div>
 				<label style="width:32px; font-weight:normal; margin-left:2px;">Index:</label>
-				<input type="text" [(ngModel)]="cfg.mappings.activeMapping.fieldSeparatorIndexes[field.path]" 
+				<input type="text" [(ngModel)]="fieldPair.transition.fieldSeparatorIndexes[field.path]" 
 					style="width:50px; text-align:right; font-size:11px;" (change)="selectionChanged($event)"/>
 			</div>
 		</div>
@@ -37,10 +37,13 @@ import { ConfigModel } from '../models/config.model';
 
 export class MappingFieldActionComponent { 
 	@Input() cfg: ConfigModel;
+	@Input() fieldPair: FieldMappingPair;
 	@Input() field: Field;
 	@Input() isSource: boolean = false;
 
-	selectionChanged(event: MouseEvent):void {			
+	selectionChanged(event: MouseEvent):void {	
+		console.log("Changed field seperator for '" + this.field.path + "' to: " 
+			+ this.fieldPair.transition.fieldSeparatorIndexes[this.field.path]);		
 		this.cfg.mappingService.saveCurrentMapping();
 	}
 }

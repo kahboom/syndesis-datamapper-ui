@@ -26,25 +26,23 @@ import { MappingManagementService } from './services/mapping.management.service'
 import { ErrorHandlerService } from './services/error.handler.service';
 import { InitializationService } from './services/initialization.service';
 
-import { ModalWindowComponent, EmptyModalBodyComponent } from './components/modal.window.component';
-import { TransitionSelectionComponent } from './components/transition.selection.component';
-import { LookupTableComponent } from './components/lookup.table.component';
-import { DataMapperErrorComponent } from './components/data.mapper.error.component';
-
-import { DocumentFieldDetailComponent } from './components/document.field.detail.component';
-import { DocumentDefinitionComponent } from './components/document.definition.component';
-
-import { MappingFieldDetailComponent } from './components/mapping.field.detail.component';
-import { MappingFieldActionComponent } from './components/mapping.field.action.component';
-import { MappingDetailComponent, MappingDetailHeaderComponent, 
-	MappingFieldSectionComponent } from './components/mapping.detail.component';
-import { MappingSelectionComponent, MappingSelectionSectionComponent } from './components/mapping.selection.component';
-
-import { DataMapperAppComponent } from './components/data.mapper.app.component';
 import { DataMapperAppExampleHostComponent } from './components/data.mapper.example.host.component';
-
-import { LineMachineComponent } from './components/line.machine.component';
+import { DataMapperAppComponent } from './components/data.mapper.app.component';
+import { DataMapperErrorComponent } from './components/data.mapper.error.component';
+import { ModalWindowComponent, EmptyModalBodyComponent } from './components/modal.window.component';
 import { ToolbarComponent } from './components/toolbar.component';
+import { LineMachineComponent } from './components/line.machine.component';
+import { CollapsableHeaderComponent } from './components/collapsable.header.component';
+
+import { DocumentDefinitionComponent } from './components/document.definition.component';
+import { DocumentFieldDetailComponent } from './components/document.field.detail.component';
+
+import { MappingDetailComponent, CollectionMappingComponent, SimpleMappingComponent, MappingPairDetailComponent } from './components/mapping/mapping.detail.component';
+import { MappingFieldDetailComponent } from './components/mapping/mapping.field.detail.component';
+import { MappingFieldActionComponent } from './components/mapping/mapping.field.action.component';
+import { MappingSelectionComponent, MappingSelectionSectionComponent } from './components/mapping/mapping.selection.component';
+import { LookupTableComponent } from './components/mapping/lookup.table.component';
+import { TransitionSelectionComponent } from './components/mapping/transition.selection.component';
 
 // export services/types for consumers of this module
 export { ErrorHandlerService } from './services/error.handler.service';
@@ -58,7 +56,6 @@ export { MappingModel } from './models/mapping.model';
 
 export { DataMapperAppComponent } from './components/data.mapper.app.component';
 
-
 @NgModule({
 	imports: [ 
 		CommonModule, 
@@ -71,8 +68,9 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 		DataMapperAppComponent,
 		DocumentDefinitionComponent,
 		MappingDetailComponent,
-		MappingDetailHeaderComponent,
-		MappingFieldSectionComponent,
+		SimpleMappingComponent,
+		CollectionMappingComponent,
+		MappingPairDetailComponent,
 		ModalWindowComponent,
 		DataMapperAppExampleHostComponent,
 		MappingFieldActionComponent,
@@ -85,7 +83,8 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 		MappingSelectionSectionComponent,
 		ToolbarComponent,
 		LookupTableComponent,
-		EmptyModalBodyComponent		
+		EmptyModalBodyComponent,
+		CollapsableHeaderComponent
 	],
 	exports: [
 		DataMapperAppExampleHostComponent,

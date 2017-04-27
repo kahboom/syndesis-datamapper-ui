@@ -44,35 +44,40 @@ export class MappingDefinition {
 		return this.tablesByName[name];
 	}
 
-	public detectTableIdentifiers(cfg: ConfigModel) {
+	public detectTableIdentifiers() {
 		for (let t of this.getTables()) {
 			if (t.sourceIdentifier && t.targetIdentifier) {
 				continue;
 			}
 			var tableChanged: boolean = false;
-			var m: MappingModel = this.getMappingForLookupTable(t.name);
+			var m: MappingModel = this.getFirstMappingForLookupTable(t.name);
 			if (m != null) {
-				if (cfg.sourceDocs[0] && !t.sourceIdentifier) {
-					var inputField: Field = cfg.sourceDocs[0].getField(m.getMappedFieldPaths(true)[0]);
-					if (inputField) {
-						t.sourceIdentifier = inputField.className;
-						tableChanged = true;
+				for (let fieldPair of m.fieldMappings) {
+					if (fieldPair.transition.lookupTableName == null) {
+						continue;
 					}
-				}
-				if (cfg.targetDocs[0] && !t.targetIdentifier) {
-					var outputField: Field = cfg.targetDocs[0].getField(m.getMappedFieldPaths(false)[0]);
-					if (outputField) {						
-						t.targetIdentifier = outputField.className;
-						tableChanged = true;
-					}					
-				}				
+					if (!t.sourceIdentifier) {
+						var inputField: Field = fieldPair.getFields(true)[0];
+						if (inputField) {
+							t.sourceIdentifier = inputField.className;
+							tableChanged = true;
+						}
+					}
+					if (!t.targetIdentifier) {
+						var outputField: Field = fieldPair.getFields(false)[0];
+						if (outputField) {						
+							t.targetIdentifier = outputField.className;
+							tableChanged = true;
+						}					
+					}	
+				}			
 			}
 			if (tableChanged) {
 				console.log("Detected lookup table source/target id: " + t.toString());
 			}
 		}
 		for (let m of this.mappings) {
-			this.initializeMappingLookupTable(m, cfg);
+			this.initializeMappingLookupTable(m);
 		}		
 	}
 
@@ -90,10 +95,12 @@ export class MappingDefinition {
         return tables;
 	}
 
-	public getMappingForLookupTable(lookupTableName: string): MappingModel {
+	public getFirstMappingForLookupTable(lookupTableName: string): MappingModel {
 		for (let m of this.mappings) {
-			if (m.transition.lookupTableName == lookupTableName) {
-				return m;
+			for (let fieldPair of m.fieldMappings) {
+				if (fieldPair.transition.lookupTableName == lookupTableName) {
+					return m;
+				}
 			}
 		}
 		return null;
@@ -121,45 +128,57 @@ export class MappingDefinition {
 	}
 
 	public isMappingStale(mapping: MappingModel, inputDoc: DocumentDefinition, outputDoc: DocumentDefinition): boolean {		
-		var inputFieldsExist: boolean = inputDoc.isFieldsExist(mapping.getMappedFieldPaths(true));
-		var outputFieldsExist: boolean = outputDoc.isFieldsExist(mapping.getMappedFieldPaths(false));
-		console.log("Blah", { "i": inputFieldsExist, "o": outputFieldsExist} );
+		var inputFieldsExist: boolean = inputDoc.isFieldsExist(mapping.getMappedFields(true));
+		var outputFieldsExist: boolean = outputDoc.isFieldsExist(mapping.getMappedFields(false));
 		return !(inputFieldsExist && outputFieldsExist);
 	}
 
-	public initializeMappingLookupTable(m: MappingModel, cfg:ConfigModel): void {
+	public initializeMappingLookupTable(m: MappingModel): void {
 		console.log("Checking mapping for lookup table initialization: " + m.toString());
-		if (!(m.transition.mode == TransitionMode.ENUM
-			&& m.transition.lookupTableName == null 
-			&& m.getMappedFieldPaths(true).length == 1
-			&& m.getMappedFieldPaths(false).length == 1)) {
-				console.log("Not looking for lookuptable for mapping: " + m.toString());
-			return;
-		}
-		console.log("Looking for lookup table for mapping: " + m.toString());
-		var inputClassName: string = null;
-		var outputClassName: string = null;
+		for (let fieldPair of m.fieldMappings) {
+			if (!(fieldPair.transition.mode == TransitionMode.ENUM
+				&& fieldPair.transition.lookupTableName == null 
+				&& fieldPair.getFields(true).length == 1
+				&& fieldPair.getFields(false).length == 1)) {
+					console.log("Not looking for lookuptable for mapping field pair.", fieldPair);
+				return;
+			}
+			console.log("Looking for lookup table for field pair.", fieldPair);
+			var inputClassName: string = null;
+			var outputClassName: string = null;
 
-		var inputField: Field = cfg.sourceDocs[0].getField(m.getMappedFieldPaths(true)[0]);
-		if (inputField) {
-			inputClassName = inputField.className;		
+			var inputField: Field = fieldPair.getFields(true)[0];
+			if (inputField) {
+				inputClassName = inputField.className;		
+			}
+			var outputField: Field = fieldPair.getFields(true)[0];
+			if (outputField) {
+				outputClassName = outputField.className;		
+			}
+			if (inputClassName && outputClassName) {
+				var table: LookupTable = this.getTableBySourceTarget(inputClassName, outputClassName);
+				if (table == null) {
+					table = new LookupTable();
+					table.sourceIdentifier = inputClassName;
+					table.targetIdentifier = outputClassName;
+					this.addTable(table);
+					fieldPair.transition.lookupTableName = table.name;
+					console.log("Created lookup table for mapping.", m);
+				} else {
+					fieldPair.transition.lookupTableName = table.name;
+					console.log("Initialized lookup table for mapping.", m)					
+				}
+			}
 		}
-		var outputField: Field = cfg.targetDocs[0].getField(m.getMappedFieldPaths(false)[0]);
-		if (outputField) {
-			outputClassName = outputField.className;		
-		}
-		if (inputClassName && outputClassName) {
-			var table: LookupTable = this.getTableBySourceTarget(inputClassName, outputClassName);
-			if (table == null) {
-				table = new LookupTable();
-				table.sourceIdentifier = inputClassName;
-				table.targetIdentifier = outputClassName;
-				this.addTable(table);
-				m.transition.lookupTableName = table.name;
-				console.log("Created lookup table for mapping.", m);
-			} else {
-				m.transition.lookupTableName = table.name;
-				console.log("Initialized lookup table for mapping.", m)					
+	}
+
+	public updateFieldPairsFromDocuments(cfg: ConfigModel): void {
+		for (let mapping of this.mappings) {
+			for (let fieldPair of mapping.fieldMappings) {
+				fieldPair.sourceFields = cfg.sourceDocs[0].getFields(fieldPair.parsedSourcePaths);
+				fieldPair.parsedSourcePaths = null;
+				fieldPair.targetFields = cfg.targetDocs[0].getFields(fieldPair.parsedTargetPaths);
+				fieldPair.parsedTargetPaths = null;
 			}
 		}
 	}
@@ -172,12 +191,16 @@ export class MappingDefinition {
         return mappings;
 	}
 
-	public getAllMappedFieldPaths(isSource: boolean) : string[] {
-		var result: string[] = [];
+	public findMappingsForField(field: Field): MappingModel[] {	
+		var mappingsForField: MappingModel[] = [];	
 		for (let m of this.mappings) {
-			result = result.concat(m.getMappedFieldPaths(isSource));
+			for (let fieldPair of m.fieldMappings) {
+				if (fieldPair.isFieldMapped(field)) {
+					mappingsForField.push(m);
+				}
+			}
 		}
-		return result;		
+		return mappingsForField;
 	}
 
 	public removeMapping(m: MappingModel): boolean {
@@ -190,38 +213,4 @@ export class MappingDefinition {
 		}
 		return false;
 	}
-
-	public toJSON(): any {
-        var mappingsJSON: any[] = [];
-        for (let m of this.mappings) {
-            mappingsJSON.push(m.toJSON());
-        }
-        var tablesJSON: any[] = [];
-        for (let t of this.getTables()) {
-            tablesJSON.push(t.toJSON());
-        }
-        return {
-            "name": this.name,
-            "mappings": mappingsJSON,
-            "tables": tablesJSON
-        };
-    }
-
-    public fromJSON(json: any): void {
-        this.name = json.name;
-        if (json.mappings && json.mappings.length) {
-            for (let m of json.mappings) {
-                var parsedMapping: MappingModel = new MappingModel();
-                parsedMapping.fromJSON(m);
-                this.mappings.push(parsedMapping);
-            }
-        }
-        if (json.tables && json.tables.length) {
-            for (let t of json.tables) {
-                var parsedTable: LookupTable = new LookupTable();
-                parsedTable.fromJSON(t);
-                this.addTable(parsedTable);
-            }
-        }
-    }
 }

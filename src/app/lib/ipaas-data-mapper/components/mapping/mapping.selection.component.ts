@@ -16,23 +16,48 @@
 
 import { Component, Input, ViewChildren, ElementRef, QueryList, } from '@angular/core';
 
-import { MappingModel } from '../models/mapping.model';
-import { ConfigModel } from '../models/config.model';
-import { Field } from '../models/field.model';
+import { MappingModel, FieldMappingPair } from '../../models/mapping.model';
+import { ConfigModel } from '../../models/config.model';
+import { Field } from '../../models/field.model';
 
-import { ModalWindowComponent } from './modal.window.component';
+import { ModalWindowComponent } from '../modal.window.component';
 
 @Component({
 	selector: 'mapping-selection-section',
 	template: `
 		<div [attr.class]="getClass()" (click)="handleMouseClick($event)">			
 			<div class="numberWrapper"><div class="number">{{ outputNumber + 1 }}</div></div>
-			<div class="pathContainer" *ngFor="let path of getPaths()">
-				<div class="path">{{ getFormattedOutputPath(path, false) }}</div>
-				<div class="fieldName">{{ getFormattedOutputPath(path, true) }}</div>
-				<div class="clear"></div>
+			<div class="pathContainer">
+				<div class="fieldPair" *ngFor="let fieldPair of mapping.fieldMappings">
+					<div class="sourceTargetSection sourcePaths">
+						<label>{{ getSourceTargetLabelText(true, fieldPair) }}</label>
+						<div class="paths" *ngFor="let sourceField of fieldPair.sourceFields">
+							<div class="path">								
+								<div class="pathName">
+									<i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+									{{ getFormattedOutputPath(sourceField.path, false) }}
+								</div>
+								<div class="fieldName">{{ getFormattedOutputPath(sourceField.path, true) }}</div>
+								<div class="clear"></div>
+							</div>
+						</div>
+					</div>
+					<div class="sourceTargetSection targetPaths">
+						<label>{{ getSourceTargetLabelText(false, fieldPair) }}</label>
+						<div class="paths" *ngFor="let targetField of fieldPair.targetFields">
+							<div class="path">								
+								<div class="pathName">
+									<i class="fa fa-long-arrow-left" aria-hidden="true"></i>
+									{{ getFormattedOutputPath(targetField.path, false) }}
+								</div>
+								<div class="fieldName">{{ getFormattedOutputPath(targetField.path, true) }}</div>
+								<div class="clear"></div>
+							</div>
+						</div>
+					</div>
+				</div>								
 			</div>
-			<div style="clear:both; height:0px;"></div>
+			<div class="clear"></div>
 		</div>
 	`
 })
@@ -44,13 +69,24 @@ export class MappingSelectionSectionComponent {
 	@Input() selected: boolean = false;
 	@Input() selectedFieldIsSource: boolean = false;
 	@Input() parentComponent: Component;
+	@Input() isOddRow: boolean = false;
 
 	public getClass(): string {
-		return "MappingSelectionSection" + (this.selected ? " SelectedMappingSelectionSection" : "");
+		var cssClass = "MappingSelectionSection";
+		if (this.selected) {
+			cssClass += " SelectedMappingSelectionSection";
+		}
+		if (this.isOddRow) {
+			cssClass += " odd";
+		}
+		return cssClass;
 	}
 
-	public getPaths(): string[] {
-		return this.mapping.getMappedFieldPaths(this.selectedFieldIsSource);
+	public getSourceTargetLabelText(isSource: boolean, fieldPair: FieldMappingPair): string {
+		if (isSource) {
+			return (fieldPair.sourceFields.length > 0) ? "Sources" : "Source";
+		}
+		return (fieldPair.targetFields.length > 0) ? "Targets" : "Target";
 	}
 
 	public getFormattedOutputPath(path: string, nameOnly:boolean) {
@@ -58,7 +94,7 @@ export class MappingSelectionSectionComponent {
 		var index: number = path.lastIndexOf("/");
 		var fieldName: string = (index == -1) ? path : path.substr(path.lastIndexOf("/") + 1);
 		path = (index == -1) ? "" : path.substr(0, path.lastIndexOf("/") + 1)		
-		return nameOnly ? fieldName: path;
+		return nameOnly ? fieldName : path;
 	}
 	
 	public handleMouseClick(event: MouseEvent) {
@@ -71,21 +107,24 @@ export class MappingSelectionSectionComponent {
 	template: `
 		<div class="MappingSelectionComponent" *ngIf="mappings">
 			<div class="header">
-				<div class="sourceTargetHeader">{{ selectedFieldIsSource ? 'Source' : 'Target' }}</div>
+				<div class="sourceTargetHeader">{{ selectedField.isSource() ? 'Source' : 'Target' }}</div>
 				<div class="pathHeader">
-					<div class="path">{{ getFormattedOutputPath(selectedField.path, false) }}</div>
+					<div class="pathName">{{ getFormattedOutputPath(selectedField.path, false) }}</div>
 					<div class="fieldName">{{ getFormattedOutputPath(selectedField.path, true) }}</div>
-					<div style="clear:both; height:0px;"></div>
+					<div class="clear"></div>
 				</div>
-				<div style="clear:both; height:0px;"></div>
+				<div class="clear"></div>		
 				<button class="btn btn-primary addButton" (click)="addMapping()">
 					<i class="fa fa-plus"></i>Add New Mapping
-				</button>
+				</button>		
 			</div>
-			<mapping-selection-section *ngFor="let mapping of mappings; let i = index; let odd=odd; let even=even;"
-				[mapping]="mapping" [outputNumber]="i" [selected]="i == 0" [selectedCallback]="selectionChanged" 
-				[selectedFieldIsSource]="selectedFieldIsSource" [parentComponent]="this" #mappingSection>
-			</mapping-selection-section>					
+			<div class="MappingSelectionOptions">				
+				<mapping-selection-section *ngFor="let mapping of mappings; let i = index; let odd=odd; let even=even;"
+					[mapping]="mapping" [outputNumber]="i" [selected]="i == 0" [selectedCallback]="selectionChanged" 
+					[selectedFieldIsSource]="selectedField.isSource()" [parentComponent]="this" 
+					[isOddRow]="odd" #mappingSection>
+				</mapping-selection-section>					
+			</div>			
 		</div>
 	`
 })
@@ -93,7 +132,6 @@ export class MappingSelectionSectionComponent {
 export class MappingSelectionComponent {
 	public modalWindow: ModalWindowComponent;
 	public mappings: MappingModel[];
-	public selectedFieldIsSource: boolean = false;
 	public selectedField: Field = null;
 	public cfg: ConfigModel;
 	private selectedMappingComponent: MappingSelectionSectionComponent = null;
@@ -119,10 +157,9 @@ export class MappingSelectionComponent {
 	}
 
 	public addMapping() {
-		console.log("Creating new mapping.")
-		var m: MappingModel = new MappingModel();
-		m.addMappedFieldPath(this.selectedField.path, m.getFirstFieldMapping(), this.selectedFieldIsSource);
-		this.cfg.mappingService.selectMapping(m);
+		this.cfg.mappingService.deselectMapping();
+		var mapping: MappingModel = this.cfg.mappingService.CreateNewMappingForSelectedField(this.selectedField);
+		this.cfg.mappingService.selectMapping(mapping);
 		this.modalWindow.close();
 	}
 

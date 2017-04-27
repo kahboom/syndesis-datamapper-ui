@@ -1,3 +1,4 @@
+
 /*
 	Copyright (C) 2017 Red Hat, Inc.
 
@@ -16,10 +17,10 @@
 
 import { Component, Input, ViewChildren, ElementRef, QueryList,  } from '@angular/core';
 
-import { LookupTable, LookupTableEntry } from '../models/lookup.table.model';
-import { ConfigModel } from '../models/config.model';
-import { Field, EnumValue } from '../models/field.model';
-import { MappingModel } from '../models/mapping.model';
+import { LookupTable, LookupTableEntry } from '../../models/lookup.table.model';
+import { ConfigModel } from '../../models/config.model';
+import { Field, EnumValue } from '../../models/field.model';
+import { MappingModel, FieldMappingPair } from '../../models/mapping.model';
 
 export class LookupTableData {
 	sourceEnumValue: string;
@@ -44,15 +45,17 @@ export class LookupTableData {
 })
 
 export class LookupTableComponent { 	
+	public fieldPair: FieldMappingPair;
+
 	table: LookupTable;
 	data: LookupTableData[];
 
 	@ViewChildren('outputSelect') outputSelects: QueryList<ElementRef>;    
 
-	public initialize(cfg: ConfigModel): void {
-		var mapping: MappingModel = cfg.mappings.activeMapping;
+	public initialize(cfg: ConfigModel, fieldPair: FieldMappingPair): void {
+		this.fieldPair = fieldPair;
 		
-		var targetField: Field = mapping.getMappedFields(false, cfg)[0];
+		var targetField: Field = fieldPair.getFields(false)[0];
 		var targetFieldClass: string = targetField.className;
 
 		var targetValues: string[] = [];
@@ -61,13 +64,13 @@ export class LookupTableComponent {
 			targetValues.push(e.name);
 		}
 
-		this.table = cfg.mappings.getTableByName(mapping.transition.lookupTableName);
+		this.table = cfg.mappings.getTableByName(fieldPair.transition.lookupTableName);
 		if (this.table == null) {
-			console.error("Could not find enum lookup table for mapping.", mapping);
+			console.error("Could not find enum lookup table for mapping.", fieldPair);
 		}
 
 		var d: LookupTableData[] = [];
-		var sourceField: Field = mapping.getMappedFields(true, cfg)[0];
+		var sourceField: Field = fieldPair.getFields(true)[0];
 		for (let e of sourceField.enumValues) {
 			var tableData: LookupTableData = new LookupTableData();
 			tableData.sourceEnumValue = e.name;

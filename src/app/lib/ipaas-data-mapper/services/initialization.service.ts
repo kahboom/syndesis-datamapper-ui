@@ -136,7 +136,8 @@ export class InitializationService {
 		
 		if ((documentCount == finishedDocCount) && this.mappingInitialized) {
 			console.log("All documents and mappings are loaded, initializing data.");
-			this.cfg.mappings.detectTableIdentifiers(this.cfg);
+			this.cfg.mappings.detectTableIdentifiers();
+			this.cfg.mappings.updateFieldPairsFromDocuments(this.cfg);
 			for (let d of this.cfg.getAllDocs()) {
 				d.updateFromMappings(this.cfg.mappings, this.cfg);
 			}

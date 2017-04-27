@@ -15,51 +15,51 @@
 */
 
 import { Field } from './field.model';
-import { ConfigModel } from '../models/config.model';
 import { TransitionModel, TransitionMode } from './transition.model';
 import { DocumentDefinition } from '../models/document.definition.model';
 
 export class FieldMappingPair {
-	public inputFieldPaths: string[] = [];
-	public outputFieldPaths: string[] = [];		
-	public fieldSeparatorIndexes: { [key:string]:string; } = {};	
+	public sourceFields: Field[] = [];
+	public targetFields: Field[] = [];	
+	public parsedSourcePaths: string[] = [];
+	public parsedTargetPaths: string[] = [];
+	public transition: TransitionModel = new TransitionModel();	
 
-	public updateSeparatorIndexes(): void {
-		for (let fieldPath of this.inputFieldPaths.concat(this.outputFieldPaths)) {
-			if (this.fieldSeparatorIndexes[fieldPath] == null) {
-				this.fieldSeparatorIndexes[fieldPath] = "1";
-			}
-		}
+	public constructor() { 
+		this.transition.fieldPair = this;
 	}
 
-	public toJSON(): any {
-		var separatorsJson: any[] = [];
-		for (let key in this.fieldSeparatorIndexes) {
-            var value: string = this.fieldSeparatorIndexes[key];
-            separatorsJson.push({ "key": key, "value": value });
-        }
-		return {
-			"inputFieldPaths": this.inputFieldPaths,
-			"outputFieldPaths": this.outputFieldPaths,
-			"fieldSeparators": separatorsJson
-		};
+	public addField(field: Field, isSource: boolean): void {
+		this.getFields(isSource).push(field);
 	}
 
-    public fromJSON(json: any): void {
-        this.inputFieldPaths = [].concat(json.inputFieldPaths);
-        this.outputFieldPaths = [].concat(json.outputFieldPaths);
-        if (json.fieldSeparators && json.fieldSeparators.length) {
-        	for (let s of json.fieldSeparators) {
-        		this.fieldSeparatorIndexes[s.key] = s.value;
-        	}
-        }        
-    }
+	public removeField(field: Field, isSource: boolean): void {
+		var fields: Field[] = this.getFields(isSource);
+		for (var i = 0; i < fields.length; i++) {
+    		if (fields[i] == field) {
+    			fields.splice(i, 1);
+    			return;
+    		}
+    	}
+	}
+
+	public getFields(isSource: boolean): Field[] {
+		return isSource ? this.sourceFields : this.targetFields;
+	}
+
+	public getAllFields(): Field[] {
+		return this.getFields(true).concat(this.getFields(false));
+	}
+
+	public isFieldMapped(field: Field): boolean {
+		return (this.getFields(field.isSource()).indexOf(field) != -1);
+	}	
 }
 
 export class MappingModel {
 	public uuid: string;
 	public fieldMappings: FieldMappingPair[] = [];
-	public transition: TransitionModel = new TransitionModel();	
+	public currentFieldMapping: FieldMappingPair = null;
 	
 	public constructor() {
 		this.uuid = "mapping." + Math.floor((Math.random() * 1000000) + 1).toString();
@@ -73,23 +73,24 @@ export class MappingModel {
 		return this.fieldMappings[0];
 	}
 
-	public isCollectionMode(cfg: ConfigModel): boolean {
-		for (let f of this.getAllMappedFields(cfg)) {
+	public getLastFieldMapping(): FieldMappingPair {
+		if (this.fieldMappings == null || (this.fieldMappings.length == 0)) {
+			return null;
+		}
+		return this.fieldMappings[this.fieldMappings.length - 1];
+	}
+
+	public getCurrentFieldMapping(): FieldMappingPair {
+		return (this.currentFieldMapping == null) ? this.getLastFieldMapping() : this.currentFieldMapping;
+	}
+
+	public isCollectionMode(): boolean {
+		for (let f of this.getAllMappedFields()) {
 			if (f.isInCollection()) {
 				return true;
 			}
 		}
 		return false;
-	}
-
-	public removeMappedFieldPath(fieldPath: string, fieldPair: FieldMappingPair, isSource: boolean): void {
-		var fieldPaths: string[] = isSource ? fieldPair.inputFieldPaths : fieldPair.outputFieldPaths;			
-		for (var i = 0; i < fieldPaths.length; i++) {
-    		if (fieldPaths[i] == fieldPath) {
-    			fieldPaths.splice(i, 1);
-    			break;
-    		}
-    	}
 	}
 
 	public removeMappedPair(fieldPair: FieldMappingPair): void {
@@ -99,73 +100,26 @@ export class MappingModel {
     			break;
     		}
     	}
+	}		
+
+	public getMappedFields(isSource: boolean): Field[] {
+		var fields: Field[] = [];
+		for (let fieldPair of this.fieldMappings) {
+			fields = fields.concat(fieldPair.getFields(isSource));
+		}
+		return fields;
 	}
 
-	public addMappedFieldPath(fieldPath: string, fieldPair: FieldMappingPair, isSource: boolean): void {
-		var fieldPaths: string[] = isSource ? fieldPair.inputFieldPaths : fieldPair.outputFieldPaths;
-		fieldPaths.push(fieldPath);
+	public isFieldhMapped(field:Field, isSource:boolean): boolean {
+		var fields: Field[] = this.getMappedFields(isSource);
+		return fields.indexOf(field) != -1;
 	}
 
-	public gettMappedFieldsFromPair(fieldPair: FieldMappingPair, isSource: boolean, cfg: ConfigModel) {
-		var fieldPaths: string[] = isSource ? fieldPair.inputFieldPaths : fieldPair.outputFieldPaths;
-		var docDef: DocumentDefinition = isSource ? cfg.sourceDocs[0] : cfg.targetDocs[0];
-		return docDef.getFields(fieldPaths);
-	}
-
-	public getMappedFields(isSource: boolean, cfg: ConfigModel): Field[] {
-		var fieldPaths: string[] = this.getMappedFieldPaths(isSource);
-		var docDef: DocumentDefinition = isSource ? cfg.sourceDocs[0] : cfg.targetDocs[0];
-		return docDef.getFields(fieldPaths);
-	}
-
-	public isFieldPathMapped(fieldPath:string, isSource:boolean): boolean {
-		var fieldPaths: string[] = this.getMappedFieldPaths(isSource);
-		return fieldPaths.indexOf(fieldPath) != -1;
-	}
-
-	public getAllMappedFields(cfg:ConfigModel): Field[] {
-		return this.getMappedFields(true, cfg).concat(this.getMappedFields(false, cfg));
-	}
-
-	public getAllMappedFieldPaths(): string[] {
-		return this.getMappedFieldPaths(true).concat(this.getMappedFieldPaths(false));
+	public getAllMappedFields(): Field[] {
+		return this.getMappedFields(true).concat(this.getMappedFields(false));
 	}
 
 	public hasMappedFields(isSource: boolean): boolean {
-		var fieldPaths: string[] = this.getMappedFieldPaths(isSource);
-		return (fieldPaths != null) && (fieldPaths.length > 0);
+		return this.getMappedFields(isSource).length != 0;
 	}
-
-	public getMappedFieldPaths(isSource: boolean): string[] {
-		var fieldPaths: string[] = [];
-		for (let fieldPair of this.fieldMappings) {
-			fieldPaths = fieldPaths.concat(isSource ? fieldPair.inputFieldPaths : fieldPair.outputFieldPaths);			
-		}
-		return fieldPaths;		
-	}
-
-	public toJSON(): any {
-        var fieldPairJSON: any[] = [];
-        for (let fieldPair of this.fieldMappings) {
-        	fieldPairJSON.push(fieldPair.toJSON());
-        }
-		return {
-			"uuid": this.uuid,
-			"fieldPairs": fieldPairJSON,
-			"transition": this.transition.toJSON()
-		};
-	}
-
-    public fromJSON(json: any): void {
-    	this.uuid = json.uuid;
-        this.transition.fromJSON(json.transition);
-        if (json.fieldPairs && json.fieldPairs.length) {
-        	this.fieldMappings = [];
-        	for (let fp of json.fieldPairs) {
-        		var fieldPair: FieldMappingPair = new FieldMappingPair;
-        		fieldPair.fromJSON(fp);
-        		this.fieldMappings.push(fieldPair);
-        	}
-        }
-    }
 }

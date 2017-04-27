@@ -4,7 +4,7 @@
   <div [attr.class]="cfg.initCfg.initialized ? 'dataMapperBody' : 'dataMapperBodyHidden'">  
     <div class="row"><data-mapper-error #errorPanel [errorService]="cfg.errorService"></data-mapper-error></div>
     <div class="row" style="min-height:0px;"><modal-window #modalWindow></modal-window></div>
-    <div class="row"><dm-toolbar [buttonClickedHandler]="buttonClickedHandler" #toolbarComponent [cfg]="cfg"></dm-toolbar></div>
+    <div class="row"><dm-toolbar #toolbarComponent [cfg]="cfg" [lineMachine]="lineMachine"></dm-toolbar></div>
     <div class="row" style="height:calc(100% - 18px); position:relative; padding-top:10px;">
       <div class="col-md-9" style='height:100%; padding:0;'>      
         <div style="float:left; width:40%; height:100%;">

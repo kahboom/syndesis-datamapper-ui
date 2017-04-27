@@ -14,6 +14,8 @@
     limitations under the License.
 */
 
+import { DocumentDefinition } from './document.definition.model';
+
 export class EnumValue {
     name: string;
     ordinal: number;
@@ -42,6 +44,7 @@ export class Field {
     isCollection: boolean = false;
     availableForSelection: boolean = true;
     selectionExclusionReason: string = null;
+    docDef: DocumentDefinition;
 
     constructor() {
         this.uuid = Field.uuidCounter.toString();
@@ -77,6 +80,9 @@ export class Field {
         copy.collapsed = this.collapsed;
         copy.hasUnmappedChildren = this.hasUnmappedChildren;
         copy.isCollection = this.isCollection;
+        copy.availableForSelection = this.availableForSelection;
+        copy.selectionExclusionReason = this.selectionExclusionReason;
+        copy.docDef = this.docDef;
     	for (let childField of this.children) {
     		copy.children.push(childField.copy());
     	}
@@ -101,6 +107,9 @@ export class Field {
         this.collapsed = that.collapsed;
         this.hasUnmappedChildren = that.hasUnmappedChildren;
         this.isCollection = that.isCollection;
+        this.availableForSelection = that.availableForSelection;
+        this.selectionExclusionReason = that.selectionExclusionReason;
+        this.docDef = that.docDef;
         for (let childField of that.children) {
             this.children.push(childField.copy());
         }
@@ -114,5 +123,41 @@ export class Field {
             }
             parent = parent.parentField;
         }
+    }
+
+    public isSource(): boolean {
+        return (this.docDef != null) && this.docDef.isSource;
+    }
+
+    public static fieldHasUnmappedChild(field: Field): boolean {
+        if (field == null) {
+            return false;
+        }
+        if (field.isTerminal()) {
+            return (field.partOfMapping == false);
+        }
+        for (let childField of field.children) {
+            if (childField.hasUnmappedChildren || Field.fieldHasUnmappedChild(childField)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static getFieldPaths(fields: Field[]): string[] {
+        var paths: string[] = [];
+        for (let field of fields) {
+            paths.push(field.path);
+        }
+        return paths;
+    }
+
+    public static getField(fieldPath: string, fields: Field[]): Field {
+        for (let field of fields) {
+            if (fieldPath == field.path) {
+                return field;
+            }
+        }
+        return null;
     }
 }

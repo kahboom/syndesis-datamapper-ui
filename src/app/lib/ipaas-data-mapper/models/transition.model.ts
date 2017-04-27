@@ -14,6 +14,9 @@
 	limitations under the License.
 */
 
+import { Field } from './field.model';
+import { FieldMappingPair } from './mapping.model';
+
 export enum TransitionMode { MAP, SEPARATE, ENUM }    
 export enum TransitionDelimiter { SPACE, COMMA }    
 
@@ -21,6 +24,8 @@ export class TransitionModel {
 	public mode: TransitionMode = TransitionMode.MAP;
 	public delimiter: TransitionDelimiter = TransitionDelimiter.SPACE;
 	public lookupTableName: string = null;
+	public fieldSeparatorIndexes: { [key:string]:string; } = {};
+	public fieldPair: FieldMappingPair = null;
 
 	public getPrettyName() {
 		if (this.mode == TransitionMode.SEPARATE) {
@@ -35,17 +40,19 @@ export class TransitionModel {
 		return this.mode == TransitionMode.SEPARATE;
 	}
 
-	public toJSON(): any {
-		return {
-			"mode": this.mode,
-			"delimiter": this.delimiter,
-			"lookupTableName": this.lookupTableName
-		};
+	public isEnumerationMode(): boolean {
+		return this.mode == TransitionMode.ENUM;
 	}
 
-    public fromJSON(json: any): void {
-        this.mode = json.mode;
-        this.delimiter = json.delimiter;
-        this.lookupTableName = json.lookupTableName;
-    }	
+	public updateSeparatorIndexes(): void {
+		for (let fieldPath of Field.getFieldPaths(this.fieldPair.getAllFields())) {
+			if (this.fieldSeparatorIndexes[fieldPath] == null) {
+				this.fieldSeparatorIndexes[fieldPath] = "1";
+			}
+		}
+	}
+
+	public hasTransition(): boolean {
+		return this.isSeparateMode() || this.isEnumerationMode();
+	}
 }

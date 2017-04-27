@@ -69,6 +69,15 @@ export class DocumentDefinition {
         return DocumentDefinition.noneField;
     }
 
+
+    public isFieldsExist(fields: Field[]): boolean {
+        if (fields == null || fields.length == 0) {
+            return true;
+        }
+        var foundFields: Field[] = this.getFields(Field.getFieldPaths(fields));
+        return (foundFields != null) && (fields.length == foundFields.length);
+    }
+
     public getFields(fieldPaths: string[]): Field[] {
         var fields: Field[] = [];
         for (let fieldPath of fieldPaths) {
@@ -78,14 +87,6 @@ export class DocumentDefinition {
             }
         }
         return fields;
-    }
-
-    public isFieldsExist(fieldPaths: string[]): boolean {
-        if (fieldPaths == null || fieldPaths.length == 0) {
-            return true;
-        }
-        var fields: Field[] = this.getFields(fieldPaths);
-        return (fields != null) && (fields.length == fieldPaths.length);
     }
 	
     public getField(fieldPath: string): Field {
@@ -253,6 +254,7 @@ export class DocumentDefinition {
     }
 
     private populateFieldData(field:Field): void {
+        field.docDef = this;
         this.fieldPaths.push(field.path);
         this.allFields.push(field);
         this.fieldsByPath[field.path] = field;
@@ -366,15 +368,17 @@ export class DocumentDefinition {
 
     public updateFromMappings(mappingDefinition: MappingDefinition, cfg: ConfigModel): void {
         var activeMapping: MappingModel = mappingDefinition.activeMapping;
-        var collectionMode: boolean = (activeMapping != null && activeMapping.isCollectionMode(cfg));
+        var collectionMode: boolean = (activeMapping != null && activeMapping.isCollectionMode());
         var fieldsInMapping: Field[] = null;
+
+        //don't disable this document's fields if there isn't a selected field from this document yet.
         if (collectionMode) {
-            fieldsInMapping = activeMapping.getMappedFields(this.isSource, cfg);
-            //don't disable this document's fields if there isn't a selected field from this document yet.
+            fieldsInMapping = activeMapping.getMappedFields(this.isSource);            
             if (fieldsInMapping.length == 0) {
                 collectionMode = false;
             }
         }
+
         for (let field of this.allFields) {
             field.partOfMapping = false;
             field.hasUnmappedChildren = false;
@@ -430,10 +434,15 @@ export class DocumentDefinition {
         
         for (let mapping of mappingDefinition.getAllMappings(true)) {
             var mappingIsActive: boolean = (mapping == mappingDefinition.activeMapping);
-            var partOfTransformation: boolean = (mapping.transition.mode == TransitionMode.SEPARATE)
-                || (mapping.transition.mode == TransitionMode.ENUM);
-            var fieldPaths: string[] = mapping.getMappedFieldPaths(this.isSource);
-            for (let field of this.getFields(fieldPaths)) {                
+
+            var partOfTransformation: boolean = false;
+            for (let fieldPair of mapping.fieldMappings) {
+                if (fieldPair.transition.hasTransition()) {
+                    partOfTransformation = true;
+                    break;
+                }
+            }            
+            for (let field of mapping.getMappedFields(this.isSource)) {                
                 var parentField: Field = field;
                 field.selected = mappingIsActive && field.isTerminal();
                 if (field.selected) {
@@ -450,22 +459,7 @@ export class DocumentDefinition {
             }
         }
         for (let field of this.allFields) {
-            field.hasUnmappedChildren = this.fieldHasUnmappedChild(field);  
+            field.hasUnmappedChildren = Field.fieldHasUnmappedChild(field);  
         }
-    }
-
-    private fieldHasUnmappedChild(field: Field): boolean {
-        if (field == null) {
-            return false;
-        }
-        if (field.isTerminal()) {
-            return (field.partOfMapping == false);
-        }
-        for (let childField of field.children) {
-            if (childField.hasUnmappedChildren || this.fieldHasUnmappedChild(childField)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    }  
 }

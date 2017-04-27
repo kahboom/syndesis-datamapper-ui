@@ -98,7 +98,7 @@ export class LineMachineComponent {
 	}
 
 	public addLine(l: LineModel): void {
-		console.log("Add line", l);
+		//console.log("Add line", l);
 		this.createLineStyle(l);
 		this.lines.push(l);
 	}
@@ -138,7 +138,7 @@ export class LineMachineComponent {
 		if (!isOutput) {
 			return;
 		}
-		console.log("Drawing current line from mouse over.");
+		//console.log("Drawing current line from mouse over.");
 		var targetY = this.docDefOutput.getFieldDetailComponentPosition(component.field.path).y;
 		this.drawCurrentLine("100%", (targetY + this.yOffset).toString());
     }
@@ -146,17 +146,18 @@ export class LineMachineComponent {
 	public mappingChanged(): void {
 		var mappingIsNew: boolean = false;
 		if (!mappingIsNew) {
-			console.log("Mapping is not new, active line drawing turned off.");
+			//console.log("Mapping is not new, active line drawing turned off.");
 			this.drawingLine = false;
 			this.setLineBeingFormed(null);		
 		} else {
+		/*
 			var mapping: MappingModel = this.cfg.mappings.activeMapping;
 			var inputPaths: string[] = mapping.getMappedFieldPaths(true);
 			var outputPaths: string[] = mapping.getMappedFieldPaths(false);
 			var inputSelected: boolean = (inputPaths.length == 1);
 			var outputSelected: boolean = (outputPaths.length == 1);
 			if ((inputSelected && !outputSelected) || (!inputSelected && outputSelected) ) {
-				console.log("active line drawing turned on");				
+				//console.log("active line drawing turned on");				
 				var l: LineModel = new LineModel();
 				var pos: any = null;
 				if (inputSelected) {
@@ -174,18 +175,19 @@ export class LineMachineComponent {
 					this.drawingLine = true;
 				}			
 			}
+		*/
 		}				
 		this.redrawLinesForMappings(); 		
 	}
 
 	public redrawLinesForMappings(): void {		
 		if (!this.cfg.initCfg.initialized) {
-			console.log("Not drawing lines, system is not yet initialized.");
+			//console.log("Not drawing lines, system is not yet initialized.");
 			return;
 		}
 		console.log("Drawing lines");
 		if (!this.cfg.mappings.activeMapping) {
-			console.log("No active mapping for line drawing.");
+			//console.log("No active mapping for line drawing.");
 			this.setLineBeingFormed(null);
 		}
 		this.clearLines();
@@ -193,7 +195,7 @@ export class LineMachineComponent {
 		var activeMapping: MappingModel = this.cfg.mappings.activeMapping;
 		var foundSelectedMapping: boolean = false;
 		for (let m of mappings) {
-			console.log("Drawing line for mapping.", m);
+			//console.log("Drawing line for mapping.", m);
 			foundSelectedMapping = foundSelectedMapping || (m == activeMapping);
 			this.drawLinesForMapping(m);
 		}			
@@ -212,43 +214,41 @@ export class LineMachineComponent {
 		var isSelectedMapping: boolean = (this.cfg.mappings.activeMapping == m);
 		var stroke: string = "url(#line-gradient-" + (isSelectedMapping ? "active" : "dormant") + ")";
 		for (let fieldPair of m.fieldMappings) {
-			if (!fieldPair.inputFieldPaths.length || !fieldPair.outputFieldPaths.length) {
-				console.log("Not drawing lines for mapping, input or output fields are empty.", fieldPair);
+			if (!fieldPair.sourceFields.length || !fieldPair.targetFields.length) {
+				//console.log("Not drawing lines for mapping, source or target fields are empty.", fieldPair);
 				return;
 			}
 
-			for (let inputFieldPath of fieldPair.inputFieldPaths) {
-				var inputField: Field = this.cfg.sourceDocs[0].getField(inputFieldPath);
+			for (let inputField of fieldPair.sourceFields) {
 				if (!this.checkFieldEligibiltyForLineDrawing(inputField, "input", m)) {
 					continue;
 				}
 
-				var inputFieldPos: any = this.docDefInput.getFieldDetailComponentPosition(inputFieldPath);
+				var inputFieldPos: any = this.docDefInput.getFieldDetailComponentPosition(inputField.path);
 				if (inputFieldPos == null) {
-					console.log("Cant find screen position for input field, not drawing line: " + inputFieldPath);
+					//console.log("Cant find screen position for input field, not drawing line: " + inputField.path);
 					continue;
 				}
 				var sourceY: number = inputFieldPos.y;
 
 				if ((sourceY < 16) || (sourceY > (lineMachineHeight - 40))) {
-					console.log("Not drawing line, input line coords are out of bounds.", sourceY);
+					//console.log("Not drawing line, input line coords are out of bounds.", sourceY);
 					continue;
 				}
 
-				for (let outputFieldPath of fieldPair.outputFieldPaths) {
-					var outputField: Field = this.cfg.targetDocs[0].getField(outputFieldPath);
+				for (let outputField of fieldPair.targetFields) {
 					if (!this.checkFieldEligibiltyForLineDrawing(outputField, "output", m)) {
 						continue;
 					}
 					
-					var outputFieldPos: any = this.docDefOutput.getFieldDetailComponentPosition(outputFieldPath);
+					var outputFieldPos: any = this.docDefOutput.getFieldDetailComponentPosition(outputField.path);
 					if (outputFieldPos == null) {
-						console.log("Cant find screen position for output field, not drawing line: " + outputFieldPath);
+						//console.log("Cant find screen position for output field, not drawing line: " + outputField.path);
 						continue;
 					}
 					var targetY: number = outputFieldPos.y;
 					if ((targetY < 16) || (targetY > (lineMachineHeight - 40))) {
-						console.log("Not drawing line, output line coords are out of bounds.", targetY);
+						//console.log("Not drawing line, output line coords are out of bounds.", targetY);
 						continue;
 					}					
 					
@@ -263,17 +263,17 @@ export class LineMachineComponent {
 
 	private checkFieldEligibiltyForLineDrawing(field: Field, description: string, m: MappingModel): boolean {
 		if (!field) {
-			console.error("Not drawing line, " + description + " field can't be found: " + field.path, m);
+			//console.error("Not drawing line, " + description + " field can't be found: " + field.path, m);
 			return false;
 		}
 		if (!field.visible) {
-			console.log("Not drawing line, " + description + " field isn't visible: " + field.path, m);
+			//console.log("Not drawing line, " + description + " field isn't visible: " + field.path, m);
 			return false;
 		}
 		var parentField: Field = field.parentField;
 		while (parentField != null) {
 			if (parentField.collapsed) {
-				console.log("Not drawing line, " + description + " field's parent is collapsed: "  + field.path, m);
+				//console.log("Not drawing line, " + description + " field's parent is collapsed: "  + field.path, m);
 				return false;
 			}
 			parentField = parentField.parentField;

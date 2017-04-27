@@ -47,7 +47,7 @@ export class MappingManagementService {
 	private saveMappingSource = new Subject<Function>();
 	saveMappingOutput$ = this.saveMappingSource.asObservable();	
 
-	private mappingSelectionRequiredSource = new Subject<MappingModel[]>();
+	private mappingSelectionRequiredSource = new Subject<Field>();
 	mappingSelectionRequired$ = this.mappingSelectionRequiredSource.asObservable();	
 
 	private headers: Headers = new Headers();
@@ -145,33 +145,24 @@ export class MappingManagementService {
 		} 
 
 		var wasSaved: boolean = this.cfg.mappings.removeMapping(m);
-		var addCurrentMapping: boolean = true;
 
-		var hasInputField: boolean = false;
-		for (let fieldPath of m.getMappedFieldPaths(true)) {
-			if (fieldPath != DocumentDefinition.getNoneField().path) {
-				hasInputField = true;
+		var inputFieldExists: boolean = false;
+		for (let field of m.getMappedFields(true)) {
+			if (field != DocumentDefinition.getNoneField()) {
+				inputFieldExists = true;
 				break;
 			}
 		}
-		if (!hasInputField) {
-			console.log("Not saving current mapping. No input fields selected.");
-			addCurrentMapping = false;
-		}
 
-		var hasOutputField: boolean = false;
-		for (let fieldPath of m.getMappedFieldPaths(false)) {
-			if (fieldPath != DocumentDefinition.getNoneField().path) {
-				hasOutputField = true;
+		var outputFieldExists: boolean = false;
+		for (let field of m.getMappedFields(false)) {
+			if (field != DocumentDefinition.getNoneField()) {
+				outputFieldExists = true;
 				break;
 			}
 		}
-		if (!hasOutputField) {
-			addCurrentMapping = false;
-			console.log("Not saving current mapping. No output fields selected.");
-		}
 
-		if (addCurrentMapping) {
+		if (outputFieldExists && inputFieldExists) {
 			console.log("Saving current mapping.");
 			this.cfg.mappings.mappings.push(m);
 		} else if (wasSaved) {
@@ -182,12 +173,10 @@ export class MappingManagementService {
 
 	public serializeMappingsToJSON(mappingDefinition: MappingDefinition): any {
 		var payload: any = MappingSerializer.serializeMappings(this.cfg);
-		
-		/*
-			var jsonVersion = JSON.stringify(payload);
-			var jsonPretty = JSON.stringify(JSON.parse(jsonVersion),null,2); 
-			console.log("JSON for saved mapping.", jsonPretty);
-		*/		
+		var jsonVersion = JSON.stringify(payload);
+		console.log("JSON for saved mapping.", jsonVersion);
+		var jsonPretty = JSON.stringify(JSON.parse(jsonVersion),null,2); 
+		console.log("JSON (pretty printed) for saved mapping.", [jsonPretty]);			
 		return payload;
 	}
 
@@ -222,133 +211,125 @@ export class MappingManagementService {
 		} else {	
 			this.deselectMapping();
 		}
-	}	
+	}		
 
-	public findMappingsForField(fieldPath: string, isSource:boolean): MappingModel[] {	
-		var mappingsForField: MappingModel[] = [];	
-		for (let m of this.cfg.mappings.mappings) {
-			if (m.isFieldPathMapped(fieldPath, isSource)) {
-				mappingsForField.push(m);
-			}
-		}
-		return mappingsForField;
-	}
-
-	public removeMappedField(fieldPath: string, fieldPair: FieldMappingPair, isSource: boolean): void {
-		this.cfg.mappings.activeMapping.removeMappedFieldPath(fieldPath, fieldPair, isSource);     	
+	public removeMappedField(field: Field, fieldPair: FieldMappingPair, isSource: boolean): void {
+		fieldPair.removeField(field, isSource);     	
     	this.notifyMappingUpdated();	
 	}
 
 	public removeMappedPair(fieldPair: FieldMappingPair): void {
 		this.cfg.mappings.activeMapping.removeMappedPair(fieldPair);
 		if (this.cfg.mappings.activeMapping.fieldMappings.length == 0) {
-			this.addMappedPair();
+			this.deselectMapping();
 		} else {
     		this.notifyMappingUpdated();	
     	}
 	}
 
-	public addMappedPair(): void {
+	public addMappedPair(): FieldMappingPair {
 		var fieldPair: FieldMappingPair = new FieldMappingPair();
-		fieldPair.inputFieldPaths.push(DocumentDefinition.getNoneField().path);
-		fieldPair.outputFieldPaths.push(DocumentDefinition.getNoneField().path);
+		fieldPair.addField(DocumentDefinition.getNoneField(), true);
+		fieldPair.addField(DocumentDefinition.getNoneField(), false);
 		this.cfg.mappings.activeMapping.fieldMappings.push(fieldPair);
+		this.notifyMappingUpdated();
+		return fieldPair;
+	}
+
+	public addMappedField(field: Field, fieldPair: FieldMappingPair, isSource: boolean): void {
+		field = (field == null) ? DocumentDefinition.getNoneField() : field;
+		fieldPair.addField(field, isSource);
+    	fieldPair.transition.updateSeparatorIndexes();
 		this.notifyMappingUpdated();
 	}
 
-	public addMappedField(fieldPath: string, fieldPair: FieldMappingPair, isSource: boolean): void {
-		fieldPath = (fieldPath == null) ? DocumentDefinition.getNoneField().path : fieldPath;
-		this.cfg.mappings.activeMapping.addMappedFieldPath(fieldPath, fieldPair, isSource);
-    	this.cfg.mappings.activeMapping.getFirstFieldMapping().updateSeparatorIndexes();
-		this.notifyMappingUpdated();
+	public fieldSelected(field: Field): void {
+		if (!field.isTerminal()) {
+			field.docDef.populateChildren(field);
+			field.collapsed = !field.collapsed;			
+			return;
+		}
+
+		if (!field.availableForSelection) {
+			this.cfg.errorService.warn("This field cannot be selected, " + field.selectionExclusionReason + ": " + field.displayName, null);
+			return;
+		}		
+
+		var mapping: MappingModel = this.cfg.mappings.activeMapping;
+		if (mapping == null) {
+			var mappingsForField: MappingModel[] = this.cfg.mappings.findMappingsForField(field);
+			if (mappingsForField && mappingsForField.length > 1) {
+				console.log("Found " + mappingsForField.length + " existing mappings for selected field, prompting for mapping selection.", 
+					{ "field": field, "mappings": mappingsForField });
+				this.mappingSelectionRequiredSource.next(field);
+				return;
+			} else if (mappingsForField && mappingsForField.length == 1) {
+				console.log("Found existing mapping for selected field.", { "field": field, "mappings": mappingsForField });
+				mapping = mappingsForField[0];
+			}
+			if (mapping == null) {
+				mapping = this.CreateNewMappingForSelectedField(field);
+			}
+			this.selectMapping(mapping);
+			return;
+		}
+
+		//FIXME: if selection switches mapping into collection or enum mode we need to show warnings or prevent that when there are multiple targets or incompatible enum fields
+				
+		var latestFieldPair: FieldMappingPair = mapping.getCurrentFieldMapping();
+		if (field.isSource()) {
+			//Collection mode: wipe out previously selected source/target 
+			//Non collection mode: only one source allowed in non collection mode pairings.
+			latestFieldPair.getFields(field.isSource()).length = 0;				
+		} else {
+			//target field: wipe out last target in list
+			var fields: Field[] = latestFieldPair.getFields(field.isSource());
+			if (fields.length > 0) {
+				fields.length = (fields.length - 1);
+			}
+		}
+		latestFieldPair.addField(field, field.isSource());
+
+		this.selectMapping(mapping);					
+	}
+
+	public CreateNewMappingForSelectedField(field: Field): MappingModel {
+		var mapping: MappingModel = new MappingModel();
+		var fieldPair: FieldMappingPair = mapping.getFirstFieldMapping();
+		fieldPair.addField(field, field.isSource());
+		if (field.enumeration) {
+			fieldPair.transition.mode = TransitionMode.ENUM;							
+		}			
+		console.log("Created new mapping.", mapping);
+		return mapping;
+	}
+
+	public selectMapping(m: MappingModel) {
+		if (m == null) {
+			this.deselectMapping();
+			return;
+		}
+		console.log("Selecting active mapping.", m);
+		this.cfg.mappings.activeMapping = m;
+		this.cfg.showMappingDetailTray = true;
+		for (let fieldPair of m.fieldMappings) {
+			this.cfg.sourceDocs[0].selectFields(Field.getFieldPaths(fieldPair.getFields(true)));
+			this.cfg.targetDocs[0].selectFields(Field.getFieldPaths(fieldPair.getFields(false)));
+		}
+		this.cfg.mappings.initializeMappingLookupTable(m);					
+		this.saveCurrentMapping();
+		this.notifyMappingUpdated();	
 	}
 
 	public deselectMapping(): void {
-		console.log("Deselecting active mapping.");
+		console.log("Deselecting active mapping.", { "mapping": this.cfg.mappings.activeMapping });
+		this.cfg.showMappingDetailTray = false;
 		this.cfg.mappings.activeMapping = null;
 		for (let d of this.cfg.getAllDocs()) {
 			d.clearSelectedFields();
 		}
 		this.notifyMappingUpdated();	
-	}
-
-	public fieldSelectionChanged(): void {
-		var mapping: MappingModel = this.cfg.mappings.activeMapping;
-		var selectedInputFields: Field[] = this.cfg.sourceDocs[0].getSelectedFields();
-		var selectedOutputFields: Field[] = this.cfg.targetDocs[0].getSelectedFields();
-		var mappingIsNew: boolean = false;
-		console.log("Selected fields.", { "input": selectedInputFields, "output": selectedOutputFields });
-		if (mapping == null) { // no current mapping shown in detail panel, find or create one		
-			if ((selectedInputFields.length == 0) && (selectedOutputFields.length == 0)) {		
-				console.log("Not creating new mapping, no fields selected.");
-				this.selectMapping(mapping);
-				return;
-			}
-			var fieldToFind: Field = null;		
-			var isSource: boolean = true;
-			
-			if ((selectedInputFields.length == 1) && (selectedOutputFields.length == 0)) {		
-				fieldToFind = selectedInputFields[0];
-			} 
-
-			if ((selectedInputFields.length == 0) && (selectedOutputFields.length == 1)) {		
-				fieldToFind = selectedOutputFields[0];
-				isSource = false;
-			} 
-			
-			var mappingsForField: MappingModel[] = (fieldToFind == null) ? null 
-				: this.findMappingsForField(fieldToFind.path, isSource);
-			if (mappingsForField && mappingsForField.length > 1) {
-				console.log("Found " + mappingsForField.length + " existing mappings.");
-				this.mappingSelectionRequiredSource.next(mappingsForField);
-				return;
-			} else if (mappingsForField && mappingsForField.length == 1) {
-				console.log("Found existing mapping.");
-				mapping = mappingsForField[0];
-			} else if (mappingsForField == null || mappingsForField.length == 0) { //new mapping
-				mappingIsNew = true;
-				mapping = new MappingModel();
-				var fieldPair: FieldMappingPair = mapping.getFirstFieldMapping();
-				fieldPair.inputFieldPaths = [].concat(this.getFieldPaths(selectedInputFields));
-				fieldPair.outputFieldPaths = [].concat(this.getFieldPaths(selectedOutputFields));		
-				for (let field of [].concat(selectedInputFields).concat(selectedOutputFields)) {
-					if (field.enumeration) {
-						mapping.transition.mode = TransitionMode.ENUM;							
-					}			
-				}
-				console.log("Created new mapping.", mapping);
-			}	
-		} else { //mapping already selected, add/remove from it	
-			var fieldPair: FieldMappingPair = mapping.getFirstFieldMapping();
-			fieldPair.inputFieldPaths = [].concat(this.getFieldPaths(selectedInputFields));
-			fieldPair.outputFieldPaths = [].concat(this.getFieldPaths(selectedOutputFields));					
-		}		
-
-		this.cfg.mappings.initializeMappingLookupTable(mapping, this.cfg);
-
-		this.selectMapping(mapping);
-	}
-
-	public selectMapping(m: MappingModel) {
-		this.cfg.mappings.activeMapping = m;
-		this.cfg.showMappingDetailTray = true;
-		if (m == null) {
-			this.cfg.sourceDocs[0].clearSelectedFields();
-			this.cfg.targetDocs[0].clearSelectedFields();
-		} else {
-			this.cfg.sourceDocs[0].selectFields(m.getMappedFieldPaths(true));
-			this.cfg.targetDocs[0].selectFields(m.getMappedFieldPaths(false));
-		}
-		this.notifyMappingUpdated();	
-	}
-
-	public getFieldPaths(fields: Field[]): string[] {
-		var paths: string[] = [];
-			for (let field of fields) {
-				paths.push(field.path);
-			}
-		return paths;
-	}
+	}	
 
 	public notifyMappingUpdated(): void {
 		this.mappingUpdatedSource.next();
@@ -357,5 +338,4 @@ export class MappingManagementService {
 	private handleError(message:string, error: any): void {
 		this.cfg.errorService.error(message, error);
 	}	
-
 }

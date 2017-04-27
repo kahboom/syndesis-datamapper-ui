@@ -20,7 +20,7 @@ import { DomSanitizer, SafeResourceUrl, SafeUrl, SafeStyle} from '@angular/platf
 import { ConfigModel } from '../models/config.model';
 import { Field } from '../models/field.model';   
 import { DocumentDefinition } from '../models/document.definition.model';
-import { MappingModel } from '../models/mapping.model';
+import { MappingModel, FieldMappingPair } from '../models/mapping.model';
 
 import { DocumentManagementService } from '../services/document.management.service';
 
@@ -132,32 +132,7 @@ export class DocumentFieldDetailComponent {
 	}
 
 	public handleMouseClick(event: MouseEvent): void {
-		if (this.field.isTerminal()) {	
-			if (!this.field.availableForSelection) {
-				this.cfg.errorService.warn("This field cannot be selected, " 
-					+ this.field.selectionExclusionReason + ": " + this.field.displayName, null);
-				return;
-			}		
-			var mapping: MappingModel = this.cfg.mappings.activeMapping;
-			var isSource: boolean = this.docDef.isSource;
-			if (mapping != null && mapping.isFieldPathMapped(this.field.path, isSource)) {
-				// don't do anything, field is already a part of current mapping
-				return;
-			}
-
-			//field isn't part of current mapping, if we already have fields selected for this source/target
-			// we should create a new mapping (deselect the old)					
-			if (mapping != null && (this.docDef.getSelectedFields().length != 0)) {
-				this.cfg.mappingService.deselectMapping();
-			}			
-
-			this.field.selected = true;		
-			this.cfg.mappingService.fieldSelectionChanged();
-			this.cfg.mappingService.saveCurrentMapping();
-		} else { //parent field
-			this.docDef.populateChildren(this.field);
-			this.field.collapsed = !this.field.collapsed;			
-		}		
+		this.cfg.mappingService.fieldSelected(this.field);		
 		setTimeout(() => { 
 			this.lineMachine.redrawLinesForMappings();
 		}, 10);  				

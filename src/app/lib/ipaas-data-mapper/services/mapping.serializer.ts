@@ -29,48 +29,41 @@ export class MappingSerializer {
 		for (let m of cfg.mappings.mappings) {
 			try {
 				//FIXME: remove when collections is serializable
-				var fieldsInMapping: Field[] = m.getAllMappedFields(cfg);
-				var collectionInMapping: boolean = false;
-				for (let f of fieldsInMapping) {
-					if (f.isInCollection()) {
-						console.error("Skipping mapping, it has collection field: " + f.path, m);
-						collectionInMapping = true;
-						break;
-					}
-				}
-				if (collectionInMapping) {
+				if (m.isCollectionMode()) {
 					continue;
 				}
 				//END FIXME
+				for (let fieldPair of m.fieldMappings) {
+					var serializedInputFields: any[] = MappingSerializer.serializeFields(fieldPair, true);
+					var serializedOutputFields: any[] = MappingSerializer.serializeFields(fieldPair, false);
+					var jsonMapping: any;
 
-				var inputFields: Field[] = m.getMappedFields(true, cfg);
-				var outputFields: Field[] = m.getMappedFields(false, cfg);
-				var jsonMapping: any;
-				if (m.transition.mode == TransitionMode.SEPARATE) {				
-					var delimiter: string = (m.transition.delimiter == TransitionDelimiter.SPACE) ? "SPACE" : "COMMA";
-					jsonMapping = {
-						"jsonType": "com.mediadriver.atlas.v2.SeparateFieldMapping", 
-						"inputField": MappingSerializer.serializeFields(inputFields, m, false)[0],
-						"outputFields": {
-							"mappedField": MappingSerializer.serializeFields(outputFields, m, true)
-						},
-						"strategy": delimiter
-					};	
-				} else if (m.transition.mode == TransitionMode.ENUM) {
-					jsonMapping = {
-						"jsonType": "com.mediadriver.atlas.v2.LookupFieldMapping", 
-						"inputField": MappingSerializer.serializeFields(inputFields, m, false)[0],
-						"outputField": MappingSerializer.serializeFields(outputFields, m, false)[0],
-						"lookupTableName": m.transition.lookupTableName
-					};
-				} else {			
-					jsonMapping = {
-						"jsonType": "com.mediadriver.atlas.v2.MapFieldMapping", 
-						"inputField": MappingSerializer.serializeFields(inputFields, m, false)[0],
-						"outputField": MappingSerializer.serializeFields(outputFields, m, false)[0]
-					};								
+					if (fieldPair.transition.isSeparateMode()) {				
+						var delimiter: string = (fieldPair.transition.delimiter == TransitionDelimiter.SPACE) ? "SPACE" : "COMMA";
+						jsonMapping = {
+							"jsonType": "com.mediadriver.atlas.v2.SeparateFieldMapping", 
+							"inputField": serializedInputFields[0],
+							"outputFields": {
+								"mappedField": serializedOutputFields
+							},
+							"strategy": delimiter
+						};	
+					} else if (fieldPair.transition.isEnumerationMode()) {
+						jsonMapping = {
+							"jsonType": "com.mediadriver.atlas.v2.LookupFieldMapping", 
+							"inputField": serializedInputFields[0],
+							"outputField": serializedOutputFields[0],
+							"lookupTableName": fieldPair.transition.lookupTableName
+						};
+					} else {			
+						jsonMapping = {
+							"jsonType": "com.mediadriver.atlas.v2.MapFieldMapping", 
+							"inputField": serializedInputFields[0],
+							"outputField": serializedOutputFields[0]
+						};								
+					}
+					jsonMappings.push(jsonMapping);
 				}
-				jsonMappings.push(jsonMapping);
 			} catch (e) {
 				var input: any = { "sourceDoc": cfg.sourceDocs[0], "targetDoc": cfg.targetDocs[0], 
 					"mapping": m, "mapping def": cfg.mappings};
@@ -79,7 +72,7 @@ export class MappingSerializer {
 		}
 				
 		var serializedLookupTables: any[] = MappingSerializer.serializeLookupTables(cfg.mappings);
-		let payload = {
+		var payload: any = {
 			"AtlasMapping": {
 				"jsonType": "com.mediadriver.atlas.v2.AtlasMapping",				
 				"fieldMappings": {
@@ -96,7 +89,7 @@ export class MappingSerializer {
 		return payload;
 	}
 
-	private static serializeLookupTables(mappingDefinition: MappingDefinition) {
+	private static serializeLookupTables(mappingDefinition: MappingDefinition): any[] {
 		var tables: LookupTable[] = mappingDefinition.getTables();
 		
 		if (!tables || !tables.length) {
@@ -127,7 +120,8 @@ export class MappingSerializer {
 		return serializedTables;
 	}
 
-	private static serializeFields(fields: Field[], mapping:MappingModel, includeIndexes:boolean): any {
+	private static serializeFields(fieldPair: FieldMappingPair, isSource: boolean): any[] {
+		var fields: Field[] = fieldPair.getFields(isSource);
 		var mappingFieldActions: any = null;		
 		var fieldsJson: any[] = [];
 		for (let field of fields) {
@@ -135,8 +129,9 @@ export class MappingSerializer {
 				//do not include "none" options from drop downs in mapping
 				continue;
 			}
+			var includeIndexes: boolean = fieldPair.transition.isSeparateMode() && !isSource;
 			if (includeIndexes) {
-				var separatorIndex: string = mapping.getFirstFieldMapping().fieldSeparatorIndexes[field.path];
+				var separatorIndex: string = fieldPair.transition.fieldSeparatorIndexes[field.path];
 				mappingFieldActions = {
 					"fieldAction":[
 						{
@@ -164,13 +159,12 @@ export class MappingSerializer {
 			var isSeparateMapping = (fieldMapping.jsonType == "com.mediadriver.atlas.v2.SeparateFieldMapping");
   			var isLookupMapping = (fieldMapping.jsonType == "com.mediadriver.atlas.v2.LookupFieldMapping");
   			var fieldPath: string = fieldMapping.inputField.field.path;
-  			MappingSerializer.addFieldIfDoesntExist(fieldPair.inputFieldPaths, fieldPath);
+  			MappingSerializer.addFieldIfDoesntExist(fieldPair.parsedSourcePaths, fieldPath);
   			if (isSeparateMapping) {
-  				m.transition.mode = TransitionMode.SEPARATE;
-  				var d: TransitionDelimiter = TransitionDelimiter.COMMA;
-  				d = (fieldMapping.strategy == "SPACE") ? TransitionDelimiter.SPACE: 
-  				m.transition.delimiter = d;
-  				var delimeter = (m.transition.delimiter == TransitionDelimiter.SPACE) ? "SPACE" : "COMMA";
+  				fieldPair.transition.mode = TransitionMode.SEPARATE;
+  				var delimeter: TransitionDelimiter = TransitionDelimiter.COMMA;
+  				delimeter = (fieldMapping.strategy == "SPACE") ? TransitionDelimiter.SPACE : delimeter;
+  				fieldPair.transition.delimiter = delimeter;
   				
   				for (let outputField of fieldMapping.outputFields.mappedField) {
   					var fieldName: string = outputField.field.name;
@@ -179,20 +173,20 @@ export class MappingSerializer {
   						&& outputField.fieldActions.fieldAction.length
   						&& outputField.fieldActions.fieldAction[0].index) {
   						var index: number = (outputField.fieldActions.fieldAction[0].index + 1)
-  						fieldPair.fieldSeparatorIndexes[fieldName] = index.toString();
+  						fieldPair.transition.fieldSeparatorIndexes[fieldName] = index.toString();
   					} else {
-  						fieldPair.fieldSeparatorIndexes[fieldName] = "1";
+  						fieldPair.transition.fieldSeparatorIndexes[fieldName] = "1";
   					}
-		  			MappingSerializer.addFieldIfDoesntExist(fieldPair.outputFieldPaths, fieldPath);
+		  			MappingSerializer.addFieldIfDoesntExist(fieldPair.parsedTargetPaths, fieldPath);
   				}
   			} else if (isLookupMapping) {
   				console.log(fieldMapping);
-  				m.transition.lookupTableName = fieldMapping.lookupTableName;
-  				m.transition.mode = TransitionMode.ENUM;	  	
-  				MappingSerializer.addFieldIfDoesntExist(fieldPair.outputFieldPaths, fieldMapping.outputField.field.path);
+  				fieldPair.transition.lookupTableName = fieldMapping.lookupTableName;
+  				fieldPair.transition.mode = TransitionMode.ENUM;	  	
+  				MappingSerializer.addFieldIfDoesntExist(fieldPair.parsedTargetPaths, fieldMapping.outputField.field.path);
   			} else {
-  				m.transition.mode = TransitionMode.MAP;	  			
-	  			MappingSerializer.addFieldIfDoesntExist(fieldPair.outputFieldPaths, fieldMapping.outputField.field.path);
+  				fieldPair.transition.mode = TransitionMode.MAP;	  			
+	  			MappingSerializer.addFieldIfDoesntExist(fieldPair.parsedTargetPaths, fieldMapping.outputField.field.path);
   			}	 	  					  			
   			mappings.push(m);
   		}	  	
