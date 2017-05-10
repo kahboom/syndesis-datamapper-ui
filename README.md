@@ -38,7 +38,7 @@ Reference: angular 2 AOT compilation guide: https://angular.io/docs/ts/latest/co
 
 [SAMPLE]
 
-1) The src/app/lib/ipaas-data-mapper/components/data.mapper.example.host.component.ts provides an example of how to consume the Data Mapper UI component
+1) The src/app/lib/syndesis-data-mapper/components/data.mapper.example.host.component.ts provides an example of how to consume the Data Mapper UI component
 
 [TROUBLESHOOTING]
 
@@ -50,7 +50,7 @@ Reference: angular 2 AOT compilation guide: https://angular.io/docs/ts/latest/co
 
 Bootstrapping the Data Mapper UI requires a bit of configuration. An example bootstrapping component is provided within the project:
 
-src/app/lib/ipass-data-mapper/components/data.mapper.example.host.component.ts
+src/app/lib/syndesis-data-mapper/components/data.mapper.example.host.component.ts
 
 *MODEL OVERVIEW*
 
