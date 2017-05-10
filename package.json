@@ -1,13 +1,13 @@
 {
-  "name": "ipaas.data.mapper",
+  "name": "syndesis.data.mapper",
   "version": "1.0.0",
-  "description": "Data Mapper module for iPAAS.",
+  "description": "Data Mapper module for Syndesis.",
   "author": "",
   "license": "MIT",
   "keywords": [],
   "repository": {},
-  "main": "src/app/lib/ipaas-data-mapper/data.mapper.module.ts",
-  "typings": "src/app/lib/ipaas-data-mapper/data.mapper.module.ts",
+  "main": "src/app/lib/syndesis-data-mapper/data.mapper.module.ts",
+  "typings": "src/app/lib/syndesis-data-mapper/data.mapper.module.ts",
   "scripts": {
     "build": "tsc -p ./",
     "build:watch": "tsc -p ./ -w",

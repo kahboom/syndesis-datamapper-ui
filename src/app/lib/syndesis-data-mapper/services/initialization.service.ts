@@ -47,7 +47,7 @@ export class InitializationService {
 		var testEnumMapping: boolean = false;
 		if (testEnumMapping) {
 			this.cfg.mappings = new MappingDefinition();
-			this.cfg.sourceDocs[0].initCfg.documentIdentifier = "com.redhat.ipaas.connector.salesforce.Contact";
+			this.cfg.sourceDocs[0].initCfg.documentIdentifier = "io.syndesis.connector.salesforce.Contact";
 		}
 
 		//load documents

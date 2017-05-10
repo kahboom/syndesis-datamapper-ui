@@ -22,7 +22,7 @@ import { RouterModule } from '@angular/router';
 
 import { AppComponent } from './app.component';
 
-import { DataMapperModule } from './lib/ipaas-data-mapper/data.mapper.module';
+import { DataMapperModule } from './lib/syndesis-data-mapper/data.mapper.module';
 
 @NgModule({
   declarations: [
