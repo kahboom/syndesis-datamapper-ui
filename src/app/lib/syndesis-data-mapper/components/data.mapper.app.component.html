@@ -1,0 +1,36 @@
+<div class="DataMapperUI">  
+  <!-- <div class="DataMapperUIBackground"></div> -->
+  <!-- <div class="DataMapperUIBackgroundCover"></div> -->
+  <div [attr.class]="cfg.initCfg.initialized ? 'dataMapperBody' : 'dataMapperBodyHidden'">  
+    <div class="row"><data-mapper-error #errorPanel [errorService]="cfg.errorService"></data-mapper-error></div>
+    <div class="row" style="min-height:0px;"><modal-window #modalWindow></modal-window></div>
+    <div class="row"><dm-toolbar #toolbarComponent [cfg]="cfg" [lineMachine]="lineMachine"></dm-toolbar></div>
+    <div class="row" style="height:calc(100% - 18px); position:relative; padding-top:10px;">
+      <div class="col-md-9" style='height:100%; padding:0;'>      
+        <div style="float:left; width:40%; height:100%;">
+          <document-definition #docDefInput [cfg]="cfg" [modalWindow]="modalWindow" 
+            [isSource]="true" [lineMachine]="lineMachine">
+          </document-definition>
+        </div>
+        <div style="float:left; width:20%; height:100%; margin-left:-5px; margin-right:-5px;">
+          <line-machine #lineMachine [cfg]="cfg"
+            [docDefInput]="docDefInput" [docDefOutput]="docDefOutput">
+          </line-machine>
+        </div>
+        <div style="float:left; width:40%; height:100%;">
+          <document-definition #docDefOutput [cfg]="cfg" [modalWindow]="modalWindow" 
+            [isSource]="false" [lineMachine]="lineMachine">
+          </document-definition>
+        </div>
+        <div class="clear"></div>
+      </div>
+      <div class="col-md-3" style="padding:0px; height:100%;">
+        <mapping-detail #mappingDetailComponent [cfg]="cfg" [modalWindow]="modalWindow"></mapping-detail>
+      </div>
+    </div>
+  </div>
+  <div class="DataMapperLoadingMessage" *ngIf="!cfg.initCfg.initialized">
+    <label [attr.class]="this.cfg.initCfg.initializationErrorOccurred ? 'error' : ''">{{loadingStatus}}</label>
+    <span class="spinner spinner-xs spinner-inline" *ngIf="!cfg.initCfg.initializationErrorOccurred"></span>
+  </div>
+</div>
