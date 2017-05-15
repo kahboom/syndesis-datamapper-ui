@@ -18,8 +18,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpModule } from '@angular/http';
 import { FormsModule } from '@angular/forms';
-import { TypeaheadModule } from 'ng2-bootstrap';
-import { TooltipModule } from 'ng2-bootstrap';
+import { TypeaheadModule } from 'ngx-bootstrap';
+import { TooltipModule } from 'ngx-bootstrap';
 
 import { DocumentManagementService } from './services/document.management.service';
 import { MappingManagementService } from './services/mapping.management.service';
@@ -36,7 +36,7 @@ import { DocumentDefinitionComponent } from './components/document.definition.co
 
 import { MappingFieldDetailComponent } from './components/mapping.field.detail.component';
 import { MappingFieldActionComponent } from './components/mapping.field.action.component';
-import { MappingDetailComponent, MappingDetailHeaderComponent, 
+import { MappingDetailComponent, MappingDetailHeaderComponent,
 	MappingFieldSectionComponent } from './components/mapping.detail.component';
 import { MappingSelectionComponent, MappingSelectionSectionComponent } from './components/mapping.selection.component';
 
@@ -60,10 +60,10 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 
 
 @NgModule({
-	imports: [ 
-		CommonModule, 
-		HttpModule, 
-		FormsModule, 
+	imports: [
+		CommonModule,
+		HttpModule,
+		FormsModule,
 		TypeaheadModule.forRoot(),
 		TooltipModule.forRoot()
 	],
@@ -85,7 +85,7 @@ export { DataMapperAppComponent } from './components/data.mapper.app.component';
 		MappingSelectionSectionComponent,
 		ToolbarComponent,
 		LookupTableComponent,
-		EmptyModalBodyComponent		
+		EmptyModalBodyComponent
 	],
 	exports: [
 		DataMapperAppExampleHostComponent,
